@@ -28,6 +28,7 @@ since v3.0.0: nothing is taken from it any more.
   `disable.sh`. `sh run.sh --install [--start]` builds and installs.
 
 ## Rules
+- `README.md` and `README.fr.md` say the same thing, section for section: a change to one goes to both.
 - The repo is public: nothing about the user's home (entity ids, people, places, addresses) goes in a
   tracked file. Secrets live only in `secrets.local.json` (git-ignored); never print the token or put it
   in a command line.

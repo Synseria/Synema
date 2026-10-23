@@ -1,5 +1,7 @@
 # Synéma
 
+**English** · [Français](README.fr.md)
+
 An Android TV launcher with a Home Assistant dashboard, and the tools to strip an Android TV of its ads
 and bloat. Built and tested on a Philips OLED running Android TV 11; the launcher and the debloat tools
 work on most Android TV and Google TV sets (not Samsung, LG or Fire TV).
