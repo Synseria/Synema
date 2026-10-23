@@ -164,7 +164,7 @@
     <string name="graph_climate">Temperature · Humidity</string>
     <string name="graph_noise">Noise</string>
     <string name="energy_title">Electricity</string>
-    <string name="sources_all">All sources…</string>
+    <string name="sources_all">More…</string>
     <string name="energy_range_today">Today</string>
     <string name="energy_range_days">30 days</string>
     <string name="energy_range_months">12 months</string>

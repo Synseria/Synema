@@ -80,14 +80,13 @@ final class RoomPage {
         rlp.topMargin = activity.dp(4);
         content.addView(readings, rlp);
 
-        // The scroll's padding, taken back by its margins, is room for a focused tile's or camera's lift
-        // and ring (Focus): nothing between them clips.
+        // The scroll's padding is room for a focused tile's or camera's lift and ring (Focus); its margins
+        // take it back on every side but the bottom, where it clips: the graphs' heading sits just under.
         int space = Focus.room(activity, CAMERA_DP);
-        scroll = new ScrollView(activity);
+        scroll = new TileScroll(activity, null);
         scroll.setVerticalScrollBarEnabled(false);
         scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
         scroll.setClipToPadding(false);
-        scroll.setClipChildren(false);
         scroll.setPadding(space, space, space, space);
         body = new LinearLayout(activity);
         body.setOrientation(LinearLayout.HORIZONTAL);
@@ -95,7 +94,6 @@ final class RoomPage {
         scroll.addView(body);
         LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
         slp.topMargin = activity.dp(14) - space;
-        slp.bottomMargin = -space;
         slp.setMarginStart(-space);
         slp.setMarginEnd(-space);
         content.addView(scroll, slp);

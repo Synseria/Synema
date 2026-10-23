@@ -1,6 +1,7 @@
 package com.synseria.synema;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.FocusFinder;
@@ -8,15 +9,26 @@ import android.view.View;
 import android.widget.ScrollView;
 
 /**
- * The House panel's rooms, scrolling alone under its fixed tiles. It clips at its bounds, so no room is
- * drawn over the tiles or the electricity: a room focused comes into view with the room its lift takes.
- * Up from the first line and Down from the last leave it at once, never a free scroll.
+ * Tiles scrolling between fixed neighbours: the House panel's rooms under its tiles, a room page's things
+ * over its graphs. It clips at its top and bottom only, so no tile is drawn over a neighbour while a
+ * focused one's lift and ring still spill sideways: a tile focused comes into view with the room its
+ * lift takes. Up from the first line and Down from the last leave it at once,
+ * never a free scroll.
  */
-public final class RoomsScroll extends ScrollView {
+public final class TileScroll extends ScrollView {
     private final Rect lifted = new Rect();
 
-    public RoomsScroll(Context ctx, AttributeSet attrs) {
+    public TileScroll(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
+        setClipChildren(false);
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        canvas.save();
+        canvas.clipRect(-getWidth(), getScrollY(), 2 * getWidth(), getScrollY() + getHeight());
+        super.dispatchDraw(canvas);
+        canvas.restore();
     }
 
     @Override

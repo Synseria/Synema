@@ -119,7 +119,7 @@
     <string name="graph_climate">Température · Humidité</string>
     <string name="graph_noise">Bruit</string>
     <string name="energy_title">Électricité</string>
-    <string name="sources_all">Toutes les sources…</string>
+    <string name="sources_all">Autres…</string>
     <string name="energy_range_today">Aujourd\'hui</string>
     <string name="energy_range_days">30 jours</string>
     <string name="energy_range_months">12 mois</string>

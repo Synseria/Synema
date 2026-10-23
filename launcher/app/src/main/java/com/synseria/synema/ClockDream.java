@@ -20,12 +20,14 @@ import java.util.Random;
  * each with its last day's temperature in a thin curve (Chart), then the other rooms' temperatures and
  * what is out of the ordinary, as Home Assistant pushes them (HaLive); the trends and the curves are
  * read again every five minutes. The clock
- * glides: one pixel every two seconds, bouncing off the screen's edges, too slow to see, so no pixel
+ * glides: one pixel every two seconds, bouncing off the safe area's edges, too slow to see, so no pixel
  * stays lit the same way and an OLED panel never marks. Enable it with tools/screensaver.sh.
  */
 public class ClockDream extends DreamService {
 
     private static final long DRIFT_MS = 2_000L;
+    /** The share of each side the glide keeps off: the 5 % title-safe margin of TV pictures. */
+    private static final float SAFE = 0.05f;
     private static final long HOUSE_MS = 5 * 60_000L;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -120,16 +122,33 @@ public class ClockDream extends DreamService {
     private final Runnable drift = new Runnable() {
         @Override
         public void run() {
-            View parent = (View) content.getParent();
-            float maxX = Math.max(0, parent.getWidth() - content.getWidth());
-            float maxY = Math.max(0, parent.getHeight() - content.getHeight());
             float x = content.getX() + dx, y = content.getY() + dy;
-            if (x <= 0 || x >= maxX) dx = -dx;
-            if (y <= 0 || y >= maxY) dy = -dy;
-            moveTo(Math.max(0, Math.min(maxX, x)), Math.max(0, Math.min(maxY, y)));
+            if (x <= safeX() || x >= maxX()) dx = -dx;
+            if (y <= safeY() || y >= maxY()) dy = -dy;
+            moveTo(x, y);
             handler.postDelayed(this, DRIFT_MS);
         }
     };
+
+    /**
+     * The glide stays inside the screen's safe area, SAFE of each side: a TV panel crops or blurs its very
+     * edges, and text touching them reads as cut.
+     */
+    private float safeX() {
+        return SAFE * ((View) content.getParent()).getWidth();
+    }
+
+    private float safeY() {
+        return SAFE * ((View) content.getParent()).getHeight();
+    }
+
+    private float maxX() {
+        return Math.max(safeX(), ((View) content.getParent()).getWidth() - safeX() - content.getWidth());
+    }
+
+    private float maxY() {
+        return Math.max(safeY(), ((View) content.getParent()).getHeight() - safeY() - content.getHeight());
+    }
 
     @Override
     public void onAttachedToWindow() {
@@ -234,16 +253,16 @@ public class ClockDream extends DreamService {
 
     /** A random start that keeps the whole clock on screen, gliding in a random direction. */
     private void placeClock() {
-        View parent = (View) content.getParent();
-        int maxX = Math.max(0, parent.getWidth() - content.getWidth());
-        int maxY = Math.max(0, parent.getHeight() - content.getHeight());
         dx = random.nextBoolean() ? 1 : -1;
         dy = random.nextBoolean() ? 1 : -1;
-        moveTo(maxX * (0.1f + 0.8f * random.nextFloat()), maxY * (0.1f + 0.8f * random.nextFloat()));
+        moveTo(safeX() + (maxX() - safeX()) * random.nextFloat(), safeY() + (maxY() - safeY()) * random.nextFloat());
+        // The readings arrive after the clock is placed and the block grows: it is kept inside at once.
+        content.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> moveTo(content.getX(), content.getY()));
     }
 
+    /** Moves the block there, kept inside the safe area. */
     private void moveTo(float x, float y) {
-        content.setX(x);
-        content.setY(y);
+        content.setX(Math.max(safeX(), Math.min(maxX(), x)));
+        content.setY(Math.max(safeY(), Math.min(maxY(), y)));
     }
 }

@@ -6,7 +6,7 @@ since v3.0.0: nothing is taken from it any more.
 
 ## Map
 - `launcher/` — the APK (Java, no Kotlin). `MainActivity` = dashboard (+ `HouseHeader` top line, `Dock`
-  favourites, `CardRow` rows in `ColumnScroll`, `HousePanel` (its rooms in `RoomsScroll`), `CameraRow`, `Backdrop`/`MovingBackdrop`);
+  favourites, `CardRow` rows in `ColumnScroll`, `HousePanel` (its rooms in `TileScroll`), `CameraRow`, `Backdrop`/`MovingBackdrop`);
   `AppsActivity`; `SidePage` (a page beside the dashboard): `RoomPage` (a room; rooms read by `Rooms`),
   `EnergyPage` (the electricity) and `SourcesPage` (Live TV, HDMI, AirPlay, then
   the TV's drawer; also the remote's Source button, `keys` in home.json); `Chart` (graphs, from `Stats`); `CameraActivity`
@@ -45,7 +45,9 @@ since v3.0.0: nothing is taken from it any more.
   `TvText`); Outfit only for the big clocks and the big temperatures (top line, room page).
 - Focus has one look, from `Focus` only (cards: ring and sheen, tiles: veil and ring, buttons: white
   disc). Every container between a focusable and the room left for its lift keeps `clipChildren` and
-  `clipToPadding` off; only a row's window clips, across.
+  `clipToPadding` off; only a row's window clips, across. A ScrollView's default `clipChildren` cuts its
+  content to the content's own bounds, so the side lift goes: tiles that scroll between neighbours sit in
+  `TileScroll`, which clips along its axis only.
 - Install with `sh run.sh --install [--start]` (re-enables the remote-buttons service, which Android drops on
   reinstall, and the Assistant button overlay, and pushes home.local.json); `sh run.sh` alone is a debug build.
 - Never press OK on the dashboard blind while testing: the panel's tiles switch real lights. Check the

@@ -20,7 +20,7 @@ import java.util.Map;
  * The dashboard's Home Assistant parts: the top line's readings and capsules (HouseHeader), and the
  * House panel on the right: the rooms lit, home.json's tiles, the rooms (Rooms; OK opens one's page,
  * RoomPage) and the electricity (OK opens its page, EnergyPage). The tiles stay put under the heading;
- * the rooms alone scroll between them and the electricity (RoomsScroll), beyond eight rooms or so.
+ * the rooms alone scroll between them and the electricity (TileScroll), beyond eight rooms or so.
  *
  * While the dashboard shows, Home Assistant pushes every change of what it shows (HaLive): a light
  * switched anywhere is drawn within a moment. The rooms themselves (which areas, which things) are

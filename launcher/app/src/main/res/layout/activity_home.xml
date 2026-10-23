@@ -416,7 +416,7 @@
                     android:background="#1AFFFFFF" />
 
                 <!-- The rooms, scrolling alone; their padding is room for a focused room's lift. -->
-                <com.synseria.synema.RoomsScroll
+                <com.synseria.synema.TileScroll
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
@@ -431,7 +431,7 @@
                         android:orientation="vertical"
                         android:clipChildren="false"
                         android:clipToPadding="false" />
-                </com.synseria.synema.RoomsScroll>
+                </com.synseria.synema.TileScroll>
 
                 <!-- The electricity on two lines: the power against the subscription (and its bar) and
                      the month's cost; Tempo's colour today and tomorrow. -->
