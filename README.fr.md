@@ -23,6 +23,15 @@ Samsung, LG ni Fire TV).
   désinstallées ; tout se restaure.
 - **AirPlay** vers la TV, réglé pour la 4K ([airplay/](airplay/README.md)).
 
+## Écrans
+
+| | |
+|---|---|
+| ![Une pièce : ses lumières, ses mesures et leurs graphiques](docs/piece.jpg) | ![L'électricité : puissance, coût du mois, Tempo, consommation](docs/electricite.jpg) |
+| Une pièce : ses lumières, ses mesures et leurs graphiques | L'électricité : puissance, coût du mois, Tempo, consommation |
+| ![Sources : la TV, chaque entrée HDMI au nom de son appareil, AirPlay](docs/sources.jpg) | |
+| Sources : la TV, chaque entrée HDMI au nom de son appareil, AirPlay | |
+
 ## Installation
 
 Il faut la TV et un ordinateur sur le même réseau, Python 3, le JDK 17 et le SDK Android 34.

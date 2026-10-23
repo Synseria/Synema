@@ -21,6 +21,15 @@ work on most Android TV and Google TV sets (not Samsung, LG or Fire TV).
   can be restored.
 - **AirPlay** to the TV, tuned for 4K ([airplay/](airplay/README.md)).
 
+## Screens
+
+| | |
+|---|---|
+| ![A room: its lights, its readings and their graphs](docs/piece.jpg) | ![The electricity: power, the month's cost, Tempo, what was used](docs/electricite.jpg) |
+| A room: its lights, its readings and their graphs | The electricity: power, the month's cost, Tempo, what was used |
+| ![Sources: the TV, each HDMI input named after its device, AirPlay](docs/sources.jpg) | |
+| Sources: the TV, each HDMI input named after its device, AirPlay | |
+
 ## Install
 
 You need the TV and a computer on the same network, Python 3, JDK 17 and the Android SDK 34.
