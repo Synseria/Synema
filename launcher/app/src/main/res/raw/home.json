@@ -1,0 +1,136 @@
+{
+  "weather": "weather.home",
+  "outside": {
+    "entity": "sensor.outdoor_temperature",
+    "humidity": "sensor.outdoor_humidity",
+    "pressure": "sensor.outdoor_pressure",
+    "label": "Outside"
+  },
+  "temperatures": [
+    {
+      "entity": "sensor.living_room_temperature",
+      "humidity": "sensor.living_room_humidity",
+      "co2": "sensor.living_room_co2",
+      "noise": "sensor.living_room_noise",
+      "label": "Living room"
+    },
+    {
+      "entity": "sensor.bedroom_temperature",
+      "humidity": "sensor.bedroom_humidity",
+      "label": "Bedroom"
+    }
+  ],
+  "energy": {
+    "power": "sensor.grid_power",
+    "subscribed": "sensor.grid_subscribed_power",
+    "subscription": "sensor.grid_subscription_price",
+    "limit": 5400,
+    "tempo": "sensor.tempo_today",
+    "tempo_tomorrow": "sensor.tempo_tomorrow"
+  },
+  "status": [
+    {
+      "entity": "alarm_control_panel.home",
+      "label": "Alarm",
+      "states": {
+        "armed_away": "armed",
+        "armed_home": "armed",
+        "armed_night": "armed (night)",
+        "arming": "arming",
+        "pending": "pending",
+        "triggered": "triggered!"
+      },
+      "show": ["armed_away", "armed_home", "armed_night", "arming", "pending", "triggered"],
+      "alert": ["triggered", "pending"]
+    },
+    {
+      "entity": "binary_sensor.front_door",
+      "label": "Front door",
+      "states": {"on": "open"},
+      "show": ["on"],
+      "for": 120,
+      "alert": true
+    },
+    {
+      "entity": "vacuum.robot",
+      "label": "Vacuum",
+      "states": {"cleaning": "cleaning", "returning": "going back", "error": "stuck"},
+      "show": ["cleaning", "returning", "error"],
+      "alert": ["error"]
+    },
+    {
+      "entity": "person.resident",
+      "states": {"home": "is home"},
+      "show": ["home"],
+      "within": 600
+    }
+  ],
+  "cameras": [
+    {
+      "entity": "camera.doorbell",
+      "label": "Front door",
+      "stream": "doorbell_sub",
+      "sound": "doorbell"
+    }
+  ],
+  "tiles": [
+    {"name": "Lamp", "service": "light/toggle", "entity": "light.living_room_lamp"},
+    {"name": "Living room", "service": "light/toggle", "entity": "light.living_room"},
+    {"name": "Kitchen", "service": "light/toggle", "entity": "light.kitchen"},
+    {"name": "Vacuum", "service": "vacuum/start", "entity": "vacuum.robot"}
+  ],
+  "house_label": "tv",
+  "alerts": [
+    {
+      "entity": "binary_sensor.front_door",
+      "to": "on",
+      "title": "Front door open",
+      "camera": "camera.doorbell",
+      "pause": true,
+      "reply": {
+        "label": "On my way",
+        "service": "notify/living_room_speaker",
+        "data": {"message": "On my way"}
+      }
+    },
+    {
+      "entity": "vacuum.robot",
+      "from": "returning",
+      "to": "docked",
+      "title": "Vacuum: done"
+    }
+  ],
+  "assistant": {
+    "language": "en",
+    "presets": [
+      {"name": "House", "agent": "conversation.home_assistant"},
+      {
+        "name": "TV",
+        "agent": "conversation.home_assistant",
+        "context": "You answer from the living-room TV, out loud: two or three sentences, no lists. On screen now: {app}. It is {time}."
+      }
+    ],
+    "suggestions": [
+      "Dim the living room",
+      "What's the temperature in the bedroom?",
+      "Start the vacuum"
+    ]
+  },
+  "keys": {
+    "326": {"app": "com.netflix.ninja"},
+    "779": {"app": "com.google.android.youtube.tv"},
+    "183": {"service": "light/toggle", "entity": "light.living_room_lamp"},
+    "184": {"service": "light/toggle", "entity": "light.living_room"},
+    "185": {"service": "light/toggle", "entity": "light.kitchen"},
+    "186": {"service": "scene/turn_on", "entity": "scene.movie"},
+    "178": {"sources": true},
+    "142": {"assistant": true},
+    "84": {"assistant": true}
+  },
+  "dismiss": [
+    "org.droidtv.nettvregistration.onetrust.IABActivity"
+  ],
+  "keys_off_in": [
+    "org.droidtv.playtv"
+  ]
+}

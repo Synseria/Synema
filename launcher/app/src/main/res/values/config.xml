@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher configuration. Edit this file, then run launcher/build-and-install.sh.
+  Or leave it and push a theme instead: tools/theme.sh themes/<name> puts a config.json (same keys, see
+  themes/README.md) and an optional wallpaper on the TV, and the launcher overlays it at start.
+  Package names: on the TV run `pm list packages` (tools/tv.py 'pm list packages').
+-->
+<resources>
+
+    <!-- Favourites: the dashboard's first row, in this order. Missing apps are skipped. -->
+    <string-array name="dock_apps">
+        <item>com.canal.android.canal</item>
+        <item>com.netflix.ninja</item>
+        <item>com.plexapp.android</item>
+        <item>org.smarttube.stable</item>
+        <item>com.amazon.amazonvideo.livingroom</item>
+        <item>com.disney.disneyplus</item>
+    </string-array>
+
+    <!-- Apps left out of All apps (the Live TV app is reached through Sources). Also set on the TV:
+         hold OK on an app in All apps. -->
+    <string-array name="hidden_apps">
+        <item>org.droidtv.playtv</item>
+        <item>org.droidtv.eum</item>
+    </string-array>
+
+    <!-- Dashboard sections not shown: resume (continue watching), picks (the focused app's row), house
+         (Home Assistant panel). Also switched on the TV from the dashboard's pencil pill. -->
+    <string-array name="hidden_blocks" />
+
+</resources>

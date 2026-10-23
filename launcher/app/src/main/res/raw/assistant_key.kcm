@@ -1,0 +1,11 @@
+# The remote's Assistant button as F12, which the system leaves to apps: RemoteKeyService then opens
+# the house assistant (home.json keys "142"). Applied per remote by tools/assistant-key.sh on.
+# Linux keys KEY_SEARCH 217, KEY_VOICECOMMAND 582, KEY_ASSISTANT 583, and the same buttons as HID usages
+# (Bluetooth remotes): AC Search 0x0c0221, Voice Command 0x0c00cf.
+type OVERLAY
+
+map key 217 F12
+map key 582 F12
+map key 583 F12
+map key usage 0x0c0221 F12
+map key usage 0x0c00cf F12

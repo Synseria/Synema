@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inputs">Sources</string>
+    <string name="settings">Paramètres</string>
+    <string name="not_available">Indisponible sur cette TV</string>
+    <string name="date_format">EEEE d MMMM</string>
+    <string name="dream_name">Horloge</string>
+    <string name="remote_key_name">Boutons de la télécommande</string>
+    <string name="remote_key_description">Ouvre les applis attribuées aux boutons de la télécommande, comme le bouton App Gallery.</string>
+    <string name="all_apps">Applications</string>
+    <string name="continue_watching">Reprendre</string>
+    <string name="ha_not_configured">Home Assistant n\'est pas configuré : lancer tools/secrets.sh</string>
+    <string name="ha_unreachable">Home Assistant ne répond pas</string>
+    <string name="state_on">Allumé</string>
+    <string name="state_off">Éteint</string>
+    <string name="state_open">Ouvert</string>
+    <string name="state_closed">Fermé</string>
+    <string name="state_brightness">Allumé · %1$d %%</string>
+    <string-array name="weather_condition_names">
+        <item>Nuit claire</item>
+        <item>Nuageux</item>
+        <item>Exceptionnel</item>
+        <item>Brouillard</item>
+        <item>Grêle</item>
+        <item>Orages</item>
+        <item>Orages et pluie</item>
+        <item>Éclaircies</item>
+        <item>Averses</item>
+        <item>Pluie</item>
+        <item>Neige</item>
+        <item>Neige fondue</item>
+        <item>Ensoleillé</item>
+        <item>Venteux</item>
+        <item>Venteux et nuageux</item>
+    </string-array>
+    <string name="alert_full_screen">Agrandir</string>
+    <string name="alert_close">Fermer</string>
+    <string name="airplay_code">Code AirPlay</string>
+    <string name="airplay_code_hint">À saisir sur votre iPhone, iPad ou Mac · Retour pour fermer</string>
+    <string name="alert_closes_in">Se ferme dans %1$d s</string>
+    <string name="edit_move">Déplacer</string>
+    <string name="edit_remove">Retirer des favoris</string>
+    <string name="edit_add">Ajouter une appli…</string>
+    <string name="edit_house_panel">Panneau Maison</string>
+    <string name="edit_moving">Mode édition · ← → déplacer · OK pour terminer</string>
+    <string name="edit_not_saved">Impossible d\'enregistrer la modification</string>
+    <string name="assistant">Assistant</string>
+    <string name="assist_hint">Demander à la maison…</string>
+    <string name="assist_speak">Parler</string>
+    <string name="assist_listening">J\'écoute…</string>
+    <string name="assist_thinking">…</string>
+    <string name="assist_no_answer">Home Assistant n\'a pas répondu.</string>
+    <string name="assist_no_agent">Aucun agent de conversation : régler assistant dans home.json.</string>
+    <string name="alert_shrink">Réduire</string>
+    <string name="customize">Personnaliser l\'accueil</string>
+    <string name="edit_close_app">Fermer l\'appli</string>
+    <string name="edit_closed">%1$s fermée</string>
+    <string name="edit_add_favourite">Ajouter un favori…</string>
+    <string name="discover">À découvrir</string>
+    <!-- The remote's colour buttons, red to blue, for the dashboard's hint. -->
+    <string name="edit_make_favourite">Ajouter aux favoris</string>
+    <string name="edit_hide_app">Masquer de Toutes les applis</string>
+    <string name="input_key_service_description">Ouvre le choix des sources quand on appuie sur le bouton Source de la télécommande.</string>
+    <string name="home_key_name">Bouton Accueil</string>
+    <string name="home_key_description">Fait ouvrir ce launcher par le bouton Accueil de la télécommande.</string>
+    <string name="backdrop">Fond</string>
+    <string name="backdrop_artwork">Affiche</string>
+    <string name="backdrop_picture">Image</string>
+    <string name="assistant_key_layout">Bouton Assistant : assistant maison</string>
+    <string name="theme_night">Nuit</string>
+    <string name="theme_aurora">Aurore</string>
+    <string name="theme_dusk">Crépuscule</string>
+    <string name="theme_ocean">Océan</string>
+    <string name="theme_graphite">Graphite</string>
+    <string name="menu_home">Accueil</string>
+    <string name="menu_favourites">Favoris</string>
+    <string name="backdrop_motion">Fond en mouvement</string>
+    <string name="cameras">Caméras</string>
+    <string name="hero_resume">%1$s · Reprendre</string>
+    <string name="hero_discover">%1$s · À découvrir</string>
+    <string name="edit_hero">Titre en vedette</string>
+    <string name="house_dashboard">Maison</string>
+    <string name="camera_talk">Parler</string>
+    <string name="camera_talking">Vous parlez</string>
+    <string name="camera_press_mic">Appuyez sur le micro de la télécommande</string>
+    <string name="time_left">reste %1$s</string>
+    <string name="play_not_found">Rien de tel que « %1$s » sur la TV</string>
+    <string name="assist_looking">Je cherche…</string>
+    <string name="assist_not_heard">Rien entendu : appuie sur le micro de la télécommande et parle</string>
+    <string name="assist_no_network">La reconnaissance vocale a besoin du réseau</string>
+    <string name="assist_again">Ta phrase n\'est pas passée : redis-la</string>
+    <string name="assist_not_found">Je ne trouve pas « %1$s » dans ce que proposent les applis.</string>
+    <string name="assist_catalogue">Ce qu\'on peut regarder sur la TV en ce moment (titre | appli · infos) :\n%1$s\nPour lancer l\'un d\'eux, réponds en une phrase courte, puis ajoute une dernière ligne exactement ainsi : ▶ titre exact | appli. Ne choisis que dans cette liste. Si on te demande seulement des idées, donne-en deux ou trois en une phrase, sans cette ligne. Jamais de liste.</string>
+    <string name="kind_film">film</string>
+    <string name="kind_series">série</string>
+    <string name="tv_state_home">Accueil</string>
+    <string name="edit_open_app">Ouvrir %1$s</string>
+    <string name="edit_hide_title">Masquer ce titre</string>
+    <plurals name="edit_show_titles"><item quantity="one">Réafficher %d titre masqué</item><item quantity="other">Réafficher les %d titres masqués</item></plurals>
+    <string name="hero_app">Appli</string>
+    <string name="power_high">Puissance %1$s</string>
+    <string name="tempo_red_today">Jour rouge</string>
+    <string name="tempo_red_tomorrow">Jour rouge demain</string>
+    <string name="house_all_off">tout est éteint</string>
+    <plurals name="rooms_lit">
+        <item quantity="one">%d pièce allumée</item>
+        <item quantity="many">%d pièces allumées</item>
+        <item quantity="other">%d pièces allumées</item>
+    </plurals>
+    <string name="room_back">‹ Accueil</string>
+    <string name="room_lights">Lumières</string>
+    <string name="room_devices">Appareils</string>
+    <string name="tech_month">%1$s ce mois</string>
+    <string name="tech_today">aujourd\'hui</string>
+    <string name="rating_audience">Public %1$d %%</string>
+    <string name="tmdb_credit">Données de films et séries : TMDB. Ce produit utilise l\'API TMDB mais n\'est ni approuvé ni certifié par TMDB.</string>
+    <string name="tech_tomorrow">demain</string>
+    <string name="graph_history">Historique</string>
+    <string name="graph_climate">Température · Humidité</string>
+    <string name="graph_noise">Bruit</string>
+    <string name="energy_title">Électricité</string>
+    <string name="sources_all">Toutes les sources…</string>
+    <string name="energy_range_today">Aujourd\'hui</string>
+    <string name="energy_range_days">30 jours</string>
+    <string name="energy_range_months">12 mois</string>
+    <string name="energy_today">Aujourd\'hui</string>
+    <string name="energy_yesterday">Hier</string>
+    <string name="energy_this_month">Ce mois</string>
+    <string name="energy_last_month">Mois dernier</string>
+    <string name="energy_total">Total %1$s</string>
+    <string name="energy_blue">Bleu</string>
+    <string name="energy_white">Blanc</string>
+    <string name="energy_red">Rouge</string>
+    <string name="energy_peak">heures pleines</string>
+    <string name="energy_offpeak">heures creuses</string>
+    <string name="energy_none">Aucun compteur d\'électricité dans le tableau Énergie de Home Assistant</string>
+    <string name="energy_consumption">Consommation</string>
+    <string name="energy_per_hour">kWh par heure</string>
+    <string name="energy_per_day">kWh par jour</string>
+    <string name="energy_per_month">kWh par mois</string>
+    <string name="assist_actions">Ce que tu peux proposer d\'actionner dans la maison (entité | nom (pièce) | état) :\n%1$s\nQuand c\'est utile, termine ta réponse par une à trois actions proposées, chacune sur sa propre ligne, exactement ainsi : ⚡ libellé court | domaine.service | entité. Services : turn_on, turn_off ou toggle ; volet : cover.open_cover ou cover.close_cover ; aspirateur : vacuum.start ou vacuum.return_to_base ; scène : scene.turn_on. Uniquement ces entités ; sinon, aucune ligne.</string>
+</resources>

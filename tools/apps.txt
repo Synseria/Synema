@@ -1,0 +1,12 @@
+# Apps that tools/apps.sh installs and updates. One per line: <package> <source> [asset regex]
+#   source = owner/repo on GitHub (latest stable release; the regex picks the APK, so pick the TV's ABI:
+#            `tools/tv.py getprop ro.product.cpu.abilist`), or `play` for a Play Store-only app,
+#            which the script opens on the TV's store page instead.
+# The TV here is 32-bit (armeabi-v7a): prefer armeabi-v7a or universal APKs.
+org.smarttube.stable      yuliskov/SmartTube                  SmartTube_stable_.*_armeabi-v7a\.apk
+io.github.jqssun.airplay  jqssun/android-airplay-server       app-release\.apk
+org.jellyfin.androidtv    jellyfin/jellyfin-androidtv         jellyfin-androidtv-v.*-release\.apk
+com.limelight             moonlight-stream/moonlight-android  app-nonRoot-release\.apk
+org.videolan.vlc          play
+org.xbmc.kodi             play
+com.valvesoftware.steamlink play

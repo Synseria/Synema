@@ -1,0 +1,58 @@
+# Philips 65OLED806/12 (Europe), Android TV 11, TP Vision (product PH1M_EA_9970A, MediaTek), 2.8 GB RAM.
+# TP Vision's own packages use the org.droidtv prefix.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/philips-65oled806/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/philips-65oled806/debloat.txt com.google.android.tvlauncher
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Stock launcher: com.google.android.tvlauncher. Live TV app: org.droidtv.playtv.
+# Quirks on this firmware:
+# - USB debugging alone opens port 5555 (no wireless pairing needed).
+# - Remote app keys are routed by org.droidtv.GlobalKey before apps see them: Rakuten (779) opens
+#   tv.wuaki.apptv or its store page, the App Gallery key (326) opens org.droidtv.nettv.market,
+#   Blue (186) opens the e-manual. Red/Green/Yellow reach the foreground app.
+# - The Freeview UK apps (uk.co.freeview.*) ship disabled on French sets.
+# - org.droidtv.nettvregistration shows a terms prompt for the FAST channels (onetrust.IABActivity)
+#   again and again, which Back does not close; the shell may not disable that component, and the
+#   package also serves the network settings: the launcher sends the prompt away instead (home.json
+#   "dismiss").
+
+# TP Vision telemetry
+org.droidtv.usagelogger                      # NettvLoggerLocalService: logs every key press and app launch
+org.droidtv.tv.frameworklogger               # framework event logger
+com.google.android.feedback                  # Google bug report / feedback
+org.droidtv.gel                              # GatheringService: usage stats + location, network access
+org.droidtv.candeebug                        # CollectionService: log collection for TP Vision
+
+# Recommendations and home-screen rows
+org.droidtv.nettvrecommender                 # Philips VOD/TOD recommendation rows
+org.droidtv.recommendation                   # Philips recommendation service
+com.google.android.tvrecommendations         # Google home rows (only the stock home reads them)
+org.droidtv.leanbackcustomizer               # partner config that injects rows into the stock home
+
+# Ads
+org.droidtv.fastip                           # Philips FAST channels: ad-funded, advertising ID
+
+# Shop demo and unused preloads
+org.droidtv.demome                           # shop demo mode, runs in the background
+com.google.android.videos                    # Google TV / Play Films
+com.phorus.playfi.tv                         # DTS Play-Fi multiroom audio
+com.phorus.playfi.softap                     # DTS Play-Fi setup access point
+org.droidtv.nettv.market                     # "Collection Smart TV" (Philips App Gallery); its remote
+                                             # button then does nothing unless RemoteKeyService takes it.
+                                             # Also hosts the Rakuten button's launcher.
+
+org.droidtv.astrahdplus                      # HD+ (German satellite operator)
+org.droidtv.sunrise                          # Sunrise (Swiss operator)
+org.droidtv.calmancalibrator                 # Calman calibration server, listens on the network
+com.google.android.marvin.talkback           # TalkBack screen reader
+com.google.android.syncadapters.calendar     # Google Calendar sync
+
+# Stock home. Disable only after the new launcher is installed and set as home.
+com.google.android.tvlauncher
+
+# Kept on purpose: org.droidtv.GlobalKey (remote keys), org.droidtv.amb*/alhuewizard (Ambilight, Hue),
+# org.droidtv.playtv/channels/hdmiservice/tvsystemui (Live TV, inputs), org.droidtv.teletext and
+# org.droidtv.hbbtvopapp/com.vewd.core.browserui (teletext, HbbTV),
+# org.droidtv.oad/com.easy.oad (firmware updates), io.mimi.* (audio processing service),
+# org.droidtv.amazonalexa (Alexa), com.google.android.katniss (Assistant), mediashell (Chromecast).

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A column of the top line (HouseHeader): the place's name (outside, with the sky), its temperature
+     large and its other readings beside it, one per line. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/climateLabel"
+            style="@style/DashCaps" />
+
+        <TextView
+            android:id="@+id/climateSky"
+            style="@style/DashCaps"
+            android:layout_marginStart="4dp"
+            android:drawablePadding="4dp"
+            android:drawableTint="#94F2F2F5"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/climateTemp"
+            style="@style/BigReading" />
+
+        <LinearLayout
+            android:id="@+id/climateFacts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:orientation="vertical" />
+    </LinearLayout>
+</LinearLayout>

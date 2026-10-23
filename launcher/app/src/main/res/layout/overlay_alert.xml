@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An alert over any app (Alerts): live camera, title, and its buttons (enlarge, optional reply,
+     close). Without a camera only the title row shows, as a small notice. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/alert_bg"
+    android:elevation="12dp">
+
+    <!-- The camera: Home Assistant's pictures at once, the WebRTC video over them from its first frame. -->
+    <FrameLayout
+        android:id="@+id/media"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="#FF1A1F28">
+
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <ImageView
+            android:id="@+id/frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFF4F1EC"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/countdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#FFB8B1A6"
+            android:textSize="10sp" />
+
+        <LinearLayout
+            android:id="@+id/buttons"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnFull"
+                style="@style/AlertButton"
+                android:layout_marginEnd="8dp"
+                android:text="@string/alert_full_screen" />
+
+            <TextView
+                android:id="@+id/btnReply"
+                style="@style/AlertButton"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/btnClose"
+                style="@style/AlertButton"
+                android:text="@string/alert_close" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

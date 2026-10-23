@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A camera full screen (CameraActivity): the WebRTC video or the pictures (MJPEG), its name bottom
+     left, and the talk button bottom centre with what it does under it. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000">
+
+    <!-- Sized to the video by its own measure (aspect fit), centred: a 4:3 doorbell is not cropped. -->
+    <org.webrtc.SurfaceViewRenderer
+        android:id="@+id/video"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+    <ImageView
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="24dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:background="@drawable/dash_badge_bg"
+        android:textColor="#FFEEF2F8"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/talk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="14dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:visibility="gone">
+
+        <!-- The button (48dp) in a room for its halo (VoiceRing). -->
+        <FrameLayout
+            android:id="@+id/talkRoom"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:clipChildren="false">
+
+            <ImageView
+                android:id="@+id/btnTalk"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:padding="13dp"
+                android:background="@drawable/talk_button_bg"
+                android:src="@drawable/ic_mic"
+                android:tint="@color/talk_icon"
+                android:focusable="true"
+                android:clickable="true"
+                android:contentDescription="@string/camera_talk" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/talkCaption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:background="@drawable/dash_badge_bg"
+            android:textColor="#FFEEF2F8"
+            android:textSize="11sp" />
+    </LinearLayout>
+</FrameLayout>

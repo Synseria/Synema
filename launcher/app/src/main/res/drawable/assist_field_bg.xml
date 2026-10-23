@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The assistant's text field: glass with round ends, ringed while typed in. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#2EFFFFFF" />
+            <stroke android:width="2dp" android:color="#FFFFFFFF" />
+            <corners android:radius="100dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#17FFFFFF" />
+            <stroke android:width="1dp" android:color="#21FFFFFF" />
+            <corners android:radius="100dp" />
+        </shape>
+    </item>
+</selector>

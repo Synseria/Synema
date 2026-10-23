@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Synéma</string>
+    <string name="inputs">Inputs</string>
+    <string name="settings">Settings</string>
+    <string name="not_available">Not available on this TV</string>
+    <string name="date_format">EEEE  d MMMM</string>
+    <string name="dream_name">Clock</string>
+    <string name="input_key_service_description">Opens the sources when the remote\'s Input button is pressed.</string>
+    <string name="remote_key_name">Remote buttons</string>
+    <string name="remote_key_description">Opens the apps you assigned to remote buttons, such as the App Gallery button.</string>
+    <string name="home_key_name">Home button</string>
+    <string name="home_key_description">Makes the remote\'s Home button open this launcher.</string>
+    <string name="all_apps">Apps</string>
+    <string name="continue_watching">Continue watching</string>
+    <string name="ha_not_configured">Home Assistant is not set up: run tools/secrets.sh</string>
+    <string name="ha_unreachable">Home Assistant did not answer</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+    <string name="state_open">Open</string>
+    <string name="state_closed">Closed</string>
+    <string name="state_brightness">On · %1$d %%</string>
+    <!-- Home Assistant weather states, in the order of weather_condition_names. -->
+    <string-array name="weather_condition_keys" translatable="false">
+        <item>clear-night</item>
+        <item>cloudy</item>
+        <item>exceptional</item>
+        <item>fog</item>
+        <item>hail</item>
+        <item>lightning</item>
+        <item>lightning-rainy</item>
+        <item>partlycloudy</item>
+        <item>pouring</item>
+        <item>rainy</item>
+        <item>snowy</item>
+        <item>snowy-rainy</item>
+        <item>sunny</item>
+        <item>windy</item>
+        <item>windy-variant</item>
+    </string-array>
+    <!-- Their icons, in the same order. -->
+    <array name="weather_condition_icons" translatable="false">
+        <item>@drawable/ic_sky_moon</item>
+        <item>@drawable/ic_sky_cloud</item>
+        <item>@drawable/ic_sky_cloud</item>
+        <item>@drawable/ic_sky_cloud</item>
+        <item>@drawable/ic_sky_rain</item>
+        <item>@drawable/ic_bolt</item>
+        <item>@drawable/ic_bolt</item>
+        <item>@drawable/ic_sky_cloud</item>
+        <item>@drawable/ic_sky_rain</item>
+        <item>@drawable/ic_sky_rain</item>
+        <item>@drawable/ic_sky_snow</item>
+        <item>@drawable/ic_sky_snow</item>
+        <item>@drawable/ic_sky_sun</item>
+        <item>@drawable/ic_sky_cloud</item>
+        <item>@drawable/ic_sky_cloud</item>
+    </array>
+    <string-array name="weather_condition_names">
+        <item>Clear night</item>
+        <item>Cloudy</item>
+        <item>Exceptional</item>
+        <item>Fog</item>
+        <item>Hail</item>
+        <item>Thunderstorms</item>
+        <item>Storms and rain</item>
+        <item>Partly cloudy</item>
+        <item>Heavy rain</item>
+        <item>Rain</item>
+        <item>Snow</item>
+        <item>Sleet</item>
+        <item>Sunny</item>
+        <item>Windy</item>
+        <item>Windy and cloudy</item>
+    </string-array>
+    <string name="alert_full_screen">Enlarge</string>
+    <string name="alert_close">Close</string>
+    <string name="airplay_code">AirPlay code</string>
+    <string name="airplay_code_hint">Type it on your iPhone, iPad or Mac · Back closes</string>
+    <string name="alert_closes_in">Closes in %1$d s</string>
+    <string name="edit_move">Move</string>
+    <string name="edit_remove">Remove from favourites</string>
+    <string name="edit_add">Add an app…</string>
+    <string name="edit_house_panel">Home Assistant panel</string>
+    <string name="edit_moving">Edit mode · ← → move · OK to finish</string>
+    <string name="edit_not_saved">Could not save the change</string>
+    <string name="assistant">Assistant</string>
+    <string name="assist_hint">Ask the house…</string>
+    <string name="assist_speak">Speak</string>
+    <string name="assist_listening">Listening…</string>
+    <string name="assist_thinking">…</string>
+    <string name="assist_no_answer">Home Assistant did not answer.</string>
+    <string name="assist_no_agent">No conversation agent: set assistant in home.json.</string>
+    <string name="alert_shrink">Smaller</string>
+    <string name="customize">Customise the home screen</string>
+    <string name="edit_close_app">Close the app</string>
+    <string name="edit_closed">%1$s closed</string>
+    <string name="edit_add_favourite">Add a favourite…</string>
+    <string name="discover">To discover</string>
+    <!-- The remote's colour buttons, red to blue, for the dashboard's hint. -->
+    <string name="edit_make_favourite">Add to favourites</string>
+    <string name="edit_hide_app">Hide from All apps</string>
+    <string name="backdrop">Background</string>
+    <string name="backdrop_artwork">Artwork</string>
+    <string name="backdrop_picture">Picture</string>
+    <string name="assistant_key_layout">Assistant button: house assistant</string>
+    <string name="theme_night">Night</string>
+    <string name="theme_aurora">Aurora</string>
+    <string name="theme_dusk">Dusk</string>
+    <string name="theme_ocean">Ocean</string>
+    <string name="theme_graphite">Graphite</string>
+    <string name="menu_home">Home screen</string>
+    <string name="menu_favourites">Favourites</string>
+    <string name="backdrop_motion">Moving background</string>
+    <string name="cameras">Cameras</string>
+    <string name="hero_resume">%1$s · Continue</string>
+    <string name="hero_discover">%1$s · To discover</string>
+    <string name="edit_hero">Featured title</string>
+    <string name="house_dashboard">House</string>
+    <string name="camera_talk">Talk</string>
+    <string name="camera_talking">You are talking</string>
+    <string name="camera_press_mic">Press the remote\'s mic button</string>
+    <string name="time_left">%1$s left</string>
+    <string name="play_not_found">Nothing called “%1$s” on the TV</string>
+    <string name="assist_looking">Looking for it…</string>
+    <string name="assist_not_heard">Nothing heard: press the remote\'s mic and speak</string>
+    <string name="assist_no_network">Speech recognition needs the network</string>
+    <string name="assist_again">That did not get through: say it again</string>
+    <string name="assist_not_found">I cannot find « %1$s » among what the apps offer.</string>
+    <string name="assist_catalogue">What can be watched on the TV now (title | app · details):\n%1$s\nTo play one of them, answer in one short sentence, then add a last line exactly like this: ▶ exact title | app. Only choose from this list. If you are only asked for ideas, give two or three in one sentence, without that line. Never a list.</string>
+    <string name="kind_film">film</string>
+    <string name="kind_series">series</string>
+    <string name="tv_state_home">Home</string>
+    <string name="edit_open_app">Open %1$s</string>
+    <string name="edit_hide_title">Hide this title</string>
+    <plurals name="edit_show_titles"><item quantity="one">Show %d hidden title again</item><item quantity="other">Show the %d hidden titles again</item></plurals>
+    <string name="hero_app">App</string>
+    <string name="unit_hpa" translatable="false">hPa</string>
+    <string name="unit_co2" translatable="false">ppm CO₂</string>
+    <string name="unit_db" translatable="false">dB</string>
+    <!-- What is out of the ordinary, read from the measures (HouseText.notices). -->
+    <string name="co2_high" translatable="false">CO₂ %1$s ppm · %2$s</string>
+    <string name="power_high">Power %1$s</string>
+    <string name="tempo_red_today">Red Tempo day</string>
+    <string name="tempo_red_tomorrow">Red Tempo day tomorrow</string>
+    <!-- The House panel. -->
+    <string name="house_all_off">all off</string>
+    <plurals name="rooms_lit">
+        <item quantity="one">%d room lit</item>
+        <item quantity="other">%d rooms lit</item>
+    </plurals>
+    <!-- A room's page. -->
+    <string name="room_back">‹ Home</string>
+    <string name="room_lights">Lights</string>
+    <string name="room_devices">Devices</string>
+    <string name="tech_tempo" translatable="false">Tempo</string>
+    <string name="tech_month">%1$s this month</string>
+    <string name="tech_today">today</string>
+    <string name="tmdb_credit">Film and series data: TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
+    <string name="rating" translatable="false">%1$d %%</string>
+    <string name="rating_audience">Audience %1$d %%</string>
+    <string name="tech_tomorrow">tomorrow</string>
+    <string name="graph_history">History</string>
+    <string name="graph_climate">Temperature · Humidity</string>
+    <string name="graph_noise">Noise</string>
+    <string name="energy_title">Electricity</string>
+    <string name="sources_all">All sources…</string>
+    <string name="energy_range_today">Today</string>
+    <string name="energy_range_days">30 days</string>
+    <string name="energy_range_months">12 months</string>
+    <string name="energy_today">Today</string>
+    <string name="energy_yesterday">Yesterday</string>
+    <string name="energy_this_month">This month</string>
+    <string name="energy_last_month">Last month</string>
+    <string name="energy_total">Total %1$s</string>
+    <string name="energy_blue">Blue</string>
+    <string name="energy_white">White</string>
+    <string name="energy_red">Red</string>
+    <string name="energy_peak">peak</string>
+    <string name="energy_offpeak">off-peak</string>
+    <string name="energy_none">No electricity meter in Home Assistant\'s Energy dashboard</string>
+    <string name="graph_co2" translatable="false">CO₂</string>
+    <string name="energy_consumption">Consumption</string>
+    <string name="energy_per_hour">kWh per hour</string>
+    <string name="energy_per_day">kWh per day</string>
+    <string name="energy_per_month">kWh per month</string>
+    <string name="assist_actions">What you may offer to switch in the house (entity | name (room) | state):\n%1$s\nWhen it helps, end your answer with one to three offered actions, each on its own line, exactly so: ⚡ short label | domain.service | entity. Services: turn_on, turn_off or toggle; cover: cover.open_cover or cover.close_cover; vacuum: vacuum.start or vacuum.return_to_base; scene: scene.turn_on. Only these entities; otherwise, no line.</string>
+</resources>

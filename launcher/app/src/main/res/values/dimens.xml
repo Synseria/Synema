@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- A card is a picture inset in its frame (Card); focused, the frame shows a ring on its edge, a
+         gap from the picture, and a sheen over the picture and the gap (dash_focus_ring). -->
+    <dimen name="card_ring">2dp</dimen>
+    <!-- The ring's width plus its 3 dp gap from the picture. -->
+    <dimen name="card_inset">5dp</dimen>
+    <dimen name="card_corner">9dp</dimen>
+    <!-- The picture's corner plus the gap: the sheen's corner, and the ring's inner edge. -->
+    <dimen name="card_ring_corner">12dp</dimen>
+</resources>

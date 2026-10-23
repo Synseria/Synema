@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A focused card's frame (Focus.card): a white ring on the edge, 3 dp from the picture, and a fixed
+     painted sheen over the picture and the gap, white at the top left fading out before the middle. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item
+                android:left="@dimen/card_ring"
+                android:top="@dimen/card_ring"
+                android:right="@dimen/card_ring"
+                android:bottom="@dimen/card_ring">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:type="linear"
+                        android:angle="315"
+                        android:startColor="#47FFFFFF"
+                        android:centerColor="#00FFFFFF"
+                        android:endColor="#00FFFFFF"
+                        android:centerX="0.42" />
+                    <corners android:radius="@dimen/card_ring_corner" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="@dimen/card_ring" android:color="#FFFFFFFF" />
+                    <corners android:radius="@dimen/card_ring_corner" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:drawable="@android:color/transparent" />
+</selector>

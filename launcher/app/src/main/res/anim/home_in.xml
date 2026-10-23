@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home coming back over the app left (with app_out when RemoteKeyService takes the Home button): it
+     fades in while it settles from a little larger, above the app. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shareInterpolator="false"
+    android:zAdjustment="top">
+    <alpha android:fromAlpha="0" android:toAlpha="1" android:duration="240"
+        android:interpolator="@android:interpolator/decelerate_quad" />
+    <scale android:fromXScale="1.06" android:toXScale="1" android:fromYScale="1.06" android:toYScale="1"
+        android:pivotX="50%" android:pivotY="50%" android:duration="380"
+        android:interpolator="@android:interpolator/decelerate_quint" />
+</set>

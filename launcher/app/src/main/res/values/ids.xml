@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- View tag: the artwork a card asked for, so a late image never lands on a reused card (Posters). -->
+    <item name="poster_uri" type="id" />
+    <!-- View tag: what a room tile of the House panel shows, so a refresh redraws it only on change. -->
+    <item name="room_shown" type="id" />
+    <!-- View tag: the size a focused view grows to (Focus.lift), to end it at once (Focus.settle). -->
+    <item name="lift" type="id" />
+</resources>

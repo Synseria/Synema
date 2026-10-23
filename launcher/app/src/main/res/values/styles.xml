@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TvHome" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:windowAnimationStyle">@style/FadeAnimation</item>
+        <item name="android:textViewStyle">@style/TvText</item>
+    </style>
+
+    <!-- Every text in Roboto, the TV's own face: crisp at small sizes, where Outfit blurred. Outfit is
+         kept for the big clocks and the top line's big temperatures (BigReading). -->
+    <style name="TvText" parent="android:Widget.Material.TextView">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Between the launcher's own screens: a short fade, never the system's slide. -->
+    <style name="FadeAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/fade_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/none</item>
+        <item name="android:activityCloseEnterAnimation">@anim/none</item>
+        <item name="android:activityCloseExitAnimation">@anim/fade_out</item>
+        <item name="android:taskOpenEnterAnimation">@anim/fade_in</item>
+        <item name="android:taskOpenExitAnimation">@anim/none</item>
+        <item name="android:taskCloseEnterAnimation">@anim/none</item>
+        <item name="android:taskCloseExitAnimation">@anim/fade_out</item>
+        <item name="android:taskToFrontEnterAnimation">@anim/home_in</item>
+        <item name="android:taskToFrontExitAnimation">@anim/none</item>
+        <item name="android:taskToBackEnterAnimation">@anim/none</item>
+        <item name="android:taskToBackExitAnimation">@anim/fade_out</item>
+    </style>
+
+    <!-- A round icon button in the top line's capsule; its name shows under the capsule while focused. -->
+    <style name="IconButton">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:padding">7dp</item>
+        <item name="android:background">@drawable/icon_button_bg</item>
+        <item name="android:tint">@color/pill_text</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <!-- A small spaced capital label on the top line: the day, a column's place, the sky. -->
+    <style name="DashCaps">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.15</item>
+        <item name="android:textColor">#94F2F2F5</item>
+        <item name="android:textSize">8.5sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- A reading in large thin figures on the top line, like the clock beside it. -->
+    <style name="BigReading">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">#FFEEF2F8</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:fontVariationSettings">\'wght\' 200</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <!-- The assistant panel over whatever was showing. -->
+    <style name="Theme.TvHome.Overlay" parent="Theme.TvHome">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+    </style>
+
+    <!-- A dashboard section: its title and its row, shown or hidden together (MainActivity.section). -->
+    <style name="DashSection">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">9dp</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:clipChildren">false</item>
+    </style>
+
+    <!-- Section title on the dashboard: small and quiet. -->
+    <style name="DashLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">2dp</item>
+        <item name="android:layout_marginBottom">3dp</item>
+        <item name="android:textColor">#CCF2F2F5</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- A CardRow: up and down, padding as room for a lifted card taken back by margins; across, CardRow
+         sets both from Focus. -->
+    <style name="DashRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">-5dp</item>
+        <item name="android:layout_marginBottom">-5dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+    </style>
+
+    <!-- A line of the House panel's electricity corner: a label, then its value at the right. -->
+    <style name="TechLine">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="TechLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">#A6F2F2F5</item>
+        <item name="android:textSize">9.5sp</item>
+    </style>
+
+    <style name="TechValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">#FFF2F2F5</item>
+        <item name="android:textSize">9.5sp</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <!-- Button in an alert over another app: focusable pill, white when focused. -->
+    <style name="AlertButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/pill_bg</item>
+        <item name="android:textColor">@color/pill_text</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+</resources>
