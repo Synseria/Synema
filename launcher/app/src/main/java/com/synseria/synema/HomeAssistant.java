@@ -151,7 +151,7 @@ final class HomeAssistant {
         }
     }
 
-    /** Sets an entity's state in Home Assistant (one this TV owns, such as sensor.clean_tv); fire and forget. */
+    /** Sets an entity's state in Home Assistant (one this TV owns, such as sensor.synema); fire and forget. */
     void setState(String entity, String state, JSONObject attributes) {
         IO.execute(() -> {
             try {

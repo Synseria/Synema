@@ -243,11 +243,11 @@ opens the Play Store page of the others. Run it again to update.
 ## Notifications from Home Assistant
 
 Any automation can put a message on the TV, over whatever is playing, by firing the event
-`clean_tv_notify` (Developer tools > Events to try it):
+`synema_notify` (Developer tools > Events to try it):
 
 ```yaml
 action:
-  - event: clean_tv_notify
+  - event: synema_notify
     event_data:
       title: "Lave-linge terminé"
       message: "Le cycle coton est fini"   # optional
@@ -266,8 +266,8 @@ a second automation on `paused`/`idle` turns the room back on.
 
 ## Playing from Home Assistant
 
-The TV reports what it shows as `sensor.clean_tv` (the app in front, its package, and `a_reprendre`, the
-titles to continue), and plays what Home Assistant asks with the event `clean_tv_play` (`title`,
+The TV reports what it shows as `sensor.synema` (the app in front, its package, and `a_reprendre`, the
+titles to continue), and plays what Home Assistant asks with the event `synema_play` (`title`,
 optional `app`): it looks the title up in what the apps published (continue watching, their rows) and
 opens it, or opens the app. The assistant does the same by itself for "mets / lance / regarde …".
 
@@ -279,7 +279,7 @@ script:
     alias: Lancer sur la TV
     description: >-
       Lance un film, une série ou une appli sur la TV du salon. Les titres en cours sont dans
-      l'attribut a_reprendre de sensor.clean_tv.
+      l'attribut a_reprendre de sensor.synema.
     fields:
       titre:
         description: Titre du film ou de la série, ou nom de l'appli
@@ -290,7 +290,7 @@ script:
         description: Appli (Netflix, Canal+, Prime Video…), facultatif
         selector: {text: {}}
     sequence:
-      - event: clean_tv_play
+      - event: synema_play
         event_data:
           title: "{{ titre }}"
           app: "{{ appli | default('') }}"

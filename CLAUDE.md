@@ -12,7 +12,7 @@ since v3.0.0: nothing is taken from it any more.
   the TV's drawer; also the remote's Source button, `keys` in home.json); `Chart` (graphs, from `Stats`); `CameraActivity`
   (`CameraStream` MJPEG, then `CameraRtc` WebRTC via HA's Frigate proxy); `AssistActivity`; `ClockDream`
   (screensaver); `RemoteKeyService` = accessibility service (remote buttons, Home with its animation,
-  `Alerts` overlay + HA events, `TvState` → sensor.clean_tv); `KeyLayouts` (Assistant button overlay);
+  `Alerts` overlay + HA events, `TvState` → sensor.synema); `KeyLayouts` (Assistant button overlay);
   `TvListings` (what apps publish, completed by `Tmdb`) and `Launch` (play a title by name, open an app
   out of its card); `HomeAssistant` (REST), `HaSocket` (WebSocket), `HaLive` (states pushed as they
   change, for the dashboard and the screensaver), `History` (sensors' past: the readings' trends in
@@ -50,4 +50,4 @@ since v3.0.0: nothing is taken from it any more.
 - Never press OK on the dashboard blind while testing: the panel's tiles switch real lights. Check the
   focus first (`uiautomator dump`) or test away from the panel.
 - Never trigger the user's lights or devices to test; fake states on a throwaway entity
-  (`POST /api/states/sensor.clean_tv_test`, then `DELETE`).
+  (`POST /api/states/sensor.synema_test`, then `DELETE`).

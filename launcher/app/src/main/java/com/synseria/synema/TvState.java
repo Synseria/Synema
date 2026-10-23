@@ -7,13 +7,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * What the TV shows, told to Home Assistant as sensor.clean_tv: the app in front as its state, its
+ * What the TV shows, told to Home Assistant as sensor.synema: the app in front as its state, its
  * package, and the titles to continue. Automations (cinema mode) and an LLM agent can then know what
  * is on, and what "reprends ma série" means. Home Assistant forgets the entity on restart; the next
  * change of app sets it again.
  */
 final class TvState {
-    static final String ENTITY = "sensor.clean_tv";
+    static final String ENTITY = "sensor.synema";
 
     private TvState() {
     }

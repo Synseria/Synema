@@ -43,9 +43,9 @@ final class Alerts implements HaSocket.Listener {
     private static final int PIN_SECONDS = 120;
     /** The same alert is not shown again within this delay (people walking past a camera). */
     private static final long COOLDOWN_MS = 120_000;
-    static final String NOTIFY_EVENT = "clean_tv_notify";
+    static final String NOTIFY_EVENT = "synema_notify";
     /** Home Assistant asks the TV to play a title or open an app: data {@code title}, optional {@code app}. */
-    static final String PLAY_EVENT = "clean_tv_play";
+    static final String PLAY_EVENT = "synema_play";
     /** The subscriptions to NOTIFY_EVENT and PLAY_EVENT, on the current connection. */
     private volatile int notifySubscription = -1, playSubscription = -1;
 
