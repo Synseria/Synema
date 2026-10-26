@@ -51,7 +51,14 @@ else
   "$PY" -I ../tools/b64push.py "$APK" /data/local/tmp/tvhome.apk
   batch() { "$PY" -I ../tools/tv.py --batch; }
 fi
+# Our accessibility services are switched off before the install and on again at the end. Left on, the
+# install and the compile below each kill the process under a bound service, and Android marks a
+# service whose process died after the update as crashed: it stays listed as enabled, never binds
+# again until the next update, and every remote button it owns is dead.
+SERVICES_OFF="s=\$(settings get secure enabled_accessibility_services | tr ':' '\n' | grep -v '^com.synseria.synema/' | paste -sd: -); settings put secure enabled_accessibility_services \"\${s:-null}\""
 printf '%s\n' \
+  "$SERVICES_OFF" \
+  "sleep 2" \
   "pm install -r /data/local/tmp/tvhome.apk" \
   "rm -f /data/local/tmp/tvhome.apk" \
   "pm grant com.synseria.synema android.permission.READ_TV_LISTINGS 2>/dev/null; echo tv-listings-granted" \
@@ -89,6 +96,12 @@ esac
 enable_service() {   # appends to enabled_accessibility_services without dropping other services
   svc=com.synseria.synema/.$1
   "$PY" -I ../tools/tv.py "s=\$(settings get secure enabled_accessibility_services); case \"\$s\" in *$svc*) ;; null|'') settings put secure enabled_accessibility_services $svc ;; *) settings put secure enabled_accessibility_services \"\$s:$svc\" ;; esac; settings put secure accessibility_enabled 1; echo $1 enabled"
+  # Enabled is not running: check Android started it.
+  sleep 2
+  if ! "$PY" -I ../tools/tv.py "dumpsys activity services com.synseria.synema/.$1" | grep -q "ServiceRecord"; then
+    echo "ERROR: $1 is enabled but Android did not start it (dumpsys accessibility: crashed?)." >&2
+    exit 1
+  fi
 }
 if [ "${INPUT_KEY_SERVICE:-0}" = 1 ]; then enable_service InputKeyService; fi
 if [ "${HOME_KEY_SERVICE:-0}" = 1 ]; then enable_service HomeKeyService; fi

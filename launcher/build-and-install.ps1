@@ -53,6 +53,9 @@ $disableStock = if ($StockLauncher -eq 'none') { 'echo stock launcher left alone
 $apk = 'app\build\outputs\apk\release\app-release.apk'
 & $py -I ..\tools\b64push.py $apk /data/local/tmp/tvhome.apk
 if ($LASTEXITCODE -ne 0) { throw 'APK upload failed' }
+# Our accessibility services go off before the install and on again at the end: one left bound while the
+# install and the compile kill its process is marked crashed and never binds again until the next update.
+& $py -I ..\tools\tv.py ('s=$(settings get secure enabled_accessibility_services | tr ":" "\n" | grep -v "^com.synseria.synema/" | paste -sd: -); settings put secure enabled_accessibility_services "${s:-null}"; sleep 2') | Out-Null
 $out = & $py -I ..\tools\tv.py 'pm install -r /data/local/tmp/tvhome.apk; rm -f /data/local/tmp/tvhome.apk'
 Write-Host $out
 if ("$out" -notmatch 'Success') { throw 'pm install failed; the stock launcher was left untouched' }

@@ -159,7 +159,8 @@ which `build-and-install.sh` grants over adb.
 
 - **Continue watching** is the Watch Next rows, up to fifteen, each app's newest first so one app
   cannot fill the row (Canal+, Prime Video and Plex publish them here). Netflix publishes no Watch Next
-  but puts the titles you are watching in its channel, marked "Reprendre la lecture" on the artwork.
+  but puts the titles you are watching in its channel, marked "Reprendre la lecture" on the artwork;
+  their card plays the title from where it was left instead of opening its page.
 - **À découvrir** is what every app puts forward, its first channel (the row the stock home showed),
   interleaved: each app's first title before any app's second, up to fifteen. On a favourite, the band
   above the rows shows that app's first one.

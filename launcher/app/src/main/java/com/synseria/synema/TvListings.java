@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.media.tv.TvContract;
+import android.net.Uri;
 import android.util.Log;
 
 import java.text.Normalizer;
@@ -231,12 +232,28 @@ final class TvListings {
                 String uri = c.getString(INTENT);
                 if (c.getInt(BROWSABLE) == 0 || uri == null || !uri.contains(CONTINUE_WATCHING)) continue;
                 Item it = item(ctx, c, c.getString(PKG), true);
-                if (it != null) out.add(it);
+                if (it == null) continue;
+                playFromWhereLeft(it.intent);
+                out.add(it);
             }
         } catch (Exception e) {
             Log.w(TAG, "preview programs unreadable: " + e);
         }
         return out;
+    }
+
+    /**
+     * Netflix links a title in progress to its page (/title/), where the film waits for another OK; the
+     * same title under /watch/ plays it from where it was left, which is what continue watching promises.
+     * In its own nflx: scheme: an http /watch/ link sent by an app is turned by the firmware into a
+     * chooser between Netflix and the browsers.
+     */
+    private static void playFromWhereLeft(Intent intent) {
+        Uri link = intent.getData();
+        String path = link == null ? null : link.getPath();
+        if (path != null && path.startsWith("/title/")) {
+            intent.setData(link.buildUpon().scheme("nflx").path("/watch/" + path.substring("/title/".length())).build());
+        }
     }
 
     /** Netflix's deep-link marker for a title in progress ("listContext=continueWatching", URL-encoded). */

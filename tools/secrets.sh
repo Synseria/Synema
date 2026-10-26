@@ -19,4 +19,4 @@ PKG=com.synseria.synema
 DIR=/sdcard/Android/data/$PKG/files
 "$PY" -I tv.py "mkdir -p $DIR" >/dev/null
 "$PY" -I tv.py --push "$SRC" "$DIR/secrets.json"
-"$PY" -I tv.py "am force-stop $PKG; input keyevent 3; echo 'Secrets set'" | tail -n 1
+./restart.sh 'Secrets set'
