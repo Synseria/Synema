@@ -25,7 +25,8 @@ since v3.0.0: nothing is taken from it any more.
 - `examples/philips-65oled806/debloat.txt` — what is disabled on this TV and the firmware's quirks.
 - `tools/` — `ha-entities.sh <word>` (find entity ids), `home.sh` (apply home.local.json without rebuild),
   `assistant-key.sh`, `secrets.sh` (push the keys), `remote-keys.sh`, `apps.sh`, `screensaver.sh`, `theme.sh`,
-  `disable.sh`. `sh run.sh --install [--start]` builds and installs.
+  `disable.sh`; `restart.sh` restarts the launcher for them, the remote-key service kept alive (never a bare
+  `am force-stop`). `sh run.sh --install [--start]` builds and installs.
 
 ## Rules
 - `README.md` and `README.fr.md` say the same thing, section for section: a change to one goes to both.

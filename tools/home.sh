@@ -19,6 +19,4 @@ PKG=com.synseria.synema
 DIR=/sdcard/Android/data/$PKG/files
 "$PY" -I tv.py "mkdir -p $DIR" >/dev/null
 "$PY" -I tv.py --push "$SRC" "$DIR/home.json"
-# The service reads home.json when it starts: switching it off and on makes it read the new one.
-./remote-keys.sh off >/dev/null && ./remote-keys.sh on >/dev/null
-"$PY" -I tv.py "am force-stop $PKG; input keyevent 3; echo 'home.json applied'" | tail -n 1
+./restart.sh 'home.json applied'
