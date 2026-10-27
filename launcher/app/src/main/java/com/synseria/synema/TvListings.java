@@ -232,9 +232,7 @@ final class TvListings {
                 String uri = c.getString(INTENT);
                 if (c.getInt(BROWSABLE) == 0 || uri == null || !uri.contains(CONTINUE_WATCHING)) continue;
                 Item it = item(ctx, c, c.getString(PKG), true);
-                if (it == null) continue;
-                playFromWhereLeft(it.intent);
-                out.add(it);
+                if (it != null) out.add(it);
             }
         } catch (Exception e) {
             Log.w(TAG, "preview programs unreadable: " + e);
@@ -245,15 +243,25 @@ final class TvListings {
     /**
      * Netflix links a title in progress to its page (/title/), where the film waits for another OK; the
      * same title under /watch/ plays it from where it was left, which is what continue watching promises.
-     * In its own nflx: scheme: an http /watch/ link sent by an app is turned by the firmware into a
-     * chooser between Netflix and the browsers.
+     * Netflix writes it "http://…/title/<id>#Intent;component=…;end", which parseIntent keeps whole as a
+     * web link: Android gives /title/ to Netflix but offers /watch/ to the browsers too. So the /watch/
+     * link names the component its fragment gives, with the source_type Netflix asks for (nflx:/watch/
+     * opens nothing).
      */
-    private static void playFromWhereLeft(Intent intent) {
-        Uri link = intent.getData();
+    private static Intent playFromWhereLeft(Intent published) {
+        Uri link = published.getData();
         String path = link == null ? null : link.getPath();
-        if (path != null && path.startsWith("/title/")) {
-            intent.setData(link.buildUpon().scheme("nflx").path("/watch/" + path.substring("/title/".length())).build());
+        if (path == null || !path.startsWith("/title/")) return published;
+        Intent named;
+        try {
+            named = Intent.parseUri(link.toString(), 0);
+        } catch (Exception e) {
+            return published;
         }
+        if (named.getComponent() == null) return published;
+        return new Intent(Intent.ACTION_VIEW, link.buildUpon().path("/watch/" + path.substring("/title/".length())).build())
+                .setComponent(named.getComponent())
+                .putExtra("source_type", named.getIntExtra("source_type", 0));
     }
 
     /** Netflix's deep-link marker for a title in progress ("listContext=continueWatching", URL-encoded). */
@@ -400,9 +408,13 @@ final class TvListings {
         return out;
     }
 
-    /** One row as an Item; {@code netflixStyle}: the episode sits in the short description. */
+    /**
+     * One row as an Item; {@code netflixStyle}: a Netflix title in progress, its episode in the short
+     * description, its link to be played rather than opened (playFromWhereLeft).
+     */
     private static Item item(Context ctx, Cursor c, String pkg, boolean netflixStyle) {
         Intent intent = parseIntent(c.getString(INTENT));
+        if (intent != null && netflixStyle) intent = playFromWhereLeft(intent);
         if (intent == null || stale(ctx, c.getString(POSTER))) return null;
         String season = c.getString(SEASON), episode = c.getString(EPISODE), epTitle = c.getString(EP_TITLE);
         StringBuilder sub = new StringBuilder();
