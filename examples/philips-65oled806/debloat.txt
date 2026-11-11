@@ -11,7 +11,9 @@
 # - Remote app keys are routed by org.droidtv.GlobalKey before apps see them: Rakuten (779) opens
 #   tv.wuaki.apptv or its store page, the App Gallery key (326) opens org.droidtv.nettv.market,
 #   Blue (186) opens the e-manual. Red/Green/Yellow reach the foreground app.
-# - The Freeview UK apps (uk.co.freeview.*) ship disabled on French sets.
+# - Shipped disabled on this French set: org.droidtv.aurora, org.droidtv.freeviewplayers and the 15
+#   uk.co.freeview.* apps. Left as found: with aurora off, the log shows no xtv retry loop
+#   (handleConnectAurora), unlike what other TP Vision units report.
 # - org.droidtv.nettvregistration shows a terms prompt for the FAST channels (onetrust.IABActivity)
 #   again and again, which Back does not close; the shell may not disable that component, and the
 #   package also serves the network settings: the launcher sends the prompt away instead (home.json
@@ -33,6 +35,13 @@ org.droidtv.leanbackcustomizer               # partner config that injects rows 
 # Ads
 org.droidtv.fastip                           # Philips FAST channels: ad-funded, advertising ID
 
+# Silent installs and first-setup leftovers
+org.droidtv.nettvapps                        # App Gallery's headless preload installer (silent installs)
+android.autoinstalls.config.tpv.device       # Play auto-install of TP Vision partner apps
+com.google.android.partnersetup              # partner referrer / attribution
+com.google.android.onetimeinitializer        # runs once at first setup, nothing afterwards
+com.google.android.sss.authbridge            # set-up-from-phone helper
+
 # Shop demo and unused preloads
 org.droidtv.demome                           # shop demo mode, runs in the background
 com.google.android.videos                    # Google TV / Play Films
@@ -42,8 +51,13 @@ org.droidtv.nettv.market                     # "Collection Smart TV" (Philips Ap
                                              # button then does nothing unless RemoteKeyService takes it.
                                              # Also hosts the Rakuten button's launcher.
 
+com.google.android.play.games                # Play Games
+com.google.android.youtube.tv                # YouTube (owner's choice: comment out to keep it)
+com.google.android.youtube.tvmusic           # YouTube Music
+
 org.droidtv.astrahdplus                      # HD+ (German satellite operator)
 org.droidtv.sunrise                          # Sunrise (Swiss operator)
+org.droidtv.m7opapp                          # M7 satellite operators' promo (Canal Digitaal, Skylink, HD Austria)
 org.droidtv.calmancalibrator                 # Calman calibration server, listens on the network
 com.google.android.marvin.talkback           # TalkBack screen reader
 com.google.android.syncadapters.calendar     # Google Calendar sync
