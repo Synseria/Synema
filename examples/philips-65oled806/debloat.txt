@@ -45,7 +45,8 @@ com.google.android.sss.authbridge            # set-up-from-phone helper
 # Shop demo and unused preloads
 org.droidtv.demome                           # shop demo mode, runs in the background
 com.google.android.videos                    # Google TV / Play Films
-com.phorus.playfi.tv                         # DTS Play-Fi multiroom audio
+# com.phorus.playfi.tv                       # DTS Play-Fi multiroom audio: the firmware re-enables it at
+                                             # every boot (enabled=1), so disabling it does not hold
 com.phorus.playfi.softap                     # DTS Play-Fi setup access point
 org.droidtv.nettv.market                     # "Collection Smart TV" (Philips App Gallery); its remote
                                              # button then does nothing unless RemoteKeyService takes it.
