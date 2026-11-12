@@ -93,7 +93,8 @@ final class CameraRow {
 
     /** Under a camera, nothing over its picture: a red dot for live, and its name. */
     private TextView live(String label) {
-        TextView name = activity.text(label, R.style.Role_Note);
+        TextView name = Tokens.text(activity, label, R.style.Role_Note);
+        name.setSingleLine(true);
         GradientDrawable dot = new GradientDrawable();
         dot.setShape(GradientDrawable.OVAL);
         dot.setColor(activity.getColor(R.color.syn_danger));

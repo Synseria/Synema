@@ -433,7 +433,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private void showRatings(TvListings.Item item) {
         heroRatings.removeAllViews();
         if (item.audience < 0) return;
-        TextView capsule = text(HouseText.units(this, getString(R.string.rating, item.audience), false), R.style.Role_Note);
+        TextView capsule = Tokens.text(this, HouseText.units(this, getString(R.string.rating, item.audience), false), R.style.Role_Note);
+        capsule.setSingleLine(true);
         capsule.setIncludeFontPadding(false);
         capsule.setContentDescription(getString(R.string.rating_audience, item.audience));
         capsule.setBackgroundResource(R.drawable.dash_capsule_bg);
@@ -837,7 +838,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
         line.addView(icon, new LinearLayout.LayoutParams(dp(UNDER_CARD_ICON_DP), dp(UNDER_CARD_ICON_DP)));
-        TextView name = text(appLabel(pm, item.pkg), R.style.Role_Note);
+        TextView name = Tokens.text(this, appLabel(pm, item.pkg), R.style.Role_Note);
+        name.setSingleLine(true);
         name.setPadding(px(R.dimen.syn_espace_1), 0, 0, 0);
         line.addView(name);
         return line;
@@ -860,16 +862,6 @@ public class MainActivity extends Activity implements EditMenu.Host {
             first.onFocusChange(v, has);
             if (has) onFocus.run();
         };
-    }
-
-    /** A line of text in one of the design system's roles (R.style.Role_*), cut short rather than wrapped. */
-    TextView text(CharSequence s, int role) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextAppearance(role);
-        t.setSingleLine(true);
-        t.setEllipsize(TextUtils.TruncateAt.END);
-        return t;
     }
 
     int dp(int v) {
