@@ -49,7 +49,6 @@
     <string name="assist_listening">À l\'écoute…</string>
     <string name="assist_thinking">…</string>
     <string name="assist_no_answer">Assistant indisponible</string>
-    <string name="assist_no_agent">Aucun agent de conversation : régler assistant dans home.json.</string>
     <string name="alert_shrink">Réduire</string>
     <string name="customize">Réglages</string>
     <string name="edit_close_app">Fermer</string>
@@ -86,7 +85,6 @@
     <string name="assist_looking">Recherche en cours…</string>
     <string name="assist_not_heard">Rien entendu</string>
     <string name="assist_no_network">Écoute indisponible</string>
-    <string name="assist_again">Envoi indisponible</string>
     <string name="assist_not_found">Aucun résultat pour « %1$s »</string>
     <string name="assist_catalogue">Ce qu\'on peut regarder sur la TV en ce moment (titre | appli · infos) :\n%1$s\nPour lancer l\'un d\'eux, réponds en une phrase courte, puis ajoute une dernière ligne exactement ainsi : ▶ titre exact | appli. Ne choisis que dans cette liste. Si on te demande seulement des idées, donne-en deux ou trois en une phrase, sans cette ligne. Jamais de liste.</string>
     <string name="kind_film">film</string>

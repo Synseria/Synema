@@ -89,7 +89,6 @@
     <string name="assist_listening">Listening…</string>
     <string name="assist_thinking">…</string>
     <string name="assist_no_answer">Assistant unavailable</string>
-    <string name="assist_no_agent">No conversation agent: set assistant in home.json.</string>
     <string name="alert_shrink">Reduce</string>
     <string name="customize">Settings</string>
     <string name="edit_close_app">Close</string>
@@ -123,7 +122,6 @@
     <string name="assist_looking">Searching…</string>
     <string name="assist_not_heard">Nothing heard</string>
     <string name="assist_no_network">Listening unavailable</string>
-    <string name="assist_again">Sending unavailable</string>
     <string name="assist_not_found">No result for “%1$s”</string>
     <string name="assist_catalogue">What can be watched on the TV now (title | app · details):\n%1$s\nTo play one of them, answer in one short sentence, then add a last line exactly like this: ▶ exact title | app. Only choose from this list. If you are only asked for ideas, give two or three in one sentence, without that line. Never a list.</string>
     <string name="kind_film">film</string>
