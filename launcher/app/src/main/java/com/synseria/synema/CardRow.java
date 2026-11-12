@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 
 import java.util.ArrayList;
 
@@ -49,6 +50,8 @@ public final class CardRow extends ViewGroup {
     private int drawnLast = -1;
     private boolean faded;
     private ValueAnimator slide;
+    private final Interpolator ease;
+    private final int slideMs;
 
     public CardRow(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
@@ -59,6 +62,8 @@ public final class CardRow extends ViewGroup {
         min = Math.round(MIN_DP * d);
         widest = Math.round(Focus.WIDEST_CARD_DP * d);
         fadeWidth = Math.round(FADE_DP * d);
+        ease = AnimationUtils.loadInterpolator(ctx, R.interpolator.syn_courbe);
+        slideMs = ctx.getResources().getInteger(R.integer.syn_duree_etat);
         // The backdrop's own colour, so the row fades into it.
         // jeton manquant: syn_fondu_opacite_rangee (0xE6)
         int fade = 0xE6 << 24 | (Backdrop.base(ctx) & 0xFFFFFF);
@@ -145,8 +150,8 @@ public final class CardRow extends ViewGroup {
         first = target;
         if (slide != null) slide.cancel();
         slide = ValueAnimator.ofInt(getScrollX(), Math.round(first * step));
-        slide.setDuration(getResources().getInteger(R.integer.syn_duree_etat));
-        slide.setInterpolator(AnimationUtils.loadInterpolator(getContext(), R.interpolator.syn_courbe));
+        slide.setDuration(slideMs);
+        slide.setInterpolator(ease);
         slide.addUpdateListener(a -> setScrollX((int) a.getAnimatedValue()));
         slide.start();
     }

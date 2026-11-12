@@ -9,14 +9,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * The room the focus rests on in the House panel, shown in the featured title's place and veil: its
  * name, temperature, other readings and, under them, the last 24 h of each as thin curves. Display
- * only: nothing in it takes focus. The curves are read once the focus has rested, and kept per room.
+ * only: nothing in it takes focus. The curves are read once the focus has rested (Stats keeps them).
  */
 final class PlaceBlock {
     /** The focus must rest this long on a room before Home Assistant is asked for its curves. */
@@ -30,9 +29,8 @@ final class PlaceBlock {
     private final LinearLayout block, facts, charts;
     private final TextView name, temperature;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Map<String, Object[]> kept = new HashMap<>();
-    /** The room now shown, and what its curves were asked for. */
-    private String room = "";
+    /** The room now shown, and what is drawn of it (its readings): the next tile of the same room changes nothing. */
+    private String room = "", drawn = "";
     private Runnable pending;
 
     PlaceBlock(MainActivity activity, View words, LinearLayout block) {
@@ -41,13 +39,13 @@ final class PlaceBlock {
         this.block = block;
         LinearLayout head = new LinearLayout(activity);
         head.setGravity(Gravity.CENTER_VERTICAL);
-        name = activity.text("", R.style.Role_Titre);
+        name = Tokens.text(activity, "", R.style.Role_Titre);
+        name.setSingleLine(true);
         name.setIncludeFontPadding(false);
         head.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         // A reading, not a title: the thin figures of the room tiles.
-        temperature = activity.text("", R.style.Role_Titre);
-        temperature.setFontVariationSettings("'wght' 200");
-        temperature.setFontFeatureSettings("tnum");
+        temperature = Tokens.text(activity, "", R.style.Role_Releve);
+        temperature.setSingleLine(true);
         temperature.setIncludeFontPadding(false);
         head.addView(temperature);
         block.addView(head, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.px(R.dimen.syn_espace_6)));
@@ -65,8 +63,10 @@ final class PlaceBlock {
         return block.getVisibility() == View.VISIBLE;
     }
 
-    /** The room in the title's place; its curves when the focus rests, at once when kept. */
+    /** The room in the title's place; its curves when the focus rests, at once when Stats has them. */
     void show(Rooms.Room r, Place p, HaLive live) {
+        String signature = r.name + '|' + p.signature();
+        if (shown() && signature.equals(drawn)) return;
         cancel();
         // Exactly the featured title's height, which stays laid out under it: nothing below moves, and the
         // curves take what the name and the readings leave (in a frame, "match parent" would grow the band).
@@ -82,22 +82,16 @@ final class PlaceBlock {
         HouseHeader.facts(activity, facts, p, Integer.MAX_VALUE, R.style.Role_Chiffre);
         if (!r.name.equals(room)) charts.removeAllViews();
         room = r.name;
+        drawn = signature;
         List<String> sensors = new ArrayList<>();
         p.addSensors(sensors);
         sensors.remove(p.pressure.sensor);
-        Object[] have = kept.get(r.name);
-        if (have != null && System.currentTimeMillis() - (Long) have[0] < FRESH_MS) {
-            draw(p, cast(have[1]));
-            return;
-        }
         charts.removeAllViews();
         if (sensors.isEmpty()) return;
-        final String asked = r.name;
         pending = () -> Stats.readings(live, sensors, SPAN, read -> {
-            if (!asked.equals(room) || !shown() || read.isEmpty()) return;
-            kept.put(asked, new Object[]{System.currentTimeMillis(), read});
+            if (!r.name.equals(room) || !shown() || read.isEmpty()) return;
             activity.whenStill(() -> {
-                if (asked.equals(room) && shown()) draw(p, read);
+                if (r.name.equals(room) && shown()) draw(p, read);
             });
         });
         handler.postDelayed(pending, REST_MS);
@@ -107,18 +101,19 @@ final class PlaceBlock {
     void hide() {
         cancel();
         room = "";
+        drawn = "";
         block.setVisibility(View.GONE);
         words.setVisibility(View.VISIBLE);
+    }
+
+    /** The activity goes: no curves are asked for after it. */
+    void release() {
+        cancel();
     }
 
     private void cancel() {
         if (pending != null) handler.removeCallbacks(pending);
         pending = null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Map<String, List<Stats.Point>> cast(Object o) {
-        return (Map<String, List<Stats.Point>>) o;
     }
 
     /** One curve block per kind the room reads, side by side: climate (two curves), CO₂, noise. */

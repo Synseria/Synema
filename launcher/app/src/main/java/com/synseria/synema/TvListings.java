@@ -33,9 +33,13 @@ final class TvListings {
      * A title as the dashboard shows it: what its app published, completed by TMDB where the app said
      * nothing (with: the one place the two meet, the app's words always winning).
      */
+    private static final java.util.regex.Pattern SEASON_WORDS = java.util.regex.Pattern.compile("(saison|season|s\\d|episode|ep\\d)");
+
     static final class Item {
         final String pkg;
         final String title;
+        /** {@link #plain} of the title, worked out once: sameAs runs on the main thread for every pair. */
+        final String plainTitle;
         /** The episode as the app gives it ("S2 É4 · Le retour", "Épisode 10"), or empty. */
         final String subtitle;
         /** The season and episode numbers the app gave, 0 when it gave none; whether it named the episode. */
@@ -65,6 +69,7 @@ final class TvListings {
                      long duration, long left, int audience, int type, String backdropUri, boolean completed) {
             this.pkg = pkg;
             this.title = title == null ? "" : title;
+            this.plainTitle = plain(this.title);
             this.subtitle = subtitle;
             this.season = season;
             this.episode = episode;
@@ -119,21 +124,20 @@ final class TvListings {
             return left >= 0 ? ctx.getString(R.string.time_left, minutes(left)) : null;
         }
 
-        /** Whether {@code other} is this same title: the same words, or the same link. */
+        /**
+         * Whether {@code other} is this same title: the same words, one the other's with a season after
+         * it ("Les Anneaux de pouvoir" and "Les Anneaux de pouvoir – Saison 2"), or the same link.
+         */
         boolean sameAs(Item other) {
-            // Apps name one show differently ("Les Anneaux de pouvoir", "… – Saison 2"): compare letters
-            // and digits only, and a title held whole in the other counts.
-            String a = plain(title), b = plain(other.title);
-            if (!a.isEmpty() && !b.isEmpty() && (a.equals(b) || Math.min(a.length(), b.length()) >= 8 && (a.contains(b) || b.contains(a)))) {
-                return true;
-            }
+            String a = plainTitle, b = other.plainTitle;
+            if (!a.isEmpty() && !b.isEmpty() && (a.equals(b) || withSeason(a, b) || withSeason(b, a))) return true;
             String link = intent == null ? null : intent.toUri(0);
             return link != null && intent.getData() != null && link.equals(other.intent == null ? null : other.intent.toUri(0));
         }
 
-        private static String plain(String s) {
-            String n = java.text.Normalizer.normalize(s == null ? "" : s, java.text.Normalizer.Form.NFD);
-            return n.replaceAll("[^\\p{L}\\p{N}]", "").toLowerCase(java.util.Locale.ROOT);
+        /** {@code longer} is {@code base} followed by a season or an episode, not by other words ("… Andor"). */
+        private static boolean withSeason(String base, String longer) {
+            return longer.startsWith(base + " ") && SEASON_WORDS.matcher(longer.substring(base.length() + 1)).lookingAt();
         }
 
         /** The title in its app, whatever the progress: what hiding a title remembers. */
@@ -398,7 +402,7 @@ final class TvListings {
     /** Lower case, no accents or punctuation, single spaces. */
     static String plain(String s) {
         String n = Normalizer.normalize(s.toLowerCase(Locale.ROOT), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
-        return n.replaceAll("[^a-z0-9]+", " ").trim();
+        return n.replaceAll("[^\\p{L}\\p{N}]+", " ").trim();
     }
 
     /** Each app's first browsable channel, by channel id; only {@code onlyPkg}'s when not null. */

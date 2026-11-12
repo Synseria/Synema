@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.TvHome" parent="android:Theme.Material.NoActionBar.Fullscreen">
-        <item name="android:windowBackground">@android:color/black</item>
-        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:windowBackground">@android:color/black</item><!-- off-palette: the GL surface paints the real background; black until it does -->
+        <item name="android:colorBackground">@android:color/black</item><!-- off-palette: as above -->
         <item name="android:windowAnimationStyle">@style/FadeAnimation</item>
         <item name="android:textViewStyle">@style/TvText</item>
     </style>
@@ -143,6 +143,11 @@
         <item name="android:fontFamily">@font/outfit</item>
         <item name="android:fontVariationSettings">\'wght\' 600</item>
         <item name="android:textColor">@color/syn_encre</item>
+    </style>
+    <!-- A reading in thin, fixed-width figures (a room's temperature), the title's size. -->
+    <style name="Role.Releve" parent="Role.Titre">
+        <item name="android:fontVariationSettings">\'wght\' 200</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
     <style name="Role.Corps">
         <item name="android:textSize">@dimen/syn_typo_corps_taille</item>

@@ -223,10 +223,12 @@ final class HousePanel {
                 Rooms.Room r = roomOf(tile.action.entity);
                 activity.houseFocused(r, r == null ? null : place(r), live);
             });
-            TextView state = activity.text("", R.style.Role_Note);
+            TextView state = Tokens.text(activity, "", R.style.Role_Note);
+            state.setSingleLine(true);
             state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
             state.setDuplicateParentStateEnabled(true);
-            TextView name = activity.text(tile.name, R.style.Role_Corps);
+            TextView name = Tokens.text(activity, tile.name, R.style.Role_Corps);
+            name.setSingleLine(true);
             // The remote's colour button that toggles it: its key drawn in the tile's top right corner.
             int key = colourKey(tile);
             if (key != 0) {
@@ -318,17 +320,18 @@ final class HousePanel {
             Focus.tile(t);
             t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
             // The name across the tile (never cut), then the temperature with its other readings stacked beside.
-            TextView title = activity.text(name, R.style.Role_CorpsFort);
+            TextView title = Tokens.text(activity, name, R.style.Role_CorpsFort);
+            title.setSingleLine(true);
             title.setIncludeFontPadding(false);
-            TextView lit = activity.text(activity.getString(R.string.room_lit), R.style.Role_Petit);
+            TextView lit = Tokens.text(activity, activity.getString(R.string.room_lit), R.style.Role_Petit);
+            lit.setSingleLine(true);
             lit.setIncludeFontPadding(false);
             t.addView(new NameLine(activity, title, lit));
             LinearLayout body = new LinearLayout(activity);
             body.setGravity(Gravity.CENTER_VERTICAL);
             // A reading, not a title: the thin figures of the top line's temperatures, at a tile's size.
-            TextView temp = activity.text("", R.style.Role_Titre);
-            temp.setFontVariationSettings("'wght' 200");
-            temp.setFontFeatureSettings("tnum");
+            TextView temp = Tokens.text(activity, "", R.style.Role_Releve);
+            temp.setSingleLine(true);
             temp.setIncludeFontPadding(false);
             body.addView(temp);
             LinearLayout facts = new LinearLayout(activity);
