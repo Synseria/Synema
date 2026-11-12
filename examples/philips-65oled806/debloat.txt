@@ -53,7 +53,7 @@ org.droidtv.nettv.market                     # "Collection Smart TV" (Philips Ap
                                              # Also hosts the Rakuten button's launcher.
 
 com.google.android.play.games                # Play Games
-com.google.android.youtube.tv                # YouTube (owner's choice: comment out to keep it)
+com.google.android.youtube.tv                # YouTube: SmartTube takes its place
 com.google.android.youtube.tvmusic           # YouTube Music
 
 org.droidtv.astrahdplus                      # HD+ (German satellite operator)
