@@ -7,7 +7,8 @@ import android.widget.LinearLayout;
 /**
  * A single-choice group (tabs, background swatches): one focusable whole, whose cells are only drawn.
  * Left and Right choose the neighbouring cell at once and never leave the group; Up and Down do. The
- * chosen cell is the cell set activated: it alone is marked, so there is no focus ring on the group.
+ * chosen cell is the cell set activated, tinted; while the group has the focus its cells are also selected,
+ * and the chosen one is then outlined: that outline says which group the arrows change. No focus ring.
  */
 final class ChoiceGroup extends LinearLayout {
     interface OnChoice {
@@ -35,6 +36,18 @@ final class ChoiceGroup extends LinearLayout {
     void choose(int index) {
         chosen = index;
         for (int i = 0; i < getChildCount(); i++) getChildAt(i).setActivated(i == index);
+        markFocus();
+    }
+
+    /** The cells are selected exactly while the group has the focus. */
+    private void markFocus() {
+        for (int i = 0; i < getChildCount(); i++) getChildAt(i).setSelected(hasFocus());
+    }
+
+    @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, android.graphics.Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        markFocus();
     }
 
     @Override
