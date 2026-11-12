@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A cell of a single-choice group (ChoiceGroup): the chosen one tinted and outlined, the others bare; the
+     group has no focus ring, its chosen cell is the only mark. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_activated="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/syn_primaire_fond" />
+            <stroke android:width="@dimen/syn_trait_etat" android:color="@color/syn_primaire" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
+        </shape>
+    </item>
+</selector>

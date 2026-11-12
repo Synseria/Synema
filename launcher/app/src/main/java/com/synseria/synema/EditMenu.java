@@ -11,10 +11,14 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -25,9 +29,10 @@ import java.util.List;
 
 /**
  * The dashboard's edit menus. Holding OK on a favourite: move it, remove it, close the app, add one
- * (an app or a TV input), or customise the home screen: show or hide its sections, pick the
- * background, applied at once. Choices are saved in the config.json overlay (Config.save), so a pushed
- * theme and an edit on the TV read and write the same keys.
+ * (an app or a TV input), or open the settings: two tabs, Home (sections, hidden apps and titles,
+ * favourites) and Theme (the background, applied as it is chosen). Gestures that lose something ask
+ * first (Confirm). Choices are saved in the config.json overlay (Config.save), so a pushed theme and
+ * an edit on the TV read and write the same keys.
  */
 final class EditMenu {
 
@@ -43,11 +48,19 @@ final class EditMenu {
     static final String BLOCK_HERO = "hero", BLOCK_RESUME = "resume", BLOCK_PICKS = "picks", BLOCK_HOUSE = "house",
             BLOCK_CAMERAS = "cameras";
 
-    /** The panel's width, room for a name over its row. */
+    /** The veil behind a panel or a sheet. jeton manquant: syn_opacite_voile */
+    static final float DIM = 0.5f;
+
+    /** The panel's width, room for a name over its row. jeton manquant: syn_panneau_largeur */
     private static final int PANEL_DP = 320;
+
+    /** A background chosen with the arrows is saved once the arrows rest: each save rebuilds the dashboard. */
+    private static final long BACKDROP_SAVE_MS = 400;
 
     private final Activity activity;
     private final Host host;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable pendingBackdrop;
 
     EditMenu(Activity activity, Host host) {
         this.activity = activity;
@@ -63,14 +76,12 @@ final class EditMenu {
         });
         row(rows, R.string.edit_remove, () -> {
             d.dismiss();
-            List<String> next = new ArrayList<>(favourites);
-            next.remove(pkg);
-            saveFavourites(next);
+            removeFavourite(pkg, favourites);
         });
         if (!pkg.startsWith(Favourites.INPUT)) {
             row(rows, R.string.edit_close_app, () -> {
                 d.dismiss();
-                closeApp(pkg);
+                confirmClose(pkg);
             });
         }
         row(rows, R.string.edit_add, () -> {
@@ -88,17 +99,19 @@ final class EditMenu {
     void titleMenu(TvListings.Item item, String appName) {
         Dialog d = dialog();
         LinearLayout rows = rows(item.title);
-        rowText(rows, activity.getString(R.string.edit_open_app, appName), () -> {
+        row(rows, activity.getString(R.string.edit_open_app, appName), () -> {
             d.dismiss();
-            android.content.Intent launch = activity.getPackageManager().getLeanbackLaunchIntentForPackage(item.pkg);
-            if (launch != null) activity.startActivity(launch.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+            Intent launch = activity.getPackageManager().getLeanbackLaunchIntentForPackage(item.pkg);
+            if (launch != null) activity.startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         });
         row(rows, R.string.edit_hide_title, () -> {
             d.dismiss();
-            List<String> hidden = new ArrayList<>(Config.load(activity).hiddenTitles);
-            if (!hidden.contains(item.id())) hidden.add(item.id());
-            if (!Config.save(activity, "hidden_titles", hidden)) failed();
-            host.changed();
+            Confirm.show(activity, activity.getString(R.string.confirm_hide_title, item.title), null, R.string.action_hide, () -> {
+                List<String> hidden = new ArrayList<>(Config.load(activity).hiddenTitles);
+                if (!hidden.contains(item.id())) hidden.add(item.id());
+                if (!Config.save(activity, "hidden_titles", hidden)) failed();
+                host.changed();
+            });
         });
         show(d, rows);
     }
@@ -111,50 +124,98 @@ final class EditMenu {
         LinearLayout rows = rows(label(pkg));
         row(rows, favourite ? R.string.edit_remove : R.string.edit_make_favourite, () -> {
             d.dismiss();
-            List<String> next = new ArrayList<>(favourites);
-            if (favourite) next.remove(pkg);
-            else next.add(pkg);
-            saveFavourites(next);
+            if (favourite) {
+                removeFavourite(pkg, favourites);
+            } else {
+                List<String> next = new ArrayList<>(favourites);
+                next.add(pkg);
+                saveFavourites(next);
+            }
         });
         row(rows, R.string.edit_hide_app, () -> {
             d.dismiss();
-            List<String> hidden = new ArrayList<>(Config.load(activity).hiddenApps);
-            if (!hidden.contains(pkg)) hidden.add(pkg);
-            if (!Config.save(activity, "hidden_apps", hidden)) failed();
-            host.changed();
+            Confirm.show(activity, activity.getString(R.string.confirm_hide_app, label(pkg)), null, R.string.action_hide, () -> {
+                List<String> hidden = new ArrayList<>(Config.load(activity).hiddenApps);
+                if (!hidden.contains(pkg)) hidden.add(pkg);
+                if (!Config.save(activity, "hidden_apps", hidden)) failed();
+                host.changed();
+            });
         });
         row(rows, R.string.edit_close_app, () -> {
             d.dismiss();
-            closeApp(pkg);
+            confirmClose(pkg);
         });
         show(d, rows);
     }
 
-    /** Customising the home screen: the sections shown, the background, a new favourite. */
+    private void removeFavourite(String pkg, List<String> favourites) {
+        Confirm.show(activity, activity.getString(R.string.confirm_remove_favourite, label(pkg)), null, R.string.action_remove, () -> {
+            List<String> next = new ArrayList<>(favourites);
+            next.remove(pkg);
+            saveFavourites(next);
+        });
+    }
+
+    private void confirmClose(String pkg) {
+        Confirm.show(activity, activity.getString(R.string.confirm_close_app, label(pkg)), null, R.string.action_close, () -> closeApp(pkg));
+    }
+
+    /** The settings: two tabs, Home and Theme; the left and right arrows on the tabs switch them. */
     private void customize(List<String> favourites) {
         Dialog d = dialog();
-        LinearLayout rows = rows(activity.getString(R.string.customize));
-        header(rows, R.string.menu_home);
+        LinearLayout panel = new LinearLayout(activity);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setPadding(px(R.dimen.syn_espace_6), Scale.marginY(activity), px(R.dimen.syn_espace_6), Scale.marginY(activity));
+        panel.addView(titleView(activity.getString(R.string.customize)));
+
+        ChoiceGroup tabs = new ChoiceGroup(activity);
+        int[] names = {R.string.tab_home, R.string.tab_theme};
+        for (int name : names) {
+            TextView cell = text(activity.getString(name), R.style.Role_CorpsFort);
+            cell.setBackgroundResource(R.drawable.choice_cell_bg);
+            cell.setTextColor(activity.getColorStateList(R.color.choice_cell_text));
+            cell.setGravity(Gravity.CENTER);
+            cell.setMinHeight(px(R.dimen.syn_cible_min));
+            tabs.addView(cell, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        }
+        LinearLayout.LayoutParams tabsLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        tabsLp.bottomMargin = px(R.dimen.syn_espace_2);
+        panel.addView(tabs, tabsLp);
+
+        LinearLayout content = new LinearLayout(activity);
+        content.setOrientation(LinearLayout.VERTICAL);
+        ScrollView scroll = new ScrollView(activity);
+        scroll.addView(content);
+        panel.addView(scroll, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        Runnable fill = () -> {
+            content.removeAllViews();
+            if (tabs.chosenIndex() == 0) homeTab(content, d, favourites);
+            else themeTab(content);
+            scroll.scrollTo(0, 0);
+        };
+        tabs.onChoice(i -> fill.run());
+        tabs.choose(0);
+        fill.run();
+        d.setOnDismissListener(x -> flushBackdrop());
+        showPanel(d, panel, tabs);
+    }
+
+    private void homeTab(LinearLayout rows, Dialog d, List<String> favourites) {
         sectionRows(rows);
-        int hiddenTitles = Config.load(activity).hiddenTitles.size();
+        Config cfg = Config.load(activity);
+        line(rows, activity.getString(R.string.hidden_apps), cfg.hiddenApps.isEmpty() ? null : value(String.valueOf(cfg.hiddenApps.size())), () -> {
+            d.dismiss();
+            hiddenApps();
+        });
+        int hiddenTitles = cfg.hiddenTitles.size();
         if (hiddenTitles > 0) {
-            rowText(rows, activity.getResources().getQuantityString(R.plurals.edit_show_titles, hiddenTitles, hiddenTitles), () -> {
+            row(rows, activity.getResources().getQuantityString(R.plurals.edit_show_titles, hiddenTitles, hiddenTitles), () -> {
                 d.dismiss();
                 if (!Config.save(activity, "hidden_titles", new ArrayList<String>())) failed();
                 host.changed();
             });
         }
-        header(rows, R.string.backdrop);
-        backdropSwatches(rows);
-        TextView motion = rowText(rows, activity.getString(R.string.backdrop_motion), null);
-        Runnable paintMotion = () -> motion.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null,
-                toggle(Config.load(activity).backdropMotion), null);
-        paintMotion.run();
-        motion.setOnClickListener(v -> {
-            if (!Config.save(activity, "backdrop_motion", !Config.load(activity).backdropMotion)) failed();
-            paintMotion.run();
-            host.changed();
-        });
         header(rows, R.string.menu_favourites);
         row(rows, R.string.edit_add_favourite, () -> {
             d.dismiss();
@@ -166,6 +227,52 @@ final class EditMenu {
             credit.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_4), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_1));
             rows.addView(credit);
         }
+    }
+
+    private void themeTab(LinearLayout rows) {
+        backdropSwatches(rows);
+        ImageView knob = new ImageView(activity);
+        Runnable paint = () -> knob.setImageDrawable(toggle(Config.load(activity).backdropMotion));
+        paint.run();
+        line(rows, activity.getString(R.string.backdrop_motion), knob, () -> {
+            if (!Config.save(activity, "backdrop_motion", !Config.load(activity).backdropMotion)) failed();
+            paint.run();
+            host.changed();
+        });
+    }
+
+    /** The apps hidden from All apps, each with a way back. */
+    private void hiddenApps() {
+        Dialog d = dialog();
+        LinearLayout rows = rows(activity.getString(R.string.hidden_apps));
+        LinearLayout list = new LinearLayout(activity);
+        list.setOrientation(LinearLayout.VERTICAL);
+        rows.addView(list);
+        Runnable[] fill = new Runnable[1];
+        fill[0] = () -> {
+            list.removeAllViews();
+            List<String> hidden = Config.load(activity).hiddenApps;
+            if (hidden.isEmpty()) {
+                TextView none = text(activity.getString(R.string.hidden_apps_none), R.style.Role_Corps);
+                none.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
+                none.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
+                list.addView(none);
+                return;
+            }
+            for (String pkg : hidden) {
+                TextView show = value(activity.getString(R.string.action_show));
+                show.setTextColor(activity.getColor(R.color.syn_primaire_encre));
+                line(list, label(pkg), show, () -> {
+                    List<String> next = new ArrayList<>(Config.load(activity).hiddenApps);
+                    next.remove(pkg);
+                    if (!Config.save(activity, "hidden_apps", next)) failed();
+                    host.changed();
+                    fill[0].run();
+                    list.requestFocus();
+                });
+            }
+        };
+        fill[0].run();
         show(d, rows);
     }
 
@@ -201,7 +308,7 @@ final class EditMenu {
         Dialog d = dialog();
         LinearLayout rows = rows(activity.getString(R.string.edit_add));
         for (String[] c : choices) {
-            rowText(rows, c[0], () -> {
+            row(rows, c[0], () -> {
                 d.dismiss();
                 List<String> next = new ArrayList<>(favourites);
                 next.add(c[1]);
@@ -219,11 +326,10 @@ final class EditMenu {
                 {BLOCK_CAMERAS, activity.getString(R.string.cameras)},
                 {BLOCK_HOUSE, activity.getString(R.string.edit_house_panel)}};
         for (String[] b : blocks) {
-            TextView row = rowText(rows, b[1], null);
-            Runnable paint = () -> row.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null,
-                    toggle(!Config.load(activity).hiddenBlocks.contains(b[0])), null);
+            ImageView knob = new ImageView(activity);
+            Runnable paint = () -> knob.setImageDrawable(toggle(!Config.load(activity).hiddenBlocks.contains(b[0])));
             paint.run();
-            row.setOnClickListener(v -> {
+            line(rows, b[1], knob, () -> {
                 List<String> hidden = new ArrayList<>(Config.load(activity).hiddenBlocks);
                 if (!hidden.remove(b[0])) hidden.add(b[0]);
                 if (!Config.save(activity, "hidden_blocks", hidden)) failed();
@@ -234,53 +340,62 @@ final class EditMenu {
     }
 
     /**
-     * The backgrounds as swatches: the artwork, each colour theme, and the picture when one is on
-     * the TV. OK applies one at once; the chosen one is ringed, the focused one named below.
+     * The backgrounds as one single-choice group of swatches: the artwork ("Auto"), each colour theme,
+     * and the picture when one is on the TV. The arrows choose; the chosen swatch is outlined and its
+     * name sits at the row's end.
      */
     private void backdropSwatches(LinearLayout rows) {
         List<String[]> choices = new ArrayList<>();
         choices.add(new String[]{Config.BACKDROP_ARTWORK, activity.getString(R.string.backdrop_artwork)});
         for (Backdrop.Theme t : Backdrop.themes(activity)) choices.add(new String[]{t.id, activity.getString(t.label)});
         if (Config.load(activity).wallpaper != null) choices.add(new String[]{Config.BACKDROP_PICTURE, activity.getString(R.string.backdrop_picture)});
-        LinearLayout strip = new LinearLayout(activity);
-        TextView name = text("", R.style.Role_Note);
-        name.setPadding(px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_2), 0, 0);
-        List<View> swatches = new ArrayList<>();
-        for (String[] c : choices) {
+        String current = Config.load(activity).backdrop;
+        int chosen = 0;
+        for (int i = 0; i < choices.size(); i++) if (choices.get(i)[0].equals(current)) chosen = i;
+
+        LinearLayout caption = new LinearLayout(activity);
+        caption.setGravity(Gravity.CENTER_VERTICAL);
+        caption.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
+        TextView title = text(activity.getString(R.string.backdrop), R.style.Role_Corps);
+        TextView name = value(choices.get(chosen)[1]);
+        caption.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        caption.addView(name);
+        rows.addView(caption);
+
+        ChoiceGroup strip = new ChoiceGroup(activity);
+        for (int i = 0; i < choices.size(); i++) {
             View sw = new View(activity);
-            sw.setFocusable(true);
-            sw.setClickable(true);
-            sw.setBackground(swatch(c[0]));
-            sw.setForeground(activity.getDrawable(R.drawable.dash_focus_ring));
-            sw.setOnFocusChangeListener((v, has) -> {
-                if (has) name.setText(c[1]);
-                else name.post(() -> {
-                    if (!strip.hasFocus()) showChosen(name, choices);   // leaving the strip: the chosen one again
-                });
-            });
-            sw.setOnClickListener(v -> {
-                if (!Config.save(activity, "backdrop", c[0])) failed();
-                for (int i = 0; i < swatches.size(); i++) swatches.get(i).setActivated(choices.get(i)[0].equals(c[0]));
-                host.changed();
-            });
-            sw.setActivated(c[0].equals(Config.load(activity).backdrop));
-            swatches.add(sw);
+            sw.setBackground(swatch(choices.get(i)[0]));
             // Equal shares of the panel's width, however many backgrounds there are.
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, px(R.dimen.syn_rangee_palette), 1f);
-            lp.setMarginEnd(px(R.dimen.syn_espace_2));
+            if (i < choices.size() - 1) lp.setMarginEnd(px(R.dimen.syn_espace_2));
             strip.addView(sw, lp);
         }
-        rows.addView(strip);
-        rows.addView(name);
-        showChosen(name, choices);
+        strip.choose(chosen);
+        strip.onChoice(i -> {
+            name.setText(choices.get(i)[1]);
+            flushBackdrop();
+            pendingBackdrop = () -> {
+                if (!Config.save(activity, "backdrop", choices.get(i)[0])) failed();
+                host.changed();
+            };
+            handler.postDelayed(pendingBackdrop, BACKDROP_SAVE_MS);
+        });
+        LinearLayout.LayoutParams stripLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        stripLp.setMargins(px(R.dimen.syn_espace_1), 0, px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_2));
+        rows.addView(strip, stripLp);
     }
 
-    private void showChosen(TextView name, List<String[]> choices) {
-        String chosen = Config.load(activity).backdrop;
-        for (String[] c : choices) if (c[0].equals(chosen)) name.setText(c[1]);
+    /** Saves the background now if its save is still waiting for the arrows to rest. */
+    private void flushBackdrop() {
+        if (pendingBackdrop == null) return;
+        handler.removeCallbacks(pendingBackdrop);
+        Runnable save = pendingBackdrop;
+        pendingBackdrop = null;
+        save.run();
     }
 
-    /** A background's swatch: its colours in miniature, with a white ring once chosen (activated). */
+    /** A background's swatch: its colours in miniature, outlined once chosen (activated). */
     private Drawable swatch(String id) {
         Backdrop.Theme t = Backdrop.theme(activity, id);
         GradientDrawable fill = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
@@ -348,51 +463,76 @@ final class EditMenu {
         LinearLayout rows = new LinearLayout(activity);
         rows.setOrientation(LinearLayout.VERTICAL);
         rows.setPadding(px(R.dimen.syn_espace_6), Scale.marginY(activity), px(R.dimen.syn_espace_6), Scale.marginY(activity));
+        rows.addView(titleView(title));
+        return rows;
+    }
+
+    private TextView titleView(String title) {
         TextView t = text(title, R.style.Role_Titre);
         t.setPadding(px(R.dimen.syn_espace_1), 0, 0, px(R.dimen.syn_espace_2));
-        rows.addView(t);
-        return rows;
+        return t;
     }
 
     /** A quiet title above a group of rows. */
     private void header(LinearLayout rows, int label) {
         TextView h = text(activity.getString(label), R.style.Role_Note);
-        h.setPadding(px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_4), 0, px(R.dimen.syn_espace_1));
+        h.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_4), 0, px(R.dimen.syn_espace_1));
         rows.addView(h);
     }
 
     private void row(LinearLayout rows, int label, Runnable action) {
-        rowText(rows, activity.getString(label), action);
+        line(rows, activity.getString(label), null, action);
     }
 
-    private TextView rowText(LinearLayout rows, String label, Runnable action) {
-        TextView t = text(label, R.style.Role_Corps);
-        t.setBackgroundResource(R.drawable.menu_row_bg);
-        t.setTextColor(activity.getColorStateList(R.color.menu_row_text));
-        t.setFocusable(true);
-        t.setClickable(true);
-        t.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        t.setMinHeight(px(R.dimen.syn_cible_min));
-        t.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
-        if (action != null) t.setOnClickListener(v -> action.run());
+    private void row(LinearLayout rows, String label, Runnable action) {
+        line(rows, label, null, action);
+    }
+
+    /** A value shown at a row's end, quieter than its label. */
+    private TextView value(String s) {
+        TextView v = text(s, R.style.Role_Corps);
+        v.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
+        return v;
+    }
+
+    /** A row: its label at the left, its value or control (if any) at the right; OK runs the action. */
+    private LinearLayout line(LinearLayout rows, String label, View end, Runnable action) {
+        LinearLayout line = new LinearLayout(activity);
+        line.setBackgroundResource(R.drawable.menu_row_bg);
+        line.setFocusable(true);
+        line.setClickable(true);
+        line.setGravity(Gravity.CENTER_VERTICAL);
+        line.setMinimumHeight(px(R.dimen.syn_cible_min));
+        line.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
+        line.addView(text(label, R.style.Role_Corps), new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        if (end != null) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMarginStart(px(R.dimen.syn_espace_2));
+            line.addView(end, lp);
+        }
+        line.setOnClickListener(v -> action.run());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = px(R.dimen.syn_espace_1);
-        rows.addView(t, lp);
-        return t;
+        rows.addView(line, lp);
+        return line;
     }
 
     private void show(Dialog d, LinearLayout rows) {
         ScrollView scroll = new ScrollView(activity);
         scroll.addView(rows);
-        scroll.setBackgroundResource(R.drawable.menu_panel_bg);
-        d.setContentView(scroll);
+        showPanel(d, scroll, rows);
+    }
+
+    private void showPanel(Dialog d, ViewGroup panel, View focus) {
+        panel.setBackgroundResource(R.drawable.menu_panel_bg);
+        d.setContentView(panel);
         Window w = d.getWindow();
         if (w != null) {
             // A panel along the right edge, the full height, like the TV's own settings.
             w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            w.setGravity(android.view.Gravity.END | android.view.Gravity.FILL_VERTICAL);
+            w.setGravity(Gravity.END | Gravity.FILL_VERTICAL);
             w.setLayout(Math.round(PANEL_DP * activity.getResources().getDisplayMetrics().density), ViewGroup.LayoutParams.MATCH_PARENT);
-            w.setDimAmount(0.5f);
+            w.setDimAmount(DIM);
         }
         // The menu opens while OK is still held (a long press): its repeats and release must not
         // pick the first row, so OK only counts once it has been released inside the dialog.
@@ -404,7 +544,7 @@ final class EditMenu {
             return ok;
         });
         d.show();
-        rows.requestFocus();   // the first focusable row
+        focus.requestFocus();   // the first focusable row
     }
 
     private TextView text(String s, int role) {
