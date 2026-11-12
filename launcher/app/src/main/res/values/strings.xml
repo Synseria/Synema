@@ -199,4 +199,7 @@
     <string name="hidden_apps">Hidden apps</string>
     <string name="action_show">Show</string>
     <string name="hidden_apps_none">No hidden apps</string>
+    <string name="confirm_action">%1$s?</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="assist_done">%1$s · done</string>
 </resources>

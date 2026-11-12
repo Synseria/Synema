@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The assistant (AssistActivity): a panel at the bottom of the screen over whatever was showing. Its
      buttons grow when focused (Focus): every container round them keeps clipChildren off, and the mic
-     sits in a room as wide as its voice halo. -->
+     sits in a room as wide as its voice halo. Side margin 120dp and the mic's room 64dp:
+     jeton manquant: syn_assistant_marge, syn_halo_micro. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -20,7 +21,7 @@
         android:orientation="vertical"
         android:padding="@dimen/syn_espace_6">
 
-        <!-- The assistants to talk to (home.json assistant.presets); the chosen one is lit. -->
+        <!-- The assistants to talk to (home.json assistant.presets), a single-choice group filled by code. -->
         <LinearLayout
             android:id="@+id/presets"
             android:layout_width="wrap_content"
@@ -67,7 +68,7 @@
                     android:padding="@dimen/syn_espace_3"
                     android:background="@drawable/mic_button_bg"
                     android:src="@drawable/ic_mic"
-                    android:tint="@color/pill_text"
+                    android:tint="@color/syn_encre"
                     android:focusable="true"
                     android:clickable="true"
                     android:contentDescription="@string/assist_speak" />

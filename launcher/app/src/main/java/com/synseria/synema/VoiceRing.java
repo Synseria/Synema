@@ -33,6 +33,7 @@ final class VoiceRing extends View {
     protected void onDraw(Canvas canvas) {
         if (shown < 0) return;
         float inner = mic.getWidth() * mic.getScaleX() / 2f, outer = Math.min(getWidth(), getHeight()) / 2f;
+        // jeton manquant: syn_opacite_halo_min (0.16) and syn_opacite_halo_max (0.40)
         paint.setAlpha(Math.round(255 * (0.16f + 0.24f * shown)));
         canvas.drawCircle(getWidth() / 2f, getHeight() / 2f, inner + (outer - inner) * (0.25f + 0.75f * shown), paint);
     }

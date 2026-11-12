@@ -39,7 +39,7 @@ final class EnergyPage {
     private final LinearLayout content, totals;
     private final TextView power, cost, tempo, legend;
     private final Chart chart;
-    private final LinearLayout chips;
+    private final ChoiceGroup chips;
     private HomeConfig home;
     /** The dashboard's connection of the moment (a new one on each return to Home). */
     private final java.util.function.Supplier<HaLive> live;
@@ -136,7 +136,7 @@ final class EnergyPage {
     void open(HomeConfig home) {
         this.home = home;
         update();
-        side.open(KEY, activity.getString(R.string.energy_title), content, chips.getChildAt(range.ordinal()),
+        side.open(KEY, activity.getString(R.string.energy_title), content, chips,
                 () -> activity.findViewById(R.id.tech));
         chart.reading();
         if (meters != null) {

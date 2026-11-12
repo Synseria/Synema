@@ -73,7 +73,8 @@ public class AssistActivity extends Activity {
     private String appShown = "";
     /** The titles to continue, for a preset's {resume}. */
     private volatile String resumeTitles = "";
-    private TextView pending;
+    /** The state line in the transcript (waiting, listening, or a problem), if any. */
+    private View status;
     /** The halo round the mic while it listens. */
     private VoiceRing ring;
     /** What can be watched, for the agent (catalogue()); read once the panel opens. */
@@ -118,18 +119,14 @@ public class AssistActivity extends Activity {
             catalogue = catalogue();
         }, "assist-resume").start();
         LinearLayout presets = findViewById(R.id.presets);
-        for (HomeConfig.Preset p : home.assistantPresets) {
-            TextView chip = Chips.capsule(this, p.name);
-            chip.setOnClickListener(v -> choose(p, presets));
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            lp.setMarginEnd(px(R.dimen.syn_espace_2));
-            presets.addView(chip, lp);
-        }
-        presets.setVisibility(home.assistantPresets.size() > 1 ? android.view.View.VISIBLE : android.view.View.GONE);
-        if (!home.assistantPresets.isEmpty()) choose(home.assistantPresets.get(0), presets);
+        String[] names = new String[home.assistantPresets.size()];
+        for (int i = 0; i < names.length; i++) names[i] = home.assistantPresets.get(i).name;
+        presets.addView(Chips.row(this, names, 0, i -> choose(home.assistantPresets.get(i))));
+        presets.setVisibility(names.length > 1 ? View.VISIBLE : View.GONE);
+        if (names.length > 0) choose(home.assistantPresets.get(0));
         LinearLayout chips = findViewById(R.id.chips);
         for (String s : home.assistantSuggestions) {
-            TextView chip = Chips.capsule(this, s);
+            TextView chip = Chips.button(this, s);
             chip.setOnClickListener(v -> ask(s));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
             lp.setMarginEnd(px(R.dimen.syn_espace_2));
@@ -163,11 +160,12 @@ public class AssistActivity extends Activity {
         });
 
         if (ha == null) {
-            say(getString(R.string.ha_not_configured), false);
+            status(getString(R.string.ha_not_configured), null);
         } else if (preset == null) {
-            say(getString(R.string.assist_no_agent), false);
+            status(getString(R.string.assist_no_answer), null);
         }
         if (canListen()) listen();
+        else if (presets.getChildCount() > 0 && presets.getVisibility() == View.VISIBLE) presets.getChildAt(0).requestFocus();
         else if (chips.getChildCount() > 0) chips.getChildAt(0).requestFocus();
         else input.requestFocus();
     }
@@ -196,12 +194,12 @@ public class AssistActivity extends Activity {
         if (text.isEmpty()) return;
         bubble(text, true);
         if (PLAY.matcher(text).matches()) {
-            pending = bubble(getString(R.string.assist_looking), false);
+            status(getString(R.string.assist_looking), null);
             new Thread(() -> {
                 Launch.Target t = Launch.find(this, text, null);
                 runOnUiThread(() -> {
                     if (isFinishing()) return;
-                    transcript.removeView(pending);
+                    clearStatus();
                     if (t == null) {
                         askHomeAssistant(text);
                         return;
@@ -231,23 +229,23 @@ public class AssistActivity extends Activity {
 
     private void askHomeAssistant(String text) {
         if (ha == null || preset == null) return;
-        pending = bubble(getString(R.string.assist_thinking), false);
+        status(getString(R.string.assist_thinking), null);
         String sent = conversationId == null && !preset.context.isEmpty() ? context(preset.context) + "\n\n" + text : text;
-        if (!actionsSent && !actions.isEmpty()) {
-            sent = getString(R.string.assist_actions, actions.context()) + "\n\n" + sent;
-            actionsSent = true;
-        }
-        if (!catalogueSent && !catalogue.isEmpty() && WATCH.matcher(text).find()) {
-            sent = getString(R.string.assist_catalogue, of(catalogue, text)) + "\n\n" + sent;
-            catalogueSent = true;
-        }
+        // Said once a conversation, but only once it was heard: a retry carries them again.
+        boolean withActions = !actionsSent && !actions.isEmpty();
+        if (withActions) sent = getString(R.string.assist_actions, actions.context()) + "\n\n" + sent;
+        boolean withCatalogue = !catalogueSent && !catalogue.isEmpty() && WATCH.matcher(text).find();
+        if (withCatalogue) sent = getString(R.string.assist_catalogue, of(catalogue, text)) + "\n\n" + sent;
+        boolean sentActions = withActions, sentCatalogue = withCatalogue;
         ha.converse(sent, preset.agent, home.assistantLanguage, conversationId, reply -> {
             if (isFinishing()) return;
-            transcript.removeView(pending);
+            clearStatus();
             if (reply == null) {
-                say(getString(R.string.assist_no_answer), false);
+                status(getString(R.string.assist_no_answer), () -> askHomeAssistant(text));
                 return;
             }
+            actionsSent |= sentActions;
+            catalogueSent |= sentCatalogue;
             conversationId = reply.conversationId;
             StringBuilder rest = new StringBuilder();
             List<HouseActions.Action> offered = actions.take(reply.speech, rest);
@@ -331,13 +329,12 @@ public class AssistActivity extends Activity {
         }
     }
 
-    /** Another assistant: a new conversation, the chip lit. */
-    private void choose(HomeConfig.Preset p, LinearLayout chips) {
+    /** Another assistant: a new conversation. */
+    private void choose(HomeConfig.Preset p) {
         preset = p;
         conversationId = null;
         catalogueSent = false;
         actionsSent = false;
-        for (int i = 0; i < chips.getChildCount(); i++) chips.getChildAt(i).setActivated(home.assistantPresets.get(i) == p);
     }
 
     /** The preset's context with {app}, {time} and {resume} filled in. */
@@ -404,9 +401,15 @@ public class AssistActivity extends Activity {
         return t;
     }
 
+    /** The services that switch something off, close or send home: asked again before they run. */
+    private static boolean undoes(String service) {
+        return service.endsWith("/turn_off") || service.endsWith("/close_cover") || service.endsWith("/return_to_base");
+    }
+
     /**
-     * The agent's actions under its answer: OK calls the service at once, the card then saying whether
-     * it was done. Never focused by themselves: an OK meant for the mic must not switch the house.
+     * The agent's actions under its answer, buttons: OK calls the service, the button then saying whether
+     * it was done. Never focused by themselves: an OK meant for the mic must not switch the house. An
+     * action that switches off, closes or sends home is confirmed first.
      */
     private void cards(List<HouseActions.Action> offered) {
         if (offered.isEmpty() || ha == null) return;
@@ -415,18 +418,30 @@ public class AssistActivity extends Activity {
         row.setClipToPadding(false);
         row.setPadding(px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_1));
         for (HouseActions.Action a : offered) {
-            TextView card = Chips.capsule(this, a.label);
-            card.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_bolt, 0, 0, 0);
-            card.setCompoundDrawableTintList(getColorStateList(R.color.pill_text));
-            card.setCompoundDrawablePadding(px(R.dimen.syn_espace_1));
-            card.setOnClickListener(v -> {
+            TextView card = Chips.button(this, a.label);
+            setCardIcon(card, R.drawable.ic_bolt, R.color.syn_encre);
+            Runnable run = () -> {
                 card.setEnabled(false);
                 ha.call(a.service, a.entity, null, ok -> {
-                    card.setText((ok ? "✓  " : "✗  ") + a.label);
-                    card.setActivated(ok);
                     card.setEnabled(true);
-                    card.setClickable(false);
+                    if (ok) {
+                        card.setText(getString(R.string.assist_done, a.label));
+                        card.setTextColor(getColor(R.color.syn_succes));
+                        setCardIcon(card, R.drawable.ic_bolt, R.color.syn_succes);
+                        card.setClickable(false);
+                    } else {
+                        card.setText(R.string.ha_unreachable);
+                        card.setTextColor(getColor(R.color.syn_danger));
+                        setCardIcon(card, R.drawable.ic_warn, R.color.syn_danger);
+                    }
                 });
+            };
+            card.setOnClickListener(v -> {
+                if (undoes(a.service)) {
+                    Confirm.show(this, getString(R.string.confirm_action, a.label), null, R.string.action_confirm, run);
+                } else {
+                    run.run();
+                }
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lp.setMarginEnd(px(R.dimen.syn_espace_2));
@@ -435,6 +450,51 @@ public class AssistActivity extends Activity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = px(R.dimen.syn_espace_2);
         add(row, lp);
+    }
+
+    private void setCardIcon(TextView card, int icon, int tint) {
+        card.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
+        card.setCompoundDrawableTintList(getColorStateList(tint));
+        card.setCompoundDrawablePadding(px(R.dimen.syn_espace_1));
+    }
+
+    /**
+     * The panel's one state line: waiting, listening or a problem ("Name unavailable"), with a retry
+     * button when there is something to retry. It replaces the previous one.
+     */
+    private void status(String text, Runnable retry) {
+        clearStatus();
+        LinearLayout line = new LinearLayout(this);
+        line.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        line.setClipChildren(false);
+        TextView t = Tokens.text(this, text, R.style.Role_Corps);
+        t.setTextColor(getColor(R.color.syn_encre_secondaire));
+        line.addView(t);
+        if (retry != null) {
+            TextView again = Tokens.text(this, getString(R.string.action_retry), R.style.Role_CorpsFort);
+            again.setTextColor(getColor(R.color.syn_primaire_encre));
+            again.setBackgroundResource(R.drawable.button_tertiary_bg);
+            again.setGravity(android.view.Gravity.CENTER);
+            again.setMinHeight(px(R.dimen.syn_cible_min));
+            again.setPadding(px(R.dimen.syn_espace_4), 0, px(R.dimen.syn_espace_4), 0);
+            Focus.button(again);
+            again.setOnClickListener(v -> {
+                clearStatus();
+                retry.run();
+            });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMarginStart(px(R.dimen.syn_espace_2));
+            line.addView(again, lp);
+        }
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = px(R.dimen.syn_espace_2);
+        add(line, lp);
+        status = line;
+    }
+
+    private void clearStatus() {
+        if (status != null) transcript.removeView(status);
+        status = null;
     }
 
     private void add(View v, LinearLayout.LayoutParams lp) {
@@ -465,7 +525,7 @@ public class AssistActivity extends Activity {
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
         if (!home.assistantLanguage.isEmpty()) i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, home.assistantLanguage);
-        input.setHint(R.string.assist_listening);
+        status(getString(R.string.assist_listening), null);
         mic().requestFocus();
         ring.level(0);
         recognizer.startListening(i);
@@ -480,7 +540,7 @@ public class AssistActivity extends Activity {
 
         @Override
         public void onResults(Bundle results) {
-            input.setHint(R.string.assist_hint);
+            clearStatus();
             ring.level(-1);
             retried = false;
             ArrayList<String> words = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
@@ -490,20 +550,19 @@ public class AssistActivity extends Activity {
 
         @Override
         public void onError(int error) {
-            input.setHint(R.string.assist_hint);
+            clearStatus();
             ring.level(-1);
             if (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                input.setHint(R.string.assist_not_heard);
+                status(getString(R.string.assist_not_heard), AssistActivity.this::listen);
             } else if (error == SpeechRecognizer.ERROR_NETWORK || error == SpeechRecognizer.ERROR_NETWORK_TIMEOUT
                     || error == SpeechRecognizer.ERROR_SERVER) {
                 // Google's recognition is now and then not reached at the first try: once more, at once.
                 if (!retried) {
                     retried = true;
                     listen();
-                    input.setHint(R.string.assist_again);
                     return;
                 }
-                input.setHint(R.string.assist_no_network);
+                status(getString(R.string.assist_no_network), AssistActivity.this::listen);
             }
         }
 
