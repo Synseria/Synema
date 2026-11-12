@@ -214,10 +214,10 @@ final class RoomPage {
         }
     }
 
-    /** A chart's first curve is the primary accent, its second the same hue's lighter ink (saffron is never a series). */
+    /** A chart's first curve is the primary accent, its second the secondary ink: told apart at a glance (saffron is never a series). */
     private void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, Chart.Unit unit) {
         List<Stats.Point> points = read.get(sensor);
-        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_primaire_encre);
+        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_encre_secondaire);
         if (points != null && !points.isEmpty()) out.add(new Chart.Series("", color, unit, points));
     }
 
@@ -273,9 +273,10 @@ final class RoomPage {
             lp.setMarginEnd(px(R.dimen.syn_espace_2));
             line.addView(t, lp);
         }
-        // Equal widths on the last line.
+        // Equal widths on the last line. The fillers match the line's height like the tiles: a fixed height
+        // here would set the line's, and the tiles, matching it, would shrink to it.
         for (int i = entities.size() % PER_ROW; i > 0 && i < PER_ROW; i++) {
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, 1, 1f);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
             lp.setMarginEnd(px(R.dimen.syn_espace_2));
             line.addView(new View(activity), lp);
         }
