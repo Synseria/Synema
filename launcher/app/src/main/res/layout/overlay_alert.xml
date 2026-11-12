@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- An alert over any app (Alerts): live camera, title, and its buttons (enlarge: secondary,
-     optional reply: primary, close: tertiary). Without a camera only the title row shows, as a small notice. -->
+<!-- An alert over any app (Alerts): live camera, a bar that empties, then one row: title and buttons (enlarge:
+     secondary, optional reply: primary, close: tertiary). Without a camera only the title shows, as a small notice.
+     The window is as wide as the House panel (Alerts sets it). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="360dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/alert_bg"
-    android:elevation="12dp"><!-- jeton manquant: syn_ombre_flottant (elevation), syn_largeur_alerte (360dp), syn_hauteur_alerte_media (180dp) -->
+    android:elevation="12dp"><!-- jeton manquant: syn_ombre_flottant (elevation), syn_hauteur_alerte_media (16:9 of the panel) -->
 
     <!-- The camera: Home Assistant's pictures at once, the WebRTC video over them from its first frame. -->
     <FrameLayout
         android:id="@+id/media"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
+        android:layout_height="153dp"
         android:layout_marginStart="@dimen/syn_espace_2"
         android:layout_marginTop="@dimen/syn_espace_2"
         android:layout_marginEnd="@dimen/syn_espace_2"
@@ -32,30 +33,41 @@
             android:importantForAccessibility="no" />
     </FrameLayout>
 
+    <!-- Time left, emptying from the right (Alerts); gone for a notice. -->
+    <FrameLayout
+        android:id="@+id/countdownBar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/syn_espace_1"
+        android:layout_marginStart="@dimen/syn_espace_2"
+        android:layout_marginEnd="@dimen/syn_espace_2"
+        android:background="@color/syn_filet"><!-- jeton manquant: syn_progress_height (4dp stands) -->
+
+        <View
+            android:id="@+id/countdown"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/syn_primaire" />
+    </FrameLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/syn_espace_4">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/syn_espace_3">
 
         <TextView
             android:id="@+id/title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/syn_espace_2"
             style="@style/Role.Titre" />
-
-        <TextView
-            android:id="@+id/countdown"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/syn_espace_1"
-            style="@style/Role.Note" />
 
         <LinearLayout
             android:id="@+id/buttons"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/syn_cible_min"
-            android:layout_marginTop="@dimen/syn_espace_3"
             android:orientation="horizontal">
 
             <TextView
