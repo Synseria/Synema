@@ -138,6 +138,7 @@ final class HouseText {
 
     /** The day's colour in words as Home Assistant states it: "Bleu". */
     static String tempoName(HomeAssistant.State s) {
+        if (!s.available() || s.state.isEmpty()) return "";
         return s.state.substring(0, 1).toUpperCase(Locale.getDefault()) + s.state.substring(1).toLowerCase(Locale.getDefault());
     }
 
