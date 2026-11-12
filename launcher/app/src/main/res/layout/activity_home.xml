@@ -22,7 +22,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="72dp"
+            android:minHeight="@dimen/top_line_height"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:clipChildren="false">
@@ -235,8 +235,8 @@
 
                         <FrameLayout
                             android:id="@+id/heroProgress"
-                            android:layout_width="160dp"
-                            android:layout_height="3dp"
+                            android:layout_width="@dimen/progress_width"
+                            android:layout_height="@dimen/progress_height"
                             android:layout_marginTop="@dimen/syn_espace_2" />
                     </LinearLayout>
 
@@ -277,12 +277,12 @@
                             android:orientation="vertical"
                             android:clipChildren="false">
 
-                            <!-- Only while a favourite is being moved: how to place it. -->
+                            <!-- Only while a favourite is being moved: what OK does. -->
                             <TextView
                                 android:id="@+id/favLabel"
                                 style="@style/DashLabel"
                                 android:text="@string/edit_moving"
-                                android:textColor="@color/syn_safran"
+                                android:textColor="@color/syn_primaire_encre"
                                 android:visibility="gone" />
 
                             <com.synseria.synema.Dock
@@ -341,7 +341,7 @@
                  padding is the room for the lift of what spans it (the electricity): unclipped. -->
             <com.synseria.synema.SidePanel
                 android:id="@+id/haPanel"
-                android:layout_width="288dp"
+                android:layout_width="@dimen/house_panel_width"
                 android:layout_height="match_parent"
                 android:layout_marginStart="@dimen/syn_espace_2"
                 android:layout_marginTop="@dimen/syn_espace_2"
@@ -449,7 +449,7 @@
                     <FrameLayout
                         android:id="@+id/powerGauge"
                         android:layout_width="match_parent"
-                        android:layout_height="3dp"
+                        android:layout_height="@dimen/progress_height"
                         android:layout_marginTop="@dimen/syn_espace_1" />
 
                     <LinearLayout

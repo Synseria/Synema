@@ -24,8 +24,8 @@
         android:layout_height="match_parent"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:paddingTop="8dp"
+        android:paddingStart="@dimen/syn_espace_2"
+        android:paddingEnd="@dimen/syn_espace_2"
+        android:paddingTop="@dimen/syn_espace_2"
         android:paddingBottom="@dimen/syn_marge_y" />
 </LinearLayout>

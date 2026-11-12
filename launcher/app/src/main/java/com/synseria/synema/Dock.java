@@ -13,7 +13,8 @@ import android.view.ViewGroup;
  */
 public final class Dock extends ViewGroup {
     static final int PER_LINE = 6;
-    private static final int MIN_DP = 96, MAX_DP = 116, GAP_DP = 16, LINE_GAP_DP = 6;
+    // jeton manquant: syn_dock_image_min (96), syn_dock_image_max (116)
+    private static final int MIN_DP = 96, MAX_DP = 116;
 
     private final int inset, min, max, gap, room, lineGap;
     /** The card width (frame) and the distance from one card to the next, set by onMeasure. */
@@ -26,8 +27,8 @@ public final class Dock extends ViewGroup {
         inset = ctx.getResources().getDimensionPixelSize(R.dimen.card_inset);
         min = Math.round(MIN_DP * d);
         max = Math.round(MAX_DP * d);
-        gap = Math.round(GAP_DP * d);
-        lineGap = Math.round(LINE_GAP_DP * d);
+        gap = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
+        lineGap = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_2);
         room = Focus.cardRoom(ctx);
         setPadding(room - inset, room - inset, room - inset, room - inset);
     }
