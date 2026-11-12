@@ -3,23 +3,45 @@ package com.synseria.synema;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 
 /**
  * The dashboard's House panel on the right (HousePanel fills it). Down stops at its last line of tiles:
  * the focus finder would otherwise drop to a card of the column, lower on the left. Its rooms (TileScroll)
  * are as tall as they are, no taller than the panel leaves for what follows them: that follows them, the
- * spare height going under it.
+ * spare height going under it. Once the focus leaves the panel, the rooms are back at the top.
  */
 public final class SidePanel extends LinearLayout {
+    private final ViewTreeObserver.OnGlobalFocusChangeListener left = (from, to) -> {
+        TileScroll scroll = rooms();
+        if (scroll != null && from != null && isAncestorOf(from) && (to == null || !isAncestorOf(to))) scroll.scrollTo(0, 0);
+    };
+
     public SidePanel(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        getViewTreeObserver().addOnGlobalFocusChangeListener(left);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        getViewTreeObserver().removeOnGlobalFocusChangeListener(left);
+        super.onDetachedFromWindow();
+    }
+
+    private TileScroll rooms() {
+        for (int i = 0; i < getChildCount(); i++) if (getChildAt(i) instanceof TileScroll) return (TileScroll) getChildAt(i);
+        return null;
+    }
+
+    @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
-        TileScroll scroll = null;
-        for (int i = 0; i < getChildCount() && scroll == null; i++) if (getChildAt(i) instanceof TileScroll) scroll = (TileScroll) getChildAt(i);
+        TileScroll scroll = rooms();
         if (scroll == null) {
             super.onMeasure(widthSpec, heightSpec);
             return;

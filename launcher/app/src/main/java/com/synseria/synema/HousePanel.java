@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * The dashboard's Home Assistant parts: the top line's readings and capsules (HouseHeader), and the
  * House panel on the right: the rooms lit, home.json's tiles, the rooms (Rooms; OK opens one's page,
- * RoomPage) and the electricity (OK opens its page, EnergyPage). The tiles stay put under the heading;
- * the rooms alone scroll between them and the electricity (TileScroll), beyond eight rooms or so.
+ * RoomPage) and the electricity (OK opens its page, EnergyPage). The rooms, then the tiles, scroll a
+ * whole line at a time between the heading and the electricity, which stays put (TileScroll).
  *
  * While the dashboard shows, Home Assistant pushes every change of what it shows (HaLive): a light
  * switched anywhere is drawn within a moment. The rooms themselves (which areas, which things) are
@@ -77,6 +77,8 @@ final class HousePanel {
         tech.setOnClickListener(v -> energyPage.open(home));
         tiles = activity.findViewById(R.id.tiles);
         rooms = activity.findViewById(R.id.rooms);
+        // Nothing cut under the heading: the rooms and the tiles scroll a whole line at a time.
+        ((TileScroll) activity.findViewById(R.id.houseScroll)).byLines(rooms, tiles);
         rule = activity.findViewById(R.id.houseRule);
         litRooms = activity.findViewById(R.id.litRooms);
         panel = activity.findViewById(R.id.haPanel);

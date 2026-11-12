@@ -400,8 +400,10 @@
 
                 <!-- The rooms first, then home.json's tiles (the remote's shortcuts, the vacuum) under a rule, as
                      tall as they are and no taller than the panel leaves (SidePanel), so the electricity follows
-                     them; scrolling alone beyond. The padding is room for a focused tile's lift (Focus). -->
+                     them; scrolling alone beyond, by whole lines (HousePanel), back to the top once the focus leaves
+                     the panel (SidePanel). The padding is room for a focused tile's lift (Focus). -->
                 <com.synseria.synema.TileScroll
+                    android:id="@+id/houseScroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/syn_espace_1"
