@@ -214,7 +214,7 @@ final class HouseHeader {
      * someone who comes home, the robot for a vacuum, a dot otherwise.
      */
     private View chip(HouseText.Notice n) {
-        int color = activity.getColor(n.problem ? R.color.syn_danger : R.color.syn_primaire_encre);
+        int color = n.problem ? activity.getColor(R.color.syn_danger) : Tokens.primaryInk(activity);
         LinearLayout chip = new LinearLayout(activity);
         chip.setGravity(Gravity.CENTER_VERTICAL);
         chip.setBackgroundResource(R.drawable.dash_capsule_bg);

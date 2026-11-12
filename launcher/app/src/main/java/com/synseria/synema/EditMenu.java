@@ -54,13 +54,13 @@ final class EditMenu {
     /** The panel's width, room for a name over its row. jeton manquant: syn_panneau_largeur */
     private static final int PANEL_DP = 320;
 
-    /** A background chosen with the arrows is saved once the arrows rest: each save rebuilds the dashboard. */
-    private static final long BACKDROP_SAVE_MS = 400;
+    /** A swatch chosen with the arrows is saved once the arrows rest: each save rebuilds the screens. */
+    private static final long SAVE_MS = 400;
 
     private final Activity activity;
     private final Host host;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable pendingBackdrop;
+    private Runnable pendingSave;
 
     EditMenu(Activity activity, Host host) {
         this.activity = activity;
@@ -194,7 +194,7 @@ final class EditMenu {
         tabs.onChoice(i -> fill.run());
         tabs.choose(0);
         fill.run();
-        d.setOnDismissListener(x -> flushBackdrop());
+        d.setOnDismissListener(x -> flushPending());
         showPanel(d, panel, tabs);
     }
 
@@ -227,6 +227,7 @@ final class EditMenu {
     }
 
     private void themeTab(LinearLayout rows) {
+        colourSwatches(rows);
         backdropSwatches(rows);
         ImageView knob = new ImageView(activity);
         Runnable paint = () -> knob.setImageDrawable(toggle(Config.load(activity).backdropMotion));
@@ -258,7 +259,7 @@ final class EditMenu {
             }
             for (String pkg : hidden) {
                 TextView show = value(activity.getString(R.string.action_show));
-                show.setTextColor(activity.getColor(R.color.syn_primaire_encre));
+                show.setTextColor(Tokens.primaryInk(activity));
                 line(list, label(pkg), show, () -> {
                     List<String> next = new ArrayList<>(Config.load(activity).hiddenApps);
                     next.remove(pkg);
@@ -336,60 +337,95 @@ final class EditMenu {
         }
     }
 
+    /** The accent: one swatch per design-system preset. Choosing it restarts the open screens in the new colour. */
+    private void colourSwatches(LinearLayout rows) {
+        List<String[]> choices = new ArrayList<>();
+        for (Tokens.Colour c : Tokens.COLOURS) choices.add(new String[]{c.id, activity.getString(c.label)});
+        swatchRow(rows, activity.getString(R.string.colour), choices, Config.load(activity).colour, Tokens.COLOURS.length,
+                this::colourSwatch, id -> {
+                    if (Config.load(activity).colour.equals(id)) return;
+                    if (!Config.save(activity, "colour", id)) failed();
+                    activity.recreate();
+                });
+    }
+
     /**
      * The backgrounds as one single-choice group of swatches: the artwork ("Auto"), each colour theme,
-     * and the picture when one is on the TV. The arrows choose; the chosen swatch is outlined and its
-     * name sits at the row's end.
+     * and the picture when one is on the TV.
      */
     private void backdropSwatches(LinearLayout rows) {
         List<String[]> choices = new ArrayList<>();
         choices.add(new String[]{Config.BACKDROP_ARTWORK, activity.getString(R.string.backdrop_artwork)});
         for (Backdrop.Theme t : Backdrop.themes(activity)) choices.add(new String[]{t.id, activity.getString(t.label)});
         if (Config.load(activity).wallpaper != null) choices.add(new String[]{Config.BACKDROP_PICTURE, activity.getString(R.string.backdrop_picture)});
-        String current = Config.load(activity).backdrop;
+        swatchRow(rows, activity.getString(R.string.backdrop), choices, Config.load(activity).backdrop, choices.size(),
+                this::swatch, id -> {
+                    if (!Config.save(activity, "backdrop", id)) failed();
+                    host.changed();
+                });
+    }
+
+    /**
+     * A label with the chosen name at its end over a single-choice group of swatches: the arrows choose, the
+     * chosen swatch is outlined, and the save waits for the arrows to rest.
+     */
+    private void swatchRow(LinearLayout rows, String label, List<String[]> choices, String current, int count,
+                           java.util.function.Function<String, Drawable> look, java.util.function.Consumer<String> save) {
         int chosen = 0;
         for (int i = 0; i < choices.size(); i++) if (choices.get(i)[0].equals(current)) chosen = i;
 
         LinearLayout caption = new LinearLayout(activity);
         caption.setGravity(Gravity.CENTER_VERTICAL);
         caption.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
-        TextView title = text(activity.getString(R.string.backdrop), R.style.Role_Corps);
+        TextView title = text(label, R.style.Role_Corps);
         TextView name = value(choices.get(chosen)[1]);
         caption.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         caption.addView(name);
         rows.addView(caption);
 
         ChoiceGroup strip = new ChoiceGroup(activity);
-        for (int i = 0; i < choices.size(); i++) {
+        for (int i = 0; i < count; i++) {
             View sw = new View(activity);
-            sw.setBackground(swatch(choices.get(i)[0]));
-            // Equal shares of the panel's width, however many backgrounds there are.
+            sw.setBackground(look.apply(choices.get(i)[0]));
+            // Equal shares of the panel's width, however many choices there are.
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, px(R.dimen.syn_rangee_palette), 1f);
-            if (i < choices.size() - 1) lp.setMarginEnd(px(R.dimen.syn_espace_2));
+            if (i < count - 1) lp.setMarginEnd(px(R.dimen.syn_espace_2));
             strip.addView(sw, lp);
         }
         strip.choose(chosen);
         strip.onChoice(i -> {
             name.setText(choices.get(i)[1]);
-            flushBackdrop();
-            pendingBackdrop = () -> {
-                if (!Config.save(activity, "backdrop", choices.get(i)[0])) failed();
-                host.changed();
-            };
-            handler.postDelayed(pendingBackdrop, BACKDROP_SAVE_MS);
+            flushPending();
+            pendingSave = () -> save.accept(choices.get(i)[0]);
+            handler.postDelayed(pendingSave, SAVE_MS);
         });
         LinearLayout.LayoutParams stripLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         stripLp.setMargins(px(R.dimen.syn_espace_1), 0, px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_2));
         rows.addView(strip, stripLp);
     }
 
-    /** Saves the background now if its save is still waiting for the arrows to rest. */
-    private void flushBackdrop() {
-        if (pendingBackdrop == null) return;
-        handler.removeCallbacks(pendingBackdrop);
-        Runnable save = pendingBackdrop;
-        pendingBackdrop = null;
+    /** Runs the swatch choice's save now if it is still waiting for the arrows to rest. */
+    private void flushPending() {
+        if (pendingSave == null) return;
+        handler.removeCallbacks(pendingSave);
+        Runnable save = pendingSave;
+        pendingSave = null;
         save.run();
+    }
+
+    /** An accent's swatch: its colour, ringed in ink once chosen (activated). */
+    private Drawable colourSwatch(String id) {
+        float radius = activity.getResources().getDimension(R.dimen.syn_rayon_controle);
+        GradientDrawable fill = new GradientDrawable();
+        fill.setCornerRadius(radius);
+        fill.setColor(Tokens.preset(activity, Tokens.colour(id)));
+        GradientDrawable chosen = new GradientDrawable();
+        chosen.setCornerRadius(radius);
+        chosen.setStroke(activity.getResources().getDimensionPixelSize(R.dimen.syn_trait_etat), activity.getColor(R.color.syn_encre));
+        StateListDrawable ring = new StateListDrawable();
+        ring.addState(new int[]{android.R.attr.state_activated}, chosen);
+        ring.addState(new int[0], new ColorDrawable(Color.TRANSPARENT));
+        return new LayerDrawable(new Drawable[]{fill, ring});
     }
 
     /** A background's swatch: its colours in miniature, outlined once chosen (activated). */
@@ -403,7 +439,7 @@ final class EditMenu {
         fill.setCornerRadius(radius);
         GradientDrawable chosen = new GradientDrawable();
         chosen.setCornerRadius(radius);
-        chosen.setStroke(activity.getResources().getDimensionPixelSize(R.dimen.syn_trait_etat), activity.getColor(R.color.syn_primaire));
+        chosen.setStroke(activity.getResources().getDimensionPixelSize(R.dimen.syn_trait_etat), Tokens.primary(activity));
         StateListDrawable ring = new StateListDrawable();
         ring.addState(new int[]{android.R.attr.state_activated}, chosen);
         ring.addState(new int[0], new ColorDrawable(Color.TRANSPARENT));
@@ -415,7 +451,7 @@ final class EditMenu {
         int width = px(R.dimen.syn_interrupteur_largeur), height = px(R.dimen.syn_interrupteur_hauteur), knobSize = px(R.dimen.syn_case);
         GradientDrawable track = new GradientDrawable();
         track.setCornerRadius(height / 2f);
-        track.setColor(activity.getColor(on ? R.color.syn_primaire : R.color.syn_filet));
+        track.setColor(on ? Tokens.primary(activity) : activity.getColor(R.color.syn_filet));
         track.setSize(width, height);
         GradientDrawable knob = new GradientDrawable();
         knob.setShape(GradientDrawable.OVAL);

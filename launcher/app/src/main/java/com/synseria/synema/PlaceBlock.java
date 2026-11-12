@@ -142,7 +142,7 @@ final class PlaceBlock {
     /** As the room page: the first curve the primary accent, the second the secondary ink. */
     private void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, Chart.Unit unit) {
         List<Stats.Point> points = read.get(sensor);
-        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_encre_secondaire);
+        int color = out.isEmpty() ? Tokens.primary(activity) : activity.getColor(R.color.syn_encre_secondaire);
         if (points != null && !points.isEmpty()) out.add(new Chart.Series("", color, unit, points));
     }
 }

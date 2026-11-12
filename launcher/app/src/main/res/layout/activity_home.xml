@@ -303,7 +303,7 @@
                                 android:id="@+id/favLabel"
                                 style="@style/DashLabel"
                                 android:text="@string/edit_moving"
-                                android:textColor="@color/syn_primaire_encre"
+                                android:textColor="?attr/syn_primaire_encre"
                                 android:visibility="gone" />
 
                             <com.synseria.synema.Dock

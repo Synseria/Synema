@@ -5,7 +5,7 @@
         <layer-list>
             <item>
                 <shape android:shape="rectangle">
-                    <solid android:color="@color/syn_primaire" />
+                    <solid android:color="?attr/syn_primaire" />
                     <corners android:radius="@dimen/syn_rayon_controle" />
                 </shape>
             </item>
@@ -19,7 +19,7 @@
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/syn_primaire" />
+            <solid android:color="?attr/syn_primaire" />
             <corners android:radius="@dimen/syn_rayon_controle" />
         </shape>
     </item>

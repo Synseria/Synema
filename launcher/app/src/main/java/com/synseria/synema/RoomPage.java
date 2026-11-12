@@ -217,7 +217,7 @@ final class RoomPage {
     /** A chart's first curve is the primary accent, its second the secondary ink: told apart at a glance (saffron is never a series). */
     private void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, Chart.Unit unit) {
         List<Stats.Point> points = read.get(sensor);
-        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_encre_secondaire);
+        int color = out.isEmpty() ? Tokens.primary(activity) : activity.getColor(R.color.syn_encre_secondaire);
         if (points != null && !points.isEmpty()) out.add(new Chart.Series("", color, unit, points));
     }
 

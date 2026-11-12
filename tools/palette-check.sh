@@ -25,3 +25,10 @@ if [ -n "$found" ]; then
   echo "$found" >&2
   exit 1
 fi
+# The accent is the user's choice: it is read from the theme (?attr/syn_primaire*, Tokens.primary*), never the fixed Azur default.
+fixed=$(grep -rnE '@color/syn_primaire|R\.color\.syn_primaire' java res --include='*.java' --include='*.xml' | grep -v "^$tokens:" || true)
+if [ -n "$fixed" ]; then
+  echo "primary accent fixed to Azur (use ?attr/syn_primaire*, or Tokens.primary / Tokens.primaryInk in code):" >&2
+  echo "$fixed" >&2
+  exit 1
+fi

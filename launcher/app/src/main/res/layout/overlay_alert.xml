@@ -46,7 +46,7 @@
             android:id="@+id/countdown"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/syn_primaire" />
+            android:background="?attr/syn_primaire" />
     </FrameLayout>
 
     <LinearLayout
@@ -90,7 +90,7 @@
                 android:id="@+id/btnClose"
                 style="@style/AlertButton"
                 android:background="@drawable/button_tertiary_bg"
-                android:textColor="@color/syn_primaire_encre"
+                android:textColor="?attr/syn_primaire_encre"
                 android:text="@string/alert_close" />
         </LinearLayout>
     </LinearLayout>

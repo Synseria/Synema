@@ -42,7 +42,7 @@
             android:minHeight="@dimen/syn_cible_min"
             android:paddingHorizontal="@dimen/syn_espace_4"
             android:text="@string/action_cancel"
-            android:textColor="@color/syn_primaire_encre" />
+            android:textColor="?attr/syn_primaire_encre" />
 
         <TextView
             android:id="@+id/confirm_action"
