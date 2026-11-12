@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 
 /**
- * The one look of focus, everywhere, the design system's: a white ring (syn_focus_trait wide) and a
+ * The one look of focus, everywhere, the design system's: a white ring (syn_trait_focus wide) and a
  * lift of syn_focus_echelle. A card (a picture) shows it with a sheen on its frame, 3 dp from the
  * picture (dash_focus_ring), a tile under a veil (dash_tile_bg), a round button or a chip on its own
  * edge (icon_button_bg, capsule_button_bg). None casts a shadow, which costs this GPU a blur per frame.

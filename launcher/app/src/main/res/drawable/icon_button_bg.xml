@@ -3,7 +3,7 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape android:shape="oval">
-            <stroke android:width="@dimen/syn_focus_trait" android:color="@color/syn_encre" />
+            <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
         </shape>
     </item>
     <item android:drawable="@android:color/transparent" />
