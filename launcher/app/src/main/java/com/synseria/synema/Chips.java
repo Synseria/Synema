@@ -32,11 +32,6 @@ final class Chips {
         return chip;
     }
 
-    @Deprecated
-    static TextView capsule(Context ctx, String text, float sp) {
-        return capsule(ctx, text);
-    }
-
     /** A row of {@code labels}, {@code chosen} lit; OK on one lights it and tells {@code onChoose} its index. */
     static LinearLayout row(Context ctx, String[] labels, int chosen, IntConsumer onChoose) {
         LinearLayout row = new LinearLayout(ctx);
@@ -55,10 +50,5 @@ final class Chips {
             row.addView(chip, lp);
         }
         return row;
-    }
-
-    @Deprecated
-    static LinearLayout row(Context ctx, String[] labels, int chosen, int heightDp, IntConsumer onChoose) {
-        return row(ctx, labels, chosen, onChoose);
     }
 }

@@ -62,21 +62,17 @@ public class ClockDream extends DreamService {
         }
     };
 
-    private float factsSp() {
-        return Tokens.sp(this, R.dimen.syn_typo_chiffre_taille);
-    }
-
     private void showHouse() {
         if (house == null) return;
         Map<String, HomeAssistant.State> states = HaLive.STATES;
         findViewById(R.id.dreamPlaces).setVisibility(!reachable || states.isEmpty() ? View.GONE : View.VISIBLE);
         if (home.outside != null) {
             outside.setVisibility(View.VISIBLE);
-            HouseHeader.column(this, outside, home, home.outside, states, true, factsSp());
+            HouseHeader.column(this, outside, home, home.outside, states, true, Integer.MAX_VALUE);
         }
         if (!home.temperatures.isEmpty()) {
             room.setVisibility(View.VISIBLE);
-            HouseHeader.column(this, room, home, home.temperatures.get(0), states, false, factsSp());
+            HouseHeader.column(this, room, home, home.temperatures.get(0), states, false, Integer.MAX_VALUE);
         }
         List<String> lines = new ArrayList<>();
         List<String> rooms = new ArrayList<>();

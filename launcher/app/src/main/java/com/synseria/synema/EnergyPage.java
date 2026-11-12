@@ -106,7 +106,7 @@ final class EnergyPage {
         head.addView(label, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL));
         chips = Chips.row(activity, new String[]{activity.getString(R.string.energy_range_today),
-                activity.getString(R.string.energy_range_days), activity.getString(R.string.energy_range_months)}, range.ordinal(), 22, i -> {
+                activity.getString(R.string.energy_range_days), activity.getString(R.string.energy_range_months)}, range.ordinal(), i -> {
             range = RANGES[i];
             draw();
         });

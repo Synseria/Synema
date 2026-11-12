@@ -15,9 +15,6 @@ import android.view.animation.AnimationUtils;
  * only a row's window clips, across: nothing focused is ever cut, nor reaches a neighbour.
  */
 final class Focus {
-    /** The lift every element takes, whatever its kind. */
-    @Deprecated
-    static final float CARD = 1.04f, TILE = CARD, BUTTON = CARD;
     /** No card's picture on the dashboard is wider (dp): a row takes one more card rather than widen them. */
     static final int WIDEST_CARD_DP = 160;
 
@@ -99,13 +96,7 @@ final class Focus {
 
     /** Grows {@code v} while it has the focus, back when it loses it. */
     static void lift(View v, boolean has) {
-        lift(v, has, scale(v.getContext()));
-    }
-
-    /** {@link #lift(View, boolean)} with a scale of its own. */
-    @Deprecated
-    static void lift(View v, boolean has, float scale) {
-        float s = has ? scale : 1f;
+        float s = has ? scale(v.getContext()) : 1f;
         v.setTag(R.id.lift, s);
         v.animate().scaleX(s).scaleY(s)
                 .setDuration(v.getResources().getInteger(R.integer.syn_duree_survol))

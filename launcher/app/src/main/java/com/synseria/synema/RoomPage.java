@@ -240,7 +240,7 @@ final class RoomPage {
 
     private void showReadings(Place p) {
         temperature.setText(HouseHeader.degrees(activity, p, ""));
-        HouseHeader.facts(activity, facts, Tokens.sp(activity, R.dimen.syn_typo_chiffre_taille), p);
+        HouseHeader.facts(activity, facts, p, Integer.MAX_VALUE);
     }
 
     /** A titled grid of tiles, four to a line, a name over two lines when it needs them; nothing when there is nothing. */

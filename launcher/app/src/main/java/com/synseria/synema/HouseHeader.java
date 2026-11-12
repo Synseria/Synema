@@ -80,12 +80,6 @@ final class HouseHeader {
      * its first {@code maxFacts} other readings beside it; the top line's, and the screensaver's.
      * Unchanged: no relayout.
      */
-    @Deprecated
-    static void column(Context ctx, View column, HomeConfig home, HomeConfig.Climate c, Map<String, HomeAssistant.State> states,
-                       boolean sky, float sp) {
-        column(ctx, column, home, c, states, sky, Integer.MAX_VALUE);
-    }
-
     static void column(Context ctx, View column, HomeConfig home, HomeConfig.Climate c, Map<String, HomeAssistant.State> states,
                        boolean sky, int maxFacts) {
         HomeAssistant.State w = sky ? states.get(home.weather) : null;
@@ -134,10 +128,6 @@ final class HouseHeader {
      * A place's readings beside its temperature, one per line of {@code facts}, the first {@code max} of:
      * humidity, pressure, CO₂ (with its dot), noise, those known, each with its unit and its trend.
      */
-    @Deprecated
-    static void facts(Context ctx, LinearLayout facts, float sp, Place p) {
-        facts(ctx, facts, p, Integer.MAX_VALUE);
-    }
 
     static void facts(Context ctx, LinearLayout facts, Place p, int max) {
         facts.removeAllViews();

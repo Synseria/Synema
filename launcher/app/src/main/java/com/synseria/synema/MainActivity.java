@@ -10,7 +10,6 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -806,17 +805,6 @@ public class MainActivity extends Activity implements EditMenu.Host {
         TextView t = new TextView(this);
         t.setText(s);
         t.setTextAppearance(role);
-        t.setSingleLine(true);
-        t.setEllipsize(TextUtils.TruncateAt.END);
-        return t;
-    }
-
-    @Deprecated
-    TextView text(CharSequence s, float sp, int color) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        if (color != 0) t.setTextColor(color);
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
         return t;
