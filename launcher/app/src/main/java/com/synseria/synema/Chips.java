@@ -8,47 +8,44 @@ import android.widget.TextView;
 
 import java.util.function.IntConsumer;
 
-/**
- * Choices with round ends (capsule_button_bg): glass at rest, lighter when chosen, a white ring when
- * focused, growing a little. The assistant's, and the graphs' spans.
- */
+/** The assistant's and the graphs' choices: a single-choice group of cells, and the action buttons beside it. */
 final class Chips {
     private Chips() {
     }
 
-    /** A chip: a touch target (syn_cible_min) high, a white ring when focused. */
-    static TextView capsule(Context ctx, String text) {
-        TextView chip = new TextView(ctx);
-        chip.setText(text);
-        chip.setTextAppearance(R.style.Role_Corps);
-        chip.setSingleLine(true);
-        chip.setTextColor(ctx.getColorStateList(R.color.pill_text));
-        chip.setBackgroundResource(R.drawable.capsule_button_bg);
-        float d = ctx.getResources().getDisplayMetrics().density;
-        chip.setPadding(Math.round(16 * d), 0, Math.round(16 * d), 0);
-        chip.setMinHeight(ctx.getResources().getDimensionPixelSize(R.dimen.syn_cible_min));
-        chip.setGravity(Gravity.CENTER);
-        Focus.button(chip);
-        return chip;
+    /** A secondary button, a touch target (syn_cible_min) high, a white ring when focused. */
+    static TextView button(Context ctx, String text) {
+        TextView b = Tokens.text(ctx, text, R.style.Role_CorpsFort);
+        b.setSingleLine(true);
+        b.setTextColor(ctx.getColor(R.color.syn_encre));
+        b.setBackgroundResource(R.drawable.button_secondary_bg);
+        int pad = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
+        b.setPadding(pad, 0, pad, 0);
+        b.setMinHeight(ctx.getResources().getDimensionPixelSize(R.dimen.syn_cible_min));
+        b.setGravity(Gravity.CENTER);
+        Focus.button(b);
+        return b;
     }
 
-    /** A row of {@code labels}, {@code chosen} lit; OK on one lights it and tells {@code onChoose} its index. */
-    static LinearLayout row(Context ctx, String[] labels, int chosen, IntConsumer onChoose) {
-        LinearLayout row = new LinearLayout(ctx);
-        row.setClipChildren(false);
-        float d = ctx.getResources().getDisplayMetrics().density;
+    /** A group of {@code labels}, {@code chosen} marked; Left and Right choose and tell {@code onChoose} the index. */
+    static ChoiceGroup row(Context ctx, String[] labels, int chosen, IntConsumer onChoose) {
+        ChoiceGroup group = new ChoiceGroup(ctx);
+        int gap = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_1);
+        int pad = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
         for (int i = 0; i < labels.length; i++) {
-            TextView chip = capsule(ctx, labels[i]);
-            chip.setActivated(i == chosen);
-            int index = i;
-            chip.setOnClickListener(v -> {
-                for (int k = 0; k < row.getChildCount(); k++) row.getChildAt(k).setActivated(k == index);
-                onChoose.accept(index);
-            });
+            TextView cell = Tokens.text(ctx, labels[i], R.style.Role_CorpsFort);
+            cell.setSingleLine(true);
+            cell.setBackgroundResource(R.drawable.choice_cell_bg);
+            cell.setTextColor(ctx.getColorStateList(R.color.choice_cell_text));
+            cell.setGravity(Gravity.CENTER);
+            cell.setPadding(pad, 0, pad, 0);
+            cell.setMinHeight(ctx.getResources().getDimensionPixelSize(R.dimen.syn_cible_min));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            if (i > 0) lp.setMarginStart(Math.round(8 * d));
-            row.addView(chip, lp);
+            if (i > 0) lp.setMarginStart(gap);
+            group.addView(cell, lp);
         }
-        return row;
+        group.choose(chosen);
+        group.onChoice(onChoose::accept);
+        return group;
     }
 }
