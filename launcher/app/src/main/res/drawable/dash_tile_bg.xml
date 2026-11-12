@@ -7,14 +7,14 @@
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/syn_tv_carte_allumee" />
-                    <corners android:radius="@dimen/syn_rayon_controle" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/focus_veil" />
                     <stroke android:width="2dp" android:color="@color/syn_encre" />
-                    <corners android:radius="@dimen/syn_rayon_controle" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>
         </layer-list>
@@ -24,14 +24,14 @@
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/syn_tv_carte" />
-                    <corners android:radius="@dimen/syn_rayon_controle" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/focus_veil" />
                     <stroke android:width="2dp" android:color="@color/syn_encre" />
-                    <corners android:radius="@dimen/syn_rayon_controle" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>
         </layer-list>
@@ -39,13 +39,13 @@
     <item android:state_activated="true">
         <shape android:shape="rectangle">
             <solid android:color="@color/syn_tv_carte_allumee" />
-            <corners android:radius="@dimen/syn_rayon_controle" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/syn_tv_carte" />
-            <corners android:radius="@dimen/syn_rayon_controle" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>
 </selector>
