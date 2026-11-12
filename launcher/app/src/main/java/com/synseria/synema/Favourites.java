@@ -17,6 +17,9 @@ import android.graphics.drawable.Drawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.DisplayMetrics;
 
 import java.util.ArrayList;
@@ -164,14 +167,16 @@ final class Favourites {
             icon.setBounds(w / 2 - 22, 34, w / 2 + 22, 78);
             icon.draw(c);
         }
-        Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
+        // The widest card shows this picture at about one pixel per pixel: the name takes the corps-fort
+        // role's size there, and goes over as many lines as it needs.
+        TextPaint text = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         text.setColor(ctx.getColor(R.color.syn_encre));
         text.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        text.setTextAlign(Paint.Align.CENTER);
-        text.setTextSize(36);
-        String s = label.toString();
-        while (s.length() > 3 && text.measureText(s) > w - 32) s = s.substring(0, s.length() - 2) + "…";
-        c.drawText(s, w / 2f, 130, text);
+        text.setTextSize(ctx.getResources().getDimension(R.dimen.syn_typo_corps_fort_taille));
+        StaticLayout name = StaticLayout.Builder.obtain(label, 0, label.length(), text, w - 32)
+                .setAlignment(Layout.Alignment.ALIGN_CENTER).build();
+        c.translate(16, 96);
+        name.draw(c);
         return new BitmapDrawable(ctx.getResources(), b);
     }
 }

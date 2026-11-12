@@ -12,7 +12,7 @@
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/syn_pression" />
-                    <stroke android:width="2dp" android:color="@color/syn_encre" />
+                    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
                     <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>

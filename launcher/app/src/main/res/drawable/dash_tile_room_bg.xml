@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A tile on the room page (Focus.tile): dash_tile_bg with the card's hairline, which the focus ring replaces.
+     The House panel's tiles keep dash_tile_bg, without one. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_activated="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_tv_carte_allumee" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/focus_veil" />
+                    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_tv_carte" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/focus_veil" />
+                    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_activated="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/syn_tv_carte_allumee" />
+            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/syn_tv_carte" />
+            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
+        </shape>
+    </item>
+</selector>

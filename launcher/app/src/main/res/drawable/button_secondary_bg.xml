@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A secondary button: surface with its control outline, a white ring when focused. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_surface" />
+                    <corners android:radius="@dimen/syn_rayon_controle" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_controle" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/syn_surface" />
+            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_contour_controle" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
+        </shape>
+    </item>
+</selector>

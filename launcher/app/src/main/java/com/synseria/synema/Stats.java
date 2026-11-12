@@ -17,7 +17,8 @@ import java.util.Map;
  * per 5 minutes, hour, day or month, a reading's mean, min and max, a meter's consumption; and the
  * Energy dashboard's grid, its meters and the month's cost. What the
  * graphs draw: 30 days stay a few hundred points, where the raw history of a busy sensor is thousands.
- * Kept a few minutes, so moving between spans and rooms reads nothing twice.
+ * Kept a few minutes, so moving between spans and rooms reads nothing twice. An empty map answers a
+ * read that failed; a map of empty lists, a read that found nothing.
  */
 final class Stats {
     /** One period's values; NaN when Home Assistant gave none. */
@@ -52,24 +53,30 @@ final class Stats {
 
     /** What a graph covers, and the period of its points. */
     enum Span {
-        HOURS_6("6 h", 6 * History.HOUR_MS, "5minute", 15 * 60_000L),
-        DAY("24 h", 24 * History.HOUR_MS, "5minute", 30 * 60_000L),
-        WEEK("7 j", 7 * 24 * History.HOUR_MS, "hour", 3 * History.HOUR_MS),
+        HOURS_6(R.string.unit_hours, 6, 6 * History.HOUR_MS, "5minute", 15 * 60_000L),
+        DAY(R.string.unit_hours, 24, 24 * History.HOUR_MS, "5minute", 30 * 60_000L),
+        WEEK(R.string.unit_days, 7, 7 * 24 * History.HOUR_MS, "hour", 3 * History.HOUR_MS),
         // A day a point: a month of hours is a zigzag of nights and days.
-        MONTH("30 j", 30 * 24 * History.HOUR_MS, "day", 24 * History.HOUR_MS);
+        MONTH(R.string.unit_days, 30, 30 * 24 * History.HOUR_MS, "day", 24 * History.HOUR_MS);
 
-        final String label;
+        private final int unit, count;
         final long ms;
         /** What Home Assistant is asked for. */
         final String period;
         /** What a drawn point gathers (Chart): two to five dozen points a graph. */
         final long drawnMs;
 
-        Span(String label, long ms, String period, long drawnMs) {
-            this.label = label;
+        Span(int unit, int count, long ms, String period, long drawnMs) {
+            this.unit = unit;
+            this.count = count;
             this.ms = ms;
             this.period = period;
             this.drawnMs = drawnMs;
+        }
+
+        /** "6 h", "7 j": the span's name for a choice. */
+        String label(android.content.Context ctx) {
+            return ctx.getString(unit, count);
         }
     }
 
@@ -120,15 +127,19 @@ final class Stats {
                     .put("statistic_ids", new JSONArray(ids)).put("period", period).put("types", new JSONArray(types));
             if (units != null) command.put("units", new JSONObject(units));
             live.request(command, result -> {
+                if (result == null) {
+                    cb.done(Collections.emptyMap());
+                    return;
+                }
                 Map<String, List<Point>> out = new HashMap<>();
-                JSONObject all = result == null ? null : result.optJSONObject("result");
+                JSONObject all = result.optJSONObject("result");
                 for (String id : ids) {
                     JSONArray points = all == null ? null : all.optJSONArray(id);
                     List<Point> list = new ArrayList<>();
                     for (int i = 0; points != null && i < points.length(); i++) list.add(new Point(points.optJSONObject(i)));
                     out.put(id, list);
                 }
-                if (result != null) CACHE.put(key, new Object[]{System.currentTimeMillis(), out});
+                CACHE.put(key, new Object[]{System.currentTimeMillis(), out});
                 cb.done(out);
             });
         } catch (org.json.JSONException e) {

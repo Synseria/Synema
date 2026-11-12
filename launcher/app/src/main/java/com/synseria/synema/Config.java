@@ -39,12 +39,14 @@ final class Config {
     /** The dashboard's background: the focused title's artwork, a picture, or a theme's id (Backdrop.THEMES). */
     static final String BACKDROP_ARTWORK = "artwork", BACKDROP_PICTURE = "picture";
     final String backdrop;
+    /** The app's accent: a preset id of Tokens.COLOURS (the design system's six). */
+    final String colour;
     /** The background drifts slowly, whichever it is (MovingBackdrop: its own GL surface under the window). */
     final boolean backdropMotion;
     /** The picture for BACKDROP_PICTURE (wallpaper.jpg next to config.json), or null when there is none. */
     final File wallpaper;
 
-    private Config(List<String> dockApps, List<String> hiddenApps, List<String> hiddenTitles, List<String> hiddenBlocks, String backdrop, boolean backdropMotion, File wallpaper) {
+    private Config(List<String> dockApps, List<String> hiddenApps, List<String> hiddenTitles, List<String> hiddenBlocks, String backdrop, boolean backdropMotion, File wallpaper, String colour) {
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.hiddenApps = Collections.unmodifiableList(hiddenApps);
         this.hiddenTitles = Collections.unmodifiableList(hiddenTitles);
@@ -52,11 +54,12 @@ final class Config {
         this.backdrop = backdrop;
         this.backdropMotion = backdropMotion;
         this.wallpaper = wallpaper;
+        this.colour = colour;
     }
 
     /** The same settings with another favourites order, while a move is in progress on the dashboard. */
     Config withDockApps(List<String> dock) {
-        return new Config(dock, hiddenApps, hiddenTitles, hiddenBlocks, backdrop, backdropMotion, wallpaper);
+        return new Config(dock, hiddenApps, hiddenTitles, hiddenBlocks, backdrop, backdropMotion, wallpaper, colour);
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -72,6 +75,7 @@ final class Config {
         List<String> hiddenTitles = new ArrayList<>();
         String backdrop = BACKDROP_ARTWORK;
         boolean motion = false;
+        String colour = Tokens.COLOURS[0].id;
 
         File dir = dir(ctx);
         File file = dir != null ? new File(dir, FILE_NAME) : null;
@@ -82,14 +86,15 @@ final class Config {
             hiddenTitles = stringList(json, "hidden_titles", hiddenTitles);
             hiddenBlocks = stringList(json, "hidden_blocks", hiddenBlocks);
             String b = json.optString("backdrop");
-            if (b.equals(BACKDROP_PICTURE) || Backdrop.theme(b) != null) backdrop = b;
+            if (b.equals(BACKDROP_PICTURE) || Backdrop.theme(ctx, b) != null) backdrop = b;
             motion = json.optBoolean("backdrop_motion");
+            if (Tokens.colour(json.optString("colour")) != null) colour = json.optString("colour");
         }
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         if (backdrop.equals(BACKDROP_PICTURE) && wallpaper == null) backdrop = BACKDROP_ARTWORK;
 
-        return new Config(dock, hidden, hiddenTitles, hiddenBlocks, backdrop, motion, wallpaper);
+        return new Config(dock, hidden, hiddenTitles, hiddenBlocks, backdrop, motion, wallpaper, colour);
     }
 
     /**

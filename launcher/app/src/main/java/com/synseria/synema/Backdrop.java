@@ -1,5 +1,6 @@
 package com.synseria.synema;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
@@ -20,14 +21,21 @@ import java.util.concurrent.Executors;
  * in it, so the surface only draws a texture.
  */
 final class Backdrop {
-    // off-palette: also the GL surface's clear colour, read without a Context; syn_tv_fond is 2 units away.
-    static final int NAVY = 0xFF0B1220;
     /**
      * The artwork is decoded and composed this wide (16:9), and the surface is this size: the screen's
      * own pixels, so a picture is as sharp as the TV can show it. The surface draws only while it fades
      * or drifts, so the pixels cost frames only then.
      */
     static final int SCENE_W = 1920, SCENE_H = SCENE_W * 9 / 16;
+    /** The base colour (syn_tv_fond), read from a Context once: the GL thread and static painting have none. */
+    private static int fond;
+
+    /** The background's base colour, under every picture and every full-screen window. */
+    static int base(Context ctx) {
+        if (fond == 0) fond = ctx.getColor(R.color.syn_tv_fond);
+        return fond;
+    }
+
     /** A theme's gradient is computed this small: smooth once stretched. */
     private static final int OUT_W = 128, OUT_H = 72;
     private static final ExecutorService WORK = Executors.newSingleThreadExecutor();
@@ -45,8 +53,9 @@ final class Backdrop {
     void show(Bitmap artwork) {
         if (artwork == null) return;
         int gen = ++generation;
+        int base = base(surface.getContext());
         WORK.execute(() -> {
-            Bitmap scene = scene(artwork);
+            Bitmap scene = scene(artwork, base);
             main.post(() -> {
                 if (gen == generation) surface.show(scene);
             });
@@ -67,17 +76,27 @@ final class Backdrop {
         }
     }
 
-    static final Theme[] THEMES = {
-            new Theme("night", R.string.theme_night, NAVY, 0xFF155A70, 0xFF462A80),  // off-palette: a backdrop theme's painting
+    private static Theme[] themes;
+
+    /** The colour themes; the night one lays its glows on the base. */
+    static Theme[] themes(Context ctx) {
+        if (themes == null) themes = build(base(ctx));
+        return themes;
+    }
+
+    private static Theme[] build(int base) {
+        return new Theme[]{
+            new Theme("night", R.string.theme_night, base, 0xFF155A70, 0xFF462A80),  // off-palette: a backdrop theme's painting
             new Theme("aurora", R.string.theme_aurora, 0xFF06120F, 0xFF136B52, 0xFF1D4580),  // off-palette: a backdrop theme's painting
             new Theme("dusk", R.string.theme_dusk, 0xFF150C14, 0xFF8A3A1C, 0xFF52226E),  // off-palette: a backdrop theme's painting
             new Theme("ocean", R.string.theme_ocean, 0xFF06111C, 0xFF14508E, 0xFF0D6A78),  // off-palette: a backdrop theme's painting
             new Theme("graphite", R.string.theme_graphite, 0xFF0E0F12, 0xFF33363E, 0xFF24262C),  // off-palette: a backdrop theme's painting
-    };
+        };
+    }
 
     /** The theme with this id, or null. */
-    static Theme theme(String id) {
-        for (Theme t : THEMES) if (t.id.equals(id)) return t;
+    static Theme theme(Context ctx, String id) {
+        for (Theme t : themes(ctx)) if (t.id.equals(id)) return t;
         return null;
     }
 
@@ -122,10 +141,10 @@ final class Backdrop {
         generation++;
     }
 
-    /** Back to the plain navy, waiting for artwork. */
+    /** Back to the plain base, waiting for artwork. */
     void clear() {
         generation++;
-        surface.show(Bitmap.createBitmap(new int[]{NAVY}, 1, 1, Bitmap.Config.ARGB_8888));
+        surface.show(Bitmap.createBitmap(new int[]{base(surface.getContext())}, 1, 1, Bitmap.Config.ARGB_8888));
     }
 
     /** Soft round light at (cx, cy), 1 at its centre fading to 0 at {@code radius}. */
@@ -139,11 +158,11 @@ final class Backdrop {
      * OLED panel kept dim while nobody watches), or the night theme when there is no artwork. Composed
      * here: call it off the main thread.
      */
-    static Bitmap dream(Bitmap artwork) {
+    static Bitmap dream(Context ctx, Bitmap artwork) {
         int w = artwork != null ? SCENE_W : OUT_W, h = artwork != null ? SCENE_H : OUT_H;
         int[] px = new int[w * h];
-        if (artwork != null) scene(artwork).getPixels(px, 0, w, 0, 0, w, h);
-        else px = glows(THEMES[0]);
+        if (artwork != null) scene(artwork, base(ctx)).getPixels(px, 0, w, 0, 0, w, h);
+        else px = glows(themes(ctx)[0]);
         for (int i = 0; i < px.length; i++) {
             int p = px[i];
             px[i] = 0xFF000000 | (((p >> 16) & 0xFF) / 3) << 16 | (((p >> 8) & 0xFF) / 3) << 8 | (p & 0xFF) / 3;
@@ -156,27 +175,27 @@ final class Backdrop {
      * shaded towards the base: at the left behind the featured title's words, at the bottom behind the
      * rows, at the top behind the time, a touch at the right behind the House panel.
      */
-    private static Bitmap scene(Bitmap artwork) {
+    private static Bitmap scene(Bitmap artwork, int base) {
         Bitmap out = Bitmap.createBitmap(SCENE_W, SCENE_H, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(out);
-        c.drawColor(NAVY);
+        c.drawColor(base);
         float scale = Math.max(SCENE_W / (float) artwork.getWidth(), SCENE_H / (float) artwork.getHeight());
         float w = artwork.getWidth() * scale, h = artwork.getHeight() * scale;
         RectF to = new RectF((SCENE_W - w) / 2, (SCENE_H - h) * 0.3f, 0, 0);
         to.right = to.left + w;
         to.bottom = to.top + h;
         c.drawBitmap(artwork, null, to, new Paint(Paint.FILTER_BITMAP_FLAG));
-        shade(c, 0, 0, SCENE_W, 0, new float[]{0.92f, 0.70f, 0f}, new float[]{0, 0.30f, 0.58f});
-        shade(c, 0, SCENE_H, 0, 0, new float[]{1f, 0.88f, 0f}, new float[]{0, 0.36f, 0.64f});
-        shade(c, 0, 0, 0, SCENE_H, new float[]{0.80f, 0f}, new float[]{0, 0.20f});
-        shade(c, SCENE_W, 0, 0, 0, new float[]{0.55f, 0f}, new float[]{0, 0.30f});
+        shade(c, base, 0, 0, SCENE_W, 0, new float[]{0.92f, 0.70f, 0f}, new float[]{0, 0.30f, 0.58f});
+        shade(c, base, 0, SCENE_H, 0, 0, new float[]{1f, 0.88f, 0f}, new float[]{0, 0.36f, 0.64f});
+        shade(c, base, 0, 0, 0, SCENE_H, new float[]{0.80f, 0f}, new float[]{0, 0.20f});
+        shade(c, base, SCENE_W, 0, 0, 0, new float[]{0.55f, 0f}, new float[]{0, 0.30f});
         return out;
     }
 
     /** The base laid over the whole picture from (x0, y0) towards (x1, y1), at these strengths and stops. */
-    private static void shade(Canvas c, float x0, float y0, float x1, float y1, float[] alphas, float[] stops) {
+    private static void shade(Canvas c, int base, float x0, float y0, float x1, float y1, float[] alphas, float[] stops) {
         int[] colors = new int[alphas.length];
-        for (int i = 0; i < alphas.length; i++) colors[i] = Math.round(alphas[i] * 255) << 24 | (NAVY & 0xFFFFFF);
+        for (int i = 0; i < alphas.length; i++) colors[i] = Math.round(alphas[i] * 255) << 24 | (base & 0xFFFFFF);
         Paint p = new Paint();
         p.setShader(new LinearGradient(x0, y0, x1, y1, colors, stops, Shader.TileMode.CLAMP));
         c.drawRect(0, 0, SCENE_W, SCENE_H, p);

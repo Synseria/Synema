@@ -18,6 +18,10 @@ since v3.0.0: nothing is taken from it any more.
   change, for the dashboard and the screensaver), `History` (sensors' past: the readings' trends in
   `Place`), `Stats` (long-term statistics, for the graphs); `Secrets`; `EditMenu`; `Favourites` (apps
   and HDMI inputs, their banners).
+  Design system: `Tokens` (text roles via `Tokens.text`, the chosen accent), `Scale` (the 0.75 ratio and the accent,
+  applied to every window's context), `Confirm` (the sheet confirming a destructive gesture), `ChoiceGroup` (a
+  single-choice group, one focusable whole), `ChartBlock` (a `Chart` and its retry), `PlaceBlock` (the focused room
+  and its curves, in the title's place), `FocusGuard` (logs a focus lift cut by a clipping parent).
 - `home.local.json` (repo root, git-ignored) — the house: every Home Assistant entity, tile, alert, camera
   and remote button, pushed by `tools/home.sh`; `launcher/app/src/main/res/raw/home.json` is the public
   example built into the APK, never a real house. Reference: `docs/dashboard.md`. Favourites are `dock_apps` in `res/values/config.xml`.
@@ -25,7 +29,8 @@ since v3.0.0: nothing is taken from it any more.
 - `examples/philips-65oled806/debloat.txt` — what is disabled on this TV and the firmware's quirks.
 - `tools/` — `ha-entities.sh <word>` (find entity ids), `home.sh` (apply home.local.json without rebuild),
   `assistant-key.sh`, `secrets.sh` (push the keys), `remote-keys.sh`, `apps.sh`, `screensaver.sh`, `theme.sh`,
-  `disable.sh`; `restart.sh` restarts the launcher for them, the remote-key service kept alive (never a bare
+  `disable.sh`, `palette-check.sh` (colours only from `jetons.xml`; run by `run.sh`), `jetons-manquants.sh` (the tokens
+  the code awaits from the design system); `restart.sh` restarts the launcher for them, the remote-key service kept alive (never a bare
   `am force-stop`). `sh run.sh --install [--start]` builds and installs.
 
 ## Rules
@@ -43,7 +48,8 @@ since v3.0.0: nothing is taken from it any more.
   pictures), drawing only while it fades or drifts, and the window paints none: on this panel a window alone
   is composed by the display's overlay, whose buffers come back late (dequeueBuffer 11–17 ms, a third of the
   frames missed), while a window over a surface is composed by the GPU, smoothly. Text is Roboto (theme
-  `TvText`); Outfit only for the big clocks and the big temperatures (top line, room page).
+  `TvText`); Outfit for the title, page-title and big-figure roles (`Role.Titre`, `TitrePage`, `GrandChiffre`) and the
+  thin readings (`Role.Releve`). Every text is built by `Tokens.text` in a `Role.*`, never with a size of its own.
 - Focus has one look, from `Focus` only (cards: ring and sheen, tiles: veil and ring, buttons: white
   disc). Every container between a focusable and the room left for its lift keeps `clipChildren` and
   `clipToPadding` off; only a row's window clips, across. A ScrollView's default `clipChildren` cuts its

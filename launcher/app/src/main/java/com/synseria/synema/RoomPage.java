@@ -23,8 +23,10 @@ import java.util.Map;
 final class RoomPage {
     private static final int PER_ROW = 4;
     /** The camera column's width (dp), its picture the widest card of the page. */
+    // jeton manquant: syn_colonne_camera (300dp)
     private static final int CAMERA_DP = 300;
     /** The graphs' height when the tiles fill the page, and at most when they leave room. */
+    // jeton manquant: syn_graphique_hauteur (128dp), syn_graphique_hauteur_max (230dp)
     private static final int CHART_DP = 128, CHART_MAX_DP = 230;
     /** The span last chosen, kept for every room. */
     private static Stats.Span span = Stats.Span.DAY;
@@ -67,16 +69,16 @@ final class RoomPage {
 
         LinearLayout readings = new LinearLayout(activity);
         readings.setGravity(Gravity.CENTER_VERTICAL);
-        temperature = new TextView(activity, null, 0, R.style.BigReading);
-        temperature.setTextSize(40);
+        temperature = Tokens.text(activity, "", R.style.Role_GrandChiffre);
+        temperature.setIncludeFontPadding(false);
         readings.addView(temperature);
         facts = new LinearLayout(activity);
         facts.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        flp.setMarginStart(activity.dp(16));
+        flp.setMarginStart(px(R.dimen.syn_espace_4));
         readings.addView(facts, flp);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = activity.dp(4);
+        rlp.topMargin = px(R.dimen.syn_espace_1);
         content.addView(readings, rlp);
 
         // The scroll's padding is room for a focused tile's or camera's lift and ring (Focus); its margins
@@ -92,7 +94,7 @@ final class RoomPage {
         body.setClipChildren(false);
         scroll.addView(body);
         LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-        slp.topMargin = activity.dp(14) - space;
+        slp.topMargin = px(R.dimen.syn_espace_4) - space;
         slp.setMarginStart(-space);
         slp.setMarginEnd(-space);
         content.addView(scroll, slp);
@@ -103,23 +105,22 @@ final class RoomPage {
         strip.setClipChildren(false);
         FrameLayout head = new FrameLayout(activity);
         head.setClipChildren(false);
-        TextView label = new TextView(activity, null, 0, R.style.DashCaps);
-        label.setText(R.string.graph_history);
+        TextView label = Tokens.text(activity, activity.getString(R.string.graph_history), R.style.Role_Note);
         head.addView(label, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL));
         String[] spans = new String[Stats.Span.values().length];
-        for (int i = 0; i < spans.length; i++) spans[i] = Stats.Span.values()[i].label;
-        head.addView(Chips.row(activity, spans, span.ordinal(), 22, i -> {
+        for (int i = 0; i < spans.length; i++) spans[i] = Stats.Span.values()[i].label(activity);
+        head.addView(Chips.row(activity, spans, span.ordinal(), i -> {
             span = Stats.Span.values()[i];
             readCharts();
         }), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.END));
         strip.addView(head);
         charts = new LinearLayout(activity);
         LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(CHART_DP));
-        clp.topMargin = activity.dp(8);
+        clp.topMargin = px(R.dimen.syn_espace_2);
         strip.addView(charts, clp);
         LinearLayout.LayoutParams stlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        stlp.topMargin = activity.dp(10);
+        stlp.topMargin = px(R.dimen.syn_espace_2);
         content.addView(strip, stlp);
     }
 
@@ -167,11 +168,11 @@ final class RoomPage {
     }
 
     private void chart(int title) {
-        Chart c = new Chart(activity);
+        ChartBlock c = new ChartBlock(activity);
         c.title(activity.getString(title));
         c.setTag(title);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-        if (charts.getChildCount() > 0) lp.setMarginStart(activity.dp(8));
+        if (charts.getChildCount() > 0) lp.setMarginStart(px(R.dimen.syn_espace_2));
         charts.addView(c, lp);
     }
 
@@ -181,17 +182,24 @@ final class RoomPage {
         List<String> sensors = new ArrayList<>();
         p.addSensors(sensors);
         if (sensors.isEmpty()) return;
-        for (int i = 0; i < charts.getChildCount(); i++) ((Chart) charts.getChildAt(i)).reading();
+        for (int i = 0; i < charts.getChildCount(); i++) ((ChartBlock) charts.getChildAt(i)).reading();
         Stats.Span asked = span;
         Stats.readings(live.get(), sensors, asked, read -> {
             if (!shownRoom.equals(shown()) || asked != span) return;
-            side.whenStill(() -> drawCharts(p, read));
+            side.whenStill(() -> {
+                if (read.isEmpty()) failedCharts();
+                else drawCharts(p, read);
+            });
         });
+    }
+
+    private void failedCharts() {
+        for (int i = 0; i < charts.getChildCount(); i++) ((ChartBlock) charts.getChildAt(i)).failed(this::readCharts);
     }
 
     private void drawCharts(Place p, Map<String, List<Stats.Point>> read) {
         for (int i = 0; i < charts.getChildCount(); i++) {
-            Chart c = (Chart) charts.getChildAt(i);
+            ChartBlock c = (ChartBlock) charts.getChildAt(i);
             List<Chart.Series> s = new ArrayList<>();
             int title = (Integer) c.getTag();
             if (title == R.string.graph_climate) {
@@ -206,10 +214,10 @@ final class RoomPage {
         }
     }
 
-    /** A chart's first curve is the primary accent, its second the saffron one. */
+    /** A chart's first curve is the primary accent, its second the secondary ink: told apart at a glance (saffron is never a series). */
     private void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, Chart.Unit unit) {
         List<Stats.Point> points = read.get(sensor);
-        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_safran);
+        int color = out.isEmpty() ? Tokens.primary(activity) : activity.getColor(R.color.syn_encre_secondaire);
         if (points != null && !points.isEmpty()) out.add(new Chart.Series("", color, unit, points));
     }
 
@@ -234,51 +242,50 @@ final class RoomPage {
             right.addView(label(R.string.cameras));
             for (int i : cams) right.addView(camera(home.cameras.get(i), i));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(activity.dp(CAMERA_DP), ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.setMarginStart(activity.dp(22));
+            lp.setMarginStart(px(R.dimen.syn_espace_6));
             body.addView(right, lp);
         }
     }
 
     private void showReadings(Place p) {
         temperature.setText(HouseHeader.degrees(activity, p, ""));
-        HouseHeader.facts(activity, facts, 11, p);
+        HouseHeader.facts(activity, facts, p, Integer.MAX_VALUE);
     }
 
-    /** A titled grid of tiles, four to a line; nothing when there is nothing. */
+    /** A titled grid of tiles, four to a line, a name over two lines when it needs them; nothing when there is nothing. */
     private void section(LinearLayout parent, int name, List<Rooms.Entity> entities, String area) {
         if (entities.isEmpty()) return;
         TextView label = label(name);
-        if (parent.getChildCount() > 0) ((LinearLayout.LayoutParams) label.getLayoutParams()).topMargin = activity.dp(14);
+        if (parent.getChildCount() > 0) ((LinearLayout.LayoutParams) label.getLayoutParams()).topMargin = px(R.dimen.syn_espace_4);
         parent.addView(label);
         LinearLayout line = null;
         for (int i = 0; i < entities.size(); i++) {
             if (i % PER_ROW == 0) {
                 line = new LinearLayout(activity);
                 line.setClipChildren(false);
-                LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(46));
-                llp.topMargin = i == 0 ? 0 : activity.dp(6);
+                LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                llp.topMargin = i == 0 ? 0 : px(R.dimen.syn_espace_2);
                 parent.addView(line, llp);
             }
             View t = tile(entities.get(i), area);
             if (first == null) first = t;
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            lp.setMarginEnd(activity.dp(6));
+            lp.setMarginEnd(px(R.dimen.syn_espace_2));
             line.addView(t, lp);
         }
-        // Equal widths on the last line.
+        // Equal widths on the last line. The fillers match the line's height like the tiles: a fixed height
+        // here would set the line's, and the tiles, matching it, would shrink to it.
         for (int i = entities.size() % PER_ROW; i > 0 && i < PER_ROW; i++) {
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, 1, 1f);
-            lp.setMarginEnd(activity.dp(6));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+            lp.setMarginEnd(px(R.dimen.syn_espace_2));
             line.addView(new View(activity), lp);
         }
     }
 
     private TextView label(int name) {
-        TextView t = new TextView(activity, null, 0, R.style.DashCaps);
-        t.setText(name);
+        TextView t = Tokens.text(activity, activity.getString(name), R.style.Role_Note);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.bottomMargin = activity.dp(6);
-        lp.setMarginStart(activity.dp(2));
+        lp.bottomMargin = px(R.dimen.syn_espace_2);
         t.setLayoutParams(lp);
         return t;
     }
@@ -287,11 +294,15 @@ final class RoomPage {
     private LinearLayout tile(Rooms.Entity e, String area) {
         LinearLayout t = new LinearLayout(activity);
         t.setOrientation(LinearLayout.VERTICAL);
-        Focus.tile(t);
-        t.setPadding(activity.dp(10), activity.dp(7), activity.dp(10), activity.dp(7));
+        Focus.block(t);
+        t.setBackgroundResource(R.drawable.dash_tile_room_bg);
+        int pad = px(R.dimen.syn_espace_3);
+        t.setPadding(pad, px(R.dimen.syn_espace_2), pad, px(R.dimen.syn_espace_2));
+        t.setMinimumHeight(px(R.dimen.syn_cible_min) + px(R.dimen.syn_espace_2));
         t.setTag(e.id);
-        TextView name = activity.text(shortName(e.name, area), 11, Focus.tileText(activity));
-        TextView state = activity.text("", 9.5f, 0);
+        TextView name = Tokens.text(activity, shortName(e.name, area), R.style.Role_CorpsFort);
+        name.setTextColor(Focus.tileText(activity));
+        TextView state = Tokens.text(activity, "", R.style.Role_Note);
         state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
         state.setDuplicateParentStateEnabled(true);
         t.addView(name);
@@ -329,9 +340,13 @@ final class RoomPage {
         card.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         card.setOnClickListener(v -> activity.open(new Intent(activity, CameraActivity.class).putExtra(CameraActivity.EXTRA_INDEX, index), v));
         col.addView(card);
-        col.addView(activity.text(cam.label, 9, activity.getColor(R.color.syn_encre_secondaire)));
+        col.addView(Tokens.text(activity, cam.label, R.style.Role_Note));
         if (first == null) first = card;
         return col;
+    }
+
+    private int px(int dimen) {
+        return activity.getResources().getDimensionPixelSize(dimen);
     }
 
     /** "Salon - Grande lampe" in the Salon is "Grande lampe". */

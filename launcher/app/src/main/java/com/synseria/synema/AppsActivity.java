@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,7 +27,15 @@ import java.util.List;
  */
 public class AppsActivity extends Activity implements EditMenu.Host {
 
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
+
     private static final int COLUMNS = 6;
+    /** A banner's height (dp). */
+    // jeton manquant: syn_banniere_hauteur (70)
+    private static final int BANNER_DP = 70;
 
     private final List<App> apps = new ArrayList<>();
     private RecyclerView grid;
@@ -51,8 +60,9 @@ public class AppsActivity extends Activity implements EditMenu.Host {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apps);
+        FocusGuard.install(this);
         // Its plain colour comes from a surface under the window, so the GPU composes it (MovingBackdrop).
-        MovingBackdrop.under(this, Backdrop.NAVY, false);
+        MovingBackdrop.under(this, false);
         density = getResources().getDisplayMetrics().density;
         editMenu = new EditMenu(this, this);
         grid = findViewById(R.id.grid);
@@ -142,8 +152,8 @@ public class AppsActivity extends Activity implements EditMenu.Host {
             col.setClipChildren(false);
             col.setClipToPadding(false);
             int inset = getResources().getDimensionPixelSize(R.dimen.card_inset);
-            int pad = Math.max(dp(3), (Focus.cardRoom(parent.getContext()) + 1) / 2 - inset);
-            col.setPadding(pad, pad, pad, dp(1));
+            int pad = Math.max(getResources().getDimensionPixelSize(R.dimen.syn_trait_focus_ecart), (Focus.cardRoom(parent.getContext()) + 1) / 2 - inset);
+            col.setPadding(pad, pad, pad, getResources().getDimensionPixelSize(R.dimen.syn_trait_filet));
             col.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             // The dashboard's card: the picture inset in the frame, the ring on the frame's edge.
             card = new FrameLayout(parent.getContext());
@@ -151,19 +161,20 @@ public class AppsActivity extends Activity implements EditMenu.Host {
             Focus.card(card);
             banner = new RoundedImageView(parent.getContext());
             card.addView(banner, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            fallback = label(12);
+            fallback = label(R.style.Role_Corps);
             fallback.setGravity(Gravity.CENTER);
             card.addView(fallback, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            col.addView(card, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(70) + 2 * inset));
-            name = label(10);
+            col.addView(card, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(BANNER_DP) + 2 * inset));
+            name = label(R.style.Role_Corps);
             name.setGravity(Gravity.CENTER_HORIZONTAL);
-            name.setPadding(0, dp(5), 0, 0);
+            name.setPadding(0, getResources().getDimensionPixelSize(R.dimen.syn_espace_1), 0, 0);
             name.setAlpha(0f);
             col.addView(name);
 
             card.setOnFocusChangeListener((v, has) -> {
-                Focus.lift(v, has, Focus.CARD);
-                name.animate().alpha(has ? 1f : 0f).setDuration(140).start();
+                Focus.lift(v, has);
+                name.animate().alpha(has ? 1f : 0f).setDuration(getResources().getInteger(R.integer.syn_duree_survol))
+                        .setInterpolator(AnimationUtils.loadInterpolator(AppsActivity.this, R.interpolator.syn_courbe)).start();
             });
             card.setOnClickListener(v -> Launch.start(AppsActivity.this, app.launch, v));
             card.setOnLongClickListener(v -> {
@@ -181,13 +192,9 @@ public class AppsActivity extends Activity implements EditMenu.Host {
         }
     }
 
-    private TextView label(float sp) {
-        TextView t = new TextView(this);
-        t.setTextSize(sp);
-        t.setTextColor(getColor(R.color.syn_encre));
-        t.setSingleLine(true);
-        t.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        return t;
+    /** A name over as many lines as it needs: a cut name tells nothing. */
+    private TextView label(int role) {
+        return Tokens.text(this, "", role);
     }
 
     private int dp(int v) {

@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.util.TypedValue;
 import android.view.View;
 
 import java.time.Instant;
@@ -54,11 +53,10 @@ final class Chart extends View {
             return String.format(Locale.getDefault(), "%." + decimals + "f", v) + suffix;
         }
 
-        /** An axis label: as few decimals as the step needs, the unit only when it is short. */
+        /** An axis label: as few decimals as the step needs, with its unit. */
         String tick(double v, double step) {
             int d = step >= 1 ? 0 : 1;
-            String n = String.format(Locale.getDefault(), "%." + d + "f", v);
-            return this == DEGREES ? n + "°" : this == PERCENT ? n + "\u00A0%" : n;
+            return String.format(Locale.getDefault(), "%." + d + "f", v) + suffix;
         }
     }
 
@@ -77,11 +75,26 @@ final class Chart extends View {
         }
     }
 
+    /** The bar of the period still running is faint: it is not a drop, only a period not over. */
+    // jeton manquant: syn_opacite_partiel (0.45), syn_opacite_bande (0x2E), syn_opacite_degrade (0x47), syn_opacite_axe_2 (0xB3)
+    private static final float PARTIAL_ALPHA = 0.45f;
+
     /** A dark card: a busy picture behind does not cross the curves. */
     private final int gridColor, labelColor, ink, card;
     private final float corner;
 
     private final float d;
+    /** The text roles' sizes in px (syn_typo_*_taille): the labels are notes, the readings figures. */
+    private final float note, figure, body;
+    /** The spacing steps in px (syn_espace_*). */
+    private final float s1, s2, s3, s4;
+    /** What the block says when it has no curve to show: reading, nothing found, or failed. */
+    private final String loading, none, failed;
+    private enum State { READING, SHOWN, FAILED }
+    private State state = State.READING;
+    private String noneText;
+    /** Where the last label of a row ended: the next one is left out rather than drawn over it. */
+    private float labelEnd;
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG),
             text = new Paint(Paint.ANTI_ALIAS_FLAG), grid = new Paint();
     private final Path path = new Path();
@@ -92,14 +105,22 @@ final class Chart extends View {
     private Stats.Range range;
     /** Under the title on the right, for bars (a total); lines show each curve's last value. */
     private String summary = "";
-    /** Nothing to draw yet, or nothing known. */
-    private boolean waiting = true;
     /** The curve alone. */
     private boolean bare;
 
     Chart(Context ctx) {
         super(ctx);
         d = ctx.getResources().getDisplayMetrics().density;
+        note = ctx.getResources().getDimension(R.dimen.syn_typo_note_taille);
+        figure = ctx.getResources().getDimension(R.dimen.syn_typo_chiffre_taille);
+        body = ctx.getResources().getDimension(R.dimen.syn_typo_corps_taille);
+        s1 = ctx.getResources().getDimension(R.dimen.syn_espace_1);
+        s2 = ctx.getResources().getDimension(R.dimen.syn_espace_2);
+        s3 = ctx.getResources().getDimension(R.dimen.syn_espace_3);
+        s4 = ctx.getResources().getDimension(R.dimen.syn_espace_4);
+        loading = ctx.getString(R.string.graph_loading);
+        none = noneText = ctx.getString(R.string.graph_none);
+        failed = ctx.getString(R.string.stats_unavailable);
         gridColor = ctx.getColor(R.color.syn_filet);
         labelColor = ctx.getColor(R.color.syn_encre_secondaire);
         ink = ctx.getColor(R.color.syn_encre);
@@ -137,49 +158,75 @@ final class Chart extends View {
         show(s, summary);
     }
 
-    /** Being read: the card and its title only. */
+    /** Being read: the card, its title and a word. */
     void reading() {
-        waiting = true;
+        state = State.READING;
+        invalidate();
+    }
+
+    /** Statistics Home Assistant did not give: the card says so (ChartBlock adds the way to try again). */
+    void failed() {
+        state = State.FAILED;
+        invalidate();
+    }
+
+    /** Nothing to count, said with {@code message} instead of the usual "No reading". */
+    void empty(String message) {
+        series = Collections.emptyList();
+        noneText = message;
+        state = State.SHOWN;
         invalidate();
     }
 
     private void show(List<Series> s, String summary) {
         series = s;
         this.summary = summary;
-        waiting = false;
+        noneText = none;
+        state = State.SHOWN;
         invalidate();
-    }
-
-    private float sp(float v) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, v, getResources().getDisplayMetrics());
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        float w = getWidth(), h = getHeight(), pad = 10 * d;
+        float w = getWidth(), h = getHeight(), pad = s3;
         fill.setShader(null);
         if (bare) {
-            if (!waiting && anyPoint()) drawLines(canvas, d, w - 4 * d, 2 * d, h - 2 * d, false);
+            if (state == State.SHOWN && anyPoint()) drawLines(canvas, s1, w - s1, s1, h - s1, false);
             return;
         }
         fill.setColor(card);
         rect.set(0, 0, w, h);
         canvas.drawRoundRect(rect, corner, corner, fill);
 
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(labelColor);
         text.setTextAlign(Paint.Align.LEFT);
-        float titleY = pad + sp(8.5f);
+        float titleY = pad + note;
         canvas.drawText(title, pad, titleY, text);
-        if (waiting || !anyPoint()) return;
+        if (state != State.SHOWN || !anyPoint()) {
+            say(canvas, w, h, titleY);
+            return;
+        }
         header(canvas, w - pad, titleY + d);
 
         boolean second = range == null && series.size() > 1;
-        text.setTextSize(sp(8.5f));
-        float left = pad + text.measureText("8888") + 4 * d, right = w - pad - (second ? text.measureText("88 %") + 6 * d : 2 * d);
-        float top = titleY + 12 * d, bottom = h - pad - sp(8.5f) - 4 * d;
+        text.setTextSize(note);
+        Unit first = series.get(0).unit;
+        float left = pad + text.measureText(first.tick(8888, 1)) + s1;
+        float right = w - pad - (second ? text.measureText(series.get(1).unit.tick(8888, 1)) + s2 : s1);
+        float top = titleY + s4, bottom = h - pad - note - s1;
         if (range != null) drawBars(canvas, left, right, top, bottom);
         else drawLines(canvas, left, right, top, bottom, second);
+    }
+
+    /** The block's state in a line of its own, centred under the title (above the retry button when failed). */
+    private void say(Canvas canvas, float w, float h, float titleY) {
+        String message = state == State.READING ? loading : state == State.FAILED ? failed : noneText;
+        float bottom = state == State.FAILED ? h - ChartBlock.retryHeight(getContext()) - s2 : h;
+        text.setTextSize(body);
+        text.setColor(labelColor);
+        text.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(message, w / 2, (titleY + bottom) / 2 + body / 3, text);
     }
 
     private boolean anyPoint() {
@@ -189,25 +236,37 @@ final class Chart extends View {
 
     /** At the top right: each curve's last value in its colour, or the bars' summary. */
     private void header(Canvas canvas, float x, float y) {
-        text.setTextSize(sp(10));
+        text.setTextSize(figure);
         text.setTextAlign(Paint.Align.RIGHT);
         if (range != null) {
-            text.setColor(ink);
-            canvas.drawText(summary, x, y, text);
+            reading(canvas, summary, ink, x, y);
             return;
         }
         for (int i = series.size() - 1; i >= 0; i--) {
             Series s = series.get(i);
             double last = last(s);
             if (Double.isNaN(last)) continue;
-            String v = s.unit.value(last);
-            text.setColor(s.color);
-            canvas.drawText(v, x, y, text);
-            x -= text.measureText(v);
+            x -= reading(canvas, s.unit.value(last), s.color, x, y);
             fill.setColor(s.color);
-            canvas.drawCircle(x - 6 * d, y - sp(10) / 3, 2.5f * d, fill);
-            x -= 16 * d;
+            // jeton manquant: point_courbe (3, 2.5)
+            canvas.drawCircle(x - s2, y - figure / 3, 2.5f * d, fill);
+            x -= s4;
         }
+    }
+
+    /** A value ending at {@code x}: its number in {@code color}, its unit after the no-break space in secondary ink. Returns its width. */
+    private float reading(Canvas canvas, String value, int color, float x, float y) {
+        int cut = value.lastIndexOf('\u00A0');
+        if (cut < 0 && value.endsWith("°")) cut = value.length() - 1;
+        String number = cut < 0 ? value : value.substring(0, cut), unit = cut < 0 ? "" : value.substring(cut);
+        text.setTextSize(figure);
+        text.setTextAlign(Paint.Align.RIGHT);
+        text.setColor(labelColor);
+        canvas.drawText(unit, x, y, text);
+        float unitWidth = text.measureText(unit);
+        text.setColor(color);
+        canvas.drawText(number, x - unitWidth, y, text);
+        return unitWidth + text.measureText(number);
     }
 
     private static double last(Series s) {
@@ -247,6 +306,7 @@ final class Chart extends View {
                 fill.setShader(null);
             }
             stroke.setColor(s.color);
+            // jeton manquant: trait_courbe (2, 1.5) and point_courbe (3, 2.5)
             stroke.setStrokeWidth((i == 0 ? 2f : 1.5f) * d);
             canvas.drawPath(path, stroke);
             fill.setColor(s.color);
@@ -424,13 +484,13 @@ final class Chart extends View {
     /** Lines at round values, labelled at the left ({@code onLeft}) or the right. */
     private void valueGrid(Canvas canvas, float left, float right, float top, float bottom, double[] scale, Unit unit,
                            boolean onLeft, int color) {
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(color);
         text.setTextAlign(onLeft ? Paint.Align.RIGHT : Paint.Align.LEFT);
         for (double v = scale[0]; v <= scale[1] + scale[2] / 2; v += scale[2]) {
             float y = y(v, scale, top, bottom);
             if (onLeft) canvas.drawLine(left, y, right, y, grid);
-            canvas.drawText(unit.tick(v, scale[2]), onLeft ? left - 5 * d : right + 5 * d, y + sp(8.5f) / 3, text);
+            canvas.drawText(unit.tick(v, scale[2]), onLeft ? left - s1 : right + s1, y + note / 3, text);
         }
     }
 
@@ -445,13 +505,13 @@ final class Chart extends View {
             case HOURS_6:
                 t = start.truncatedTo(ChronoUnit.HOURS).plusHours(1);
                 stepHours = 1;
-                label = DateTimeFormatter.ofPattern("H'h'");
+                label = DateTimeFormatter.ofPattern("H'\u00A0h'");
                 break;
             case DAY:
                 t = start.truncatedTo(ChronoUnit.HOURS).plusHours(1);
                 while (t.getHour() % 3 != 0) t = t.plusHours(1);
                 stepHours = 3;
-                label = DateTimeFormatter.ofPattern("H'h'");
+                label = DateTimeFormatter.ofPattern("H'\u00A0h'");
                 break;
             case WEEK:
                 t = start.truncatedTo(ChronoUnit.DAYS).plusDays(1);
@@ -464,18 +524,27 @@ final class Chart extends View {
                 stepHours = 24 * 5;
                 label = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault());
         }
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(labelColor);
         text.setTextAlign(Paint.Align.CENTER);
-        float labelY = bottom + 4 * d + sp(8.5f);
+        float labelY = bottom + s1 + note;
+        labelEnd = Float.NEGATIVE_INFINITY;
         for (; t.toInstant().toEpochMilli() < t1; t = t.plusHours(stepHours)) {
             float x = x(t.toInstant().toEpochMilli(), left, right, t0, t1);
             canvas.drawLine(x, top, x, bottom, grid);
             // A day's name sits under its middle, a time under its line.
             float lx = span == Stats.Span.WEEK ? x + (right - left) * 12 * History.HOUR_MS / (float) (t1 - t0) : x;
-            if (lx < right) canvas.drawText(label.format(t), lx, labelY, text);
+            if (lx < right) tick(canvas, label.format(t), lx, labelY);
         }
         canvas.drawLine(left, bottom, right, bottom, grid);
+    }
+
+    /** A label centred on {@code cx}, unless it would touch the one before: a cut or crowded label tells nothing. */
+    private void tick(Canvas canvas, String label, float cx, float y) {
+        float half = text.measureText(label) / 2;
+        if (cx - half < labelEnd + s1) return;
+        canvas.drawText(label, cx, y, text);
+        labelEnd = cx + half;
     }
 
     // ---- bars --------------------------------------------------------------------------------------
@@ -495,14 +564,16 @@ final class Chart extends View {
         scale[0] = 0;
         Unit unit = series.get(0).unit;
         valueGrid(canvas, left, right, top, bottom, scale, unit, true, labelColor);
-        float slot = (right - left) / slots, bar = slot * 0.64f, radius = Math.min(3 * d, bar / 2);
+        float slot = (right - left) / slots, bar = slot * 0.64f, radius = Math.min(getResources().getDimension(R.dimen.syn_rayon_pastille), bar / 2);
         double[] base = new double[slots];
+        int now = slot(System.currentTimeMillis());
         for (int k = 0; k < series.size(); k++) {
             Series s = series.get(k);
-            fill.setColor(s.color);
+            int soft = (s.color & 0x00FFFFFF) | Math.round(255 * PARTIAL_ALPHA) << 24;
             for (Stats.Point p : s.points) {
                 int i = slot(p.start);
                 if (i < 0 || i >= slots || Double.isNaN(p.change) || p.change <= 0) continue;
+                fill.setColor(i == now ? soft : s.color);
                 float x = left + slot * i + (slot - bar) / 2;
                 float yLow = y(base[i], scale, top, bottom), yHigh = y(base[i] + p.change, scale, top, bottom);
                 base[i] += p.change;
@@ -516,17 +587,18 @@ final class Chart extends View {
             }
         }
         // Labels: every third hour, every fifth day, every month.
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(labelColor);
         text.setTextAlign(Paint.Align.CENTER);
-        float labelY = bottom + 4 * d + sp(8.5f);
+        float labelY = bottom + s1 + note;
+        labelEnd = Float.NEGATIVE_INFINITY;
         LocalDate first = Instant.ofEpochMilli(range.start()).atZone(ZoneId.systemDefault()).toLocalDate();
         for (int i = 0; i < slots; i++) {
             String l = null;
-            if (range == Stats.Range.TODAY && i % 3 == 0) l = i + "h";
+            if (range == Stats.Range.TODAY && i % 3 == 0) l = i + "\u00A0h";
             else if (range == Stats.Range.DAYS && first.plusDays(i).getDayOfMonth() % 5 == 0) l = String.valueOf(first.plusDays(i).getDayOfMonth());
             else if (range == Stats.Range.MONTHS) l = DateTimeFormatter.ofPattern("MMM", Locale.getDefault()).format(first.plusMonths(i));
-            if (l != null) canvas.drawText(l, left + slot * (i + 0.5f), labelY, text);
+            if (l != null) tick(canvas, l, left + slot * (i + 0.5f), labelY);
         }
         canvas.drawLine(left, bottom, right, bottom, grid);
     }

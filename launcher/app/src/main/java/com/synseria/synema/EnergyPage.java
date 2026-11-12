@@ -38,8 +38,8 @@ final class EnergyPage {
     private final SidePage side;
     private final LinearLayout content, totals;
     private final TextView power, cost, tempo, legend;
-    private final Chart chart;
-    private final LinearLayout chips;
+    private final ChartBlock chart;
+    private final ChoiceGroup chips;
     private HomeConfig home;
     /** The dashboard's connection of the moment (a new one on each return to Home). */
     private final java.util.function.Supplier<HaLive> live;
@@ -60,73 +60,73 @@ final class EnergyPage {
 
         LinearLayout readings = new LinearLayout(activity);
         readings.setGravity(Gravity.CENTER_VERTICAL);
-        power = new TextView(activity, null, 0, R.style.BigReading);
-        power.setTextSize(40);
+        power = Tokens.text(activity, "", R.style.Role_GrandChiffre);
+        power.setIncludeFontPadding(false);
         readings.addView(power);
         LinearLayout facts = new LinearLayout(activity);
         facts.setOrientation(LinearLayout.VERTICAL);
-        cost = activity.text("", 11, activity.getColor(R.color.syn_encre));
-        tempo = activity.text("", 11, activity.getColor(R.color.syn_encre));
+        cost = Tokens.text(activity, "", R.style.Role_Corps);
+        tempo = Tokens.text(activity, "", R.style.Role_Corps);
         facts.addView(cost);
         facts.addView(tempo);
         LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        flp.setMarginStart(activity.dp(16));
+        flp.setMarginStart(px(R.dimen.syn_espace_4));
         readings.addView(facts, flp);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = activity.dp(4);
+        rlp.topMargin = px(R.dimen.syn_espace_1);
         content.addView(readings, rlp);
 
         // Today, yesterday, this month, the last: a small label over each figure.
         totals = new LinearLayout(activity);
         LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tlp.topMargin = activity.dp(16);
+        tlp.topMargin = px(R.dimen.syn_espace_4);
         // On the picture, as the chart below: a light picture would swallow the figures.
         GradientDrawable veil = new GradientDrawable();
         veil.setColor(activity.getColor(R.color.syn_tv_voile));
         veil.setCornerRadius(activity.getResources().getDimension(R.dimen.syn_rayon_carte));
         totals.setBackground(veil);
-        int pad = activity.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
-        totals.setPadding(pad, activity.dp(12), pad, activity.dp(12));
+        int pad = px(R.dimen.syn_espace_4);
+        totals.setPadding(pad, px(R.dimen.syn_espace_3), pad, px(R.dimen.syn_espace_3));
         content.addView(totals, tlp);
         for (int name : new int[]{R.string.energy_today, R.string.energy_yesterday, R.string.energy_this_month, R.string.energy_last_month}) {
             LinearLayout cell = new LinearLayout(activity);
             cell.setOrientation(LinearLayout.VERTICAL);
-            TextView label = new TextView(activity, null, 0, R.style.DashCaps);
-            label.setText(name);
-            cell.addView(label);
-            TextView value = activity.text("–", 20, activity.getColor(R.color.syn_encre));
-            value.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+            cell.addView(Tokens.text(activity, activity.getString(name), R.style.Role_Note));
+            TextView value = Tokens.text(activity, "–", R.style.Role_Titre);
             value.setFontFeatureSettings("tnum");
             LinearLayout.LayoutParams vlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            vlp.topMargin = activity.dp(4);
+            vlp.topMargin = px(R.dimen.syn_espace_1);
             cell.addView(value, vlp);
             totals.addView(cell, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         }
 
         FrameLayout head = new FrameLayout(activity);
         head.setClipChildren(false);
-        TextView label = new TextView(activity, null, 0, R.style.DashCaps);
-        label.setText(R.string.energy_consumption);
+        TextView label = Tokens.text(activity, activity.getString(R.string.energy_consumption), R.style.Role_Note);
         head.addView(label, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL));
         chips = Chips.row(activity, new String[]{activity.getString(R.string.energy_range_today),
-                activity.getString(R.string.energy_range_days), activity.getString(R.string.energy_range_months)}, range.ordinal(), 22, i -> {
+                activity.getString(R.string.unit_days, 30), activity.getString(R.string.energy_range_months)}, range.ordinal(), i -> {
             range = RANGES[i];
             draw();
         });
         head.addView(chips, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.END));
         LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        hlp.topMargin = activity.dp(18);
+        hlp.topMargin = px(R.dimen.syn_espace_4);
         content.addView(head, hlp);
 
-        chart = new Chart(activity);
+        chart = new ChartBlock(activity);
         LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-        clp.topMargin = activity.dp(8);
+        clp.topMargin = px(R.dimen.syn_espace_2);
         content.addView(chart, clp);
-        legend = activity.text("", 9.5f, activity.getColor(R.color.syn_encre_secondaire));
+        legend = Tokens.text(activity, "", R.style.Role_Note);
         LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        llp.topMargin = activity.dp(6);
+        llp.topMargin = px(R.dimen.syn_espace_2);
         content.addView(legend, llp);
+    }
+
+    private int px(int dimen) {
+        return activity.getResources().getDimensionPixelSize(dimen);
     }
 
     boolean isOpen() {
@@ -136,7 +136,7 @@ final class EnergyPage {
     void open(HomeConfig home) {
         this.home = home;
         update();
-        side.open(KEY, activity.getString(R.string.energy_title), content, chips.getChildAt(range.ordinal()),
+        side.open(KEY, activity.getString(R.string.energy_title), content, chips,
                 () -> activity.findViewById(R.id.tech));
         chart.reading();
         if (meters != null) {
@@ -162,7 +162,8 @@ final class EnergyPage {
         Map<String, HomeAssistant.State> states = HaLive.STATES;
         HomeAssistant.State p = states.get(home.energyPower);
         Double va = HouseText.number(p);
-        power.setText(va == null ? "–" : HouseText.whole(va) + " " + p.attrs.optString("unit_of_measurement"));
+        HomeAssistant.State subscribed = states.get(home.energySubscribed);
+        power.setText(va == null ? "–" : HouseText.power(activity, va, p, HouseText.number(subscribed), subscribed));
         cost.setText(monthCost.get());
         SpannableStringBuilder sb = new SpannableStringBuilder();
         tempoDay(sb, R.string.tech_today, states.get(home.energyTempo));
@@ -177,7 +178,7 @@ final class EnergyPage {
         int at = sb.length();
         sb.append("●");
         sb.setSpan(new ForegroundColorSpan(HouseText.tempoColour(activity, s)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        sb.append(' ').append(s.state.substring(0, 1).toUpperCase(Locale.getDefault())).append(s.state.substring(1).toLowerCase(Locale.getDefault()));
+        sb.append(' ').append(HouseText.tempoName(s));
     }
 
     // ---- what was used ------------------------------------------------------------------------------
@@ -191,11 +192,16 @@ final class EnergyPage {
     private void read() {
         if (meters == null) return;
         if (meters.isEmpty()) {
-            legend.setText(R.string.energy_none);
+            legend.setText("");
+            chart.empty(activity.getString(R.string.energy_none));
             return;
         }
         chart.reading();
         Stats.consumption(live.get(), meters, "day", Stats.Range.MONTHS.start(), d -> {
+            if (d.isEmpty()) {
+                if (isOpen()) chart.failed(this::read);
+                return;
+            }
             Map<String, List<Stats.Point>> byDay = usable(d, false);
             Stats.consumption(live.get(), meters, "hour", Stats.Range.TODAY.start(), h -> {
                 days = byDay;
@@ -263,7 +269,7 @@ final class EnergyPage {
 
     private void total(int cell, double kwh) {
         TextView value = (TextView) ((LinearLayout) totals.getChildAt(cell)).getChildAt(1);
-        value.setText(Double.isNaN(kwh) ? "–" : Chart.Unit.KWH.value(kwh));
+        value.setText(Double.isNaN(kwh) ? "–" : HouseText.units(activity, Chart.Unit.KWH.value(kwh), true));
     }
 
     /** The range chosen, from what was read: per hour today, per day over 30 days, per month over a year. */
@@ -330,7 +336,7 @@ final class EnergyPage {
         int t = tempoOf(id);
         boolean off = offPeak(id);
         if (t < 3) return HouseText.TEMPO[t][off ? 1 : 0];
-        return activity.getColor(off ? R.color.syn_safran : R.color.syn_primaire);
+        return off ? activity.getColor(R.color.syn_encre_secondaire) : Tokens.primary(activity);
     }
 
     private String name(String id) {

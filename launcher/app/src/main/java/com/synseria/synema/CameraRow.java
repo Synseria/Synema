@@ -55,7 +55,7 @@ final class CameraRow {
         if (ha == null || !shown) return;
         for (Map.Entry<String, ImageView> e : cameraViews.entrySet()) {
             ImageView view = e.getValue();
-            ha.cameraFrame(e.getKey(), activity.dp(150), bmp -> {
+            ha.cameraFrame(e.getKey(), activity.dp(Focus.WIDEST_CARD_DP), bmp -> {
                 if (bmp == null) return;
                 frames.put(e.getKey(), bmp);
                 activity.whenStill(() -> view.setImageBitmap(bmp));
@@ -93,14 +93,14 @@ final class CameraRow {
 
     /** Under a camera, nothing over its picture: a red dot for live, and its name. */
     private TextView live(String label) {
-        TextView name = activity.text(label, 8, activity.getColor(R.color.syn_encre_secondaire));
+        TextView name = Tokens.line(activity, label, R.style.Role_Note);
         GradientDrawable dot = new GradientDrawable();
         dot.setShape(GradientDrawable.OVAL);
         dot.setColor(activity.getColor(R.color.syn_danger));
-        int size = activity.dp(5);
+        int size = activity.px(R.dimen.syn_espace_2);
         dot.setSize(size, size);
         name.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null);
-        name.setCompoundDrawablePadding(activity.dp(5));
+        name.setCompoundDrawablePadding(activity.px(R.dimen.syn_espace_1));
         name.setIncludeFontPadding(false);
         name.setGravity(Gravity.CENTER_VERTICAL);
         name.setPadding(activity.getResources().getDimensionPixelSize(R.dimen.card_inset), activity.underCardTop(), 0, 0);

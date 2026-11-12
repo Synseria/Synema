@@ -3,9 +3,6 @@ package com.synseria.synema;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +18,8 @@ import java.util.Map;
 /**
  * The dashboard's Home Assistant parts: the top line's readings and capsules (HouseHeader), and the
  * House panel on the right: the rooms lit, home.json's tiles, the rooms (Rooms; OK opens one's page,
- * RoomPage) and the electricity (OK opens its page, EnergyPage). The tiles stay put under the heading;
- * the rooms alone scroll between them and the electricity (TileScroll), beyond eight rooms or so.
+ * RoomPage) and the electricity (OK opens its page, EnergyPage). The rooms, then the tiles, scroll a
+ * whole line at a time between the heading and the electricity, which stays put (TileScroll).
  *
  * While the dashboard shows, Home Assistant pushes every change of what it shows (HaLive): a light
  * switched anywhere is drawn within a moment. The rooms themselves (which areas, which things) are
@@ -32,12 +29,15 @@ import java.util.Map;
  */
 final class HousePanel {
     private static final int PER_LINE = 2;
-    /** Line heights and the space between lines (dp): eight rooms and six tiles fit on 540 dp. */
-    private static final int TILE_DP = 34, ROOM_DP = 52, LINE_GAP_DP = 3;
-    /** A remote key as drawn on its tile (dp): its size, its corner and its distance from the tile's edges. */
-    private static final int KEY_W_DP = 14, KEY_H_DP = 8, KEY_RADIUS_DP = 3, KEY_EDGE_DP = 8;
-    /** The contour is the primary ink at 35 %: enough to outline the key on any tile, too little to be a second colour. */
-    private static final int KEY_CONTOUR_ALPHA = 0x59;
+    /**
+     * A room's height (dp): a name over its temperature; the rooms beyond the height scroll. A tile is a touch
+     * target (syn_cible_min), the space between lines syn_espace_1.
+     */
+    // jeton manquant: syn_tuile_piece_hauteur (68)
+    private static final int ROOM_DP = 68;
+    /** A remote key as drawn on its tile (dp): its size; its corner is syn_rayon_pastille, its distance from the edges syn_espace_2. */
+    // jeton manquant: syn_touche_tuile_largeur (14), syn_touche_tuile_hauteur (8)
+    private static final int KEY_W_DP = 14, KEY_H_DP = 8;
     /** The rooms are read again this often while the dashboard stays in front. */
     private static final long ROOMS_MS = 10 * 60_000L;
     /** The month's cost is read again this often: Home Assistant values the hours as they end. */
@@ -73,9 +73,12 @@ final class HousePanel {
         energyPage = new EnergyPage(activity, side, () -> live, this::monthCost);
         View tech = activity.findViewById(R.id.tech);
         Focus.block(tech);
+        onFocus(tech, () -> activity.houseFocused(null, null, live));
         tech.setOnClickListener(v -> energyPage.open(home));
         tiles = activity.findViewById(R.id.tiles);
         rooms = activity.findViewById(R.id.rooms);
+        // Nothing cut under the heading: the rooms and the tiles scroll a whole line at a time.
+        ((TileScroll) activity.findViewById(R.id.houseScroll)).byLines(rooms, tiles);
         rule = activity.findViewById(R.id.houseRule);
         litRooms = activity.findViewById(R.id.litRooms);
         panel = activity.findViewById(R.id.haPanel);
@@ -195,7 +198,7 @@ final class HousePanel {
                 LinearLayout t = (LinearLayout) row.getChildAt(c);
                 HomeConfig.Item tile = (HomeConfig.Item) t.getTag();
                 HomeAssistant.State s = STATES.get(tile.action.entity);
-                ((TextView) t.getChildAt(2)).setText(s == null ? "" : describe(s));
+                ((TextView) t.getChildAt(2)).setText(s == null ? "" : HouseText.units(activity, describe(s), false));
                 t.setActivated(s != null && s.on());
             }
         }
@@ -209,24 +212,28 @@ final class HousePanel {
             if (i % PER_LINE == 0) {
                 row = new LinearLayout(activity);
                 row.setClipChildren(false);
-                LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(TILE_DP));
-                rlp.topMargin = i == 0 ? 0 : activity.dp(LINE_GAP_DP);
+                LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.px(R.dimen.syn_cible_min));
+                rlp.topMargin = i == 0 ? 0 : activity.px(R.dimen.syn_espace_1);
                 tiles.addView(row, rlp);
             }
             LinearLayout t = new LinearLayout(activity);
             t.setOrientation(LinearLayout.VERTICAL);
             Focus.tile(t);
-            t.setPadding(activity.dp(8), activity.dp(5), activity.dp(8), activity.dp(5));
+            t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
             t.setTag(tile);
-            TextView state = activity.text("", 9, 0);
+            onFocus(t, () -> {
+                Rooms.Room r = roomOf(tile.action.entity);
+                activity.houseFocused(r, r == null ? null : place(r), live);
+            });
+            TextView state = Tokens.line(activity, "", R.style.Role_Note);
             state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
             state.setDuplicateParentStateEnabled(true);
-            TextView name = activity.text(tile.name, 10, Focus.tileText(activity));
+            TextView name = Tokens.line(activity, tile.name, R.style.Role_Corps);
             // The remote's colour button that toggles it: its key drawn in the tile's top right corner.
             int key = colourKey(tile);
             if (key != 0) {
                 t.setForeground(keyDrawable(key));
-                name.setPadding(0, 0, activity.dp(KEY_W_DP + KEY_EDGE_DP), 0);
+                name.setPadding(0, 0, activity.dp(KEY_W_DP) + activity.px(R.dimen.syn_espace_2), 0);
             }
             t.addView(name);
             t.addView(new View(activity), new LinearLayout.LayoutParams(1, 0, 1f));
@@ -240,7 +247,7 @@ final class HousePanel {
                 activity.runAction(tile.action);
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            if (i % PER_LINE == 0 && i + 1 < home.tiles.size()) lp.setMarginEnd(activity.dp(LINE_GAP_DP));   // a lone last tile spans the row
+            if (i % PER_LINE == 0 && i + 1 < home.tiles.size()) lp.setMarginEnd(activity.px(R.dimen.syn_espace_1));   // a lone last tile spans the row
             row.addView(t, lp);
         }
     }
@@ -263,6 +270,21 @@ final class HousePanel {
         Rooms.Room open = room(roomPage.shown());
         if (open != null) roomPage.update(open, place(open));
         if (energyPage.isOpen()) energyPage.update();
+    }
+
+    /** Adds to what the view does on gaining focus (its lift, Focus). */
+    private static void onFocus(View v, Runnable gained) {
+        View.OnFocusChangeListener lift = v.getOnFocusChangeListener();
+        v.setOnFocusChangeListener((view, has) -> {
+            lift.onFocusChange(view, has);
+            if (has) gained.run();
+        });
+    }
+
+    /** The room that holds this thing, or null when no room is known to. */
+    private Rooms.Room roomOf(String entity) {
+        for (Rooms.Room r : lastRooms) for (Rooms.Entity e : r.entities) if (e.id.equals(entity)) return r;
+        return null;
     }
 
     private Rooms.Room room(String name) {
@@ -289,40 +311,43 @@ final class HousePanel {
                 line = new LinearLayout(activity);
                 line.setClipChildren(false);
                 LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(ROOM_DP));
-                llp.topMargin = i == 0 ? 0 : activity.dp(LINE_GAP_DP);
+                llp.topMargin = i == 0 ? 0 : activity.px(R.dimen.syn_espace_1);
                 rooms.addView(line, llp);
             }
             String name = found.get(i).name;
             LinearLayout t = new LinearLayout(activity);
             t.setOrientation(LinearLayout.VERTICAL);
             Focus.tile(t);
-            t.setPadding(activity.dp(7), activity.dp(5), activity.dp(6), activity.dp(5));
-            TextView title = activity.text(name, 10, Focus.tileText(activity));
-            title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
+            // The name across the tile (never cut), then the temperature with its other readings stacked beside.
+            TextView title = Tokens.line(activity, name, R.style.Role_CorpsFort);
             title.setIncludeFontPadding(false);
-            t.addView(title);
-            // Then the temperature large and thin, its other readings stacked beside it as on the top line.
+            TextView lit = Tokens.line(activity, activity.getString(R.string.room_lit), R.style.Role_Petit);
+            lit.setIncludeFontPadding(false);
+            t.addView(new NameLine(activity, title, lit));
             LinearLayout body = new LinearLayout(activity);
             body.setGravity(Gravity.CENTER_VERTICAL);
-            TextView temp = activity.text("", 20, Focus.tileText(activity));
-            temp.setTypeface(android.graphics.Typeface.create("sans-serif-light", android.graphics.Typeface.NORMAL));
+            // A reading, not a title: the thin figures of the top line's temperatures, at a tile's size.
+            TextView temp = Tokens.line(activity, "", R.style.Role_Releve);
             temp.setIncludeFontPadding(false);
             body.addView(temp);
             LinearLayout facts = new LinearLayout(activity);
             facts.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            flp.setMarginStart(activity.dp(6));
+            flp.setMarginStart(activity.px(R.dimen.syn_espace_2));
             body.addView(facts, flp);
-            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-            blp.topMargin = activity.dp(2);
-            t.addView(body, blp);
+            t.addView(body, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
             t.setTag(name);
+            onFocus(t, () -> {
+                Rooms.Room r = room(name);
+                activity.houseFocused(r, r == null ? null : place(r), live);
+            });
             t.setOnClickListener(v -> {
                 Rooms.Room r = room(name);
                 if (r != null) roomPage.open(r, place(r), home, () -> rooms.findViewWithTag(name));
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            if (i % PER_LINE == 0) lp.setMarginEnd(activity.dp(LINE_GAP_DP));
+            if (i % PER_LINE == 0) lp.setMarginEnd(activity.px(R.dimen.syn_espace_1));
             line.addView(t, lp);
         }
         // A lone last room keeps the width of the others.
@@ -330,8 +355,7 @@ final class HousePanel {
     }
 
     /**
-     * "Salon" over its temperature and, stacked beside, its other readings as the top line shows them,
-     * compact; the tile lighter while a light is on. Rebuilt only when something changed.
+     * "Salon" over its temperature and, stacked beside, its other readings as the top line shows them; the tile lighter while a light is on. Rebuilt only when something changed.
      */
     private void fillRoom(LinearLayout t, Rooms.Room r) {
         Place place = place(r);
@@ -340,9 +364,10 @@ final class HousePanel {
         if (signature.equals(t.getTag(R.id.room_shown))) return;
         t.setTag(R.id.room_shown, signature);
         t.setActivated(lit);
+        ((NameLine) t.getChildAt(0)).setLit(lit);
         LinearLayout body = (LinearLayout) t.getChildAt(1);
-        ((TextView) body.getChildAt(0)).setText(HouseHeader.degrees(activity, place, ""));
-        HouseHeader.facts(activity, (LinearLayout) body.getChildAt(1), 8, place);
+        ((TextView) body.getChildAt(0)).setText(place.temperature.value == null ? "" : HouseText.units(activity, HouseText.degrees(place.temperature.value), true));
+        HouseHeader.facts(activity, (LinearLayout) body.getChildAt(1), place, Integer.MAX_VALUE, R.style.Role_Petit);
     }
 
     /**
@@ -359,6 +384,36 @@ final class HousePanel {
         }
         return new Place(reading(c == null ? "" : c.entity, r.temperature), reading(c == null ? "" : c.humidity, r.humidity),
                 Place.Reading.NONE, reading(c == null ? "" : c.co2, r.co2), reading(c == null ? "" : c.noise, r.noise));
+    }
+
+    /** A room's name and, at the right, the word "lit" while it is: dropped when the name leaves it no room, never the name cut. */
+    private static final class NameLine extends LinearLayout {
+        private final TextView name, word;
+        private boolean lit;
+
+        NameLine(MainActivity activity, TextView name, TextView word) {
+            super(activity);
+            this.name = name;
+            this.word = word;
+            setGravity(Gravity.CENTER_VERTICAL);
+            addView(name);
+            addView(new View(activity), new LayoutParams(0, 1, 1f));
+            addView(word);
+            word.setPadding(activity.px(R.dimen.syn_espace_1), 0, 0, 0);
+        }
+
+        void setLit(boolean lit) {
+            this.lit = lit;
+            requestLayout();
+        }
+
+        @Override
+        protected void onMeasure(int widthSpec, int heightSpec) {
+            float need = name.getPaint().measureText(name.getText().toString()) + word.getPaint().measureText(word.getText().toString())
+                    + word.getPaddingStart();
+            word.setVisibility(lit && need <= MeasureSpec.getSize(widthSpec) ? VISIBLE : GONE);
+            super.onMeasure(widthSpec, heightSpec);
+        }
     }
 
     private static Place.Reading reading(String configured, String discovered) {
@@ -379,25 +434,21 @@ final class HousePanel {
         powerValue.setVisibility(va == null ? View.INVISIBLE : View.VISIBLE);
         gauge.setVisibility(va == null || max == null ? View.GONE : View.VISIBLE);
         if (va != null) {
-            SpannableStringBuilder sb = new SpannableStringBuilder(HouseText.whole(va) + "\u00A0" + unit(power));
             if (max != null) {
-                int at = sb.length();
-                sb.append(" / ").append(HouseText.whole(max)).append('\u00A0').append(unit(subscribed));
-                sb.setSpan(new ForegroundColorSpan(activity.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 gauge.removeAllViews();
                 gauge.addView(activity.progress((float) Math.min(1, va / (max * kilo(subscribed) / kilo(power)))),
                         new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
-            powerValue.setText(sb);
+            powerValue.setText(HouseText.power(activity, va, power, max, subscribed));
         }
         String month = monthCost();
         TextView cost = activity.findViewById(R.id.costValue);
         cost.setVisibility(month.isEmpty() ? View.GONE : View.VISIBLE);
-        cost.setText(month);
+        cost.setText(HouseText.units(activity, month, true));
         HomeAssistant.State today = states.get(home.energyTempo), tomorrow = states.get(home.energyTempoTomorrow);
         activity.findViewById(R.id.tempoLine).setVisibility(today == null && tomorrow == null ? View.GONE : View.VISIBLE);
-        tempoDot(activity.findViewById(R.id.tempoToday), today);
-        tempoDot(activity.findViewById(R.id.tempoTomorrow), tomorrow);
+        tempoDay(R.id.tempoToday, R.id.tempoTodayLabel, R.string.tech_today, today);
+        tempoDay(R.id.tempoTomorrow, R.id.tempoTomorrowLabel, R.string.tech_tomorrow, tomorrow);
         boolean any = va != null || !month.isEmpty() || today != null || tomorrow != null;
         activity.findViewById(R.id.tech).setVisibility(any ? View.VISIBLE : View.GONE);
     }
@@ -410,7 +461,7 @@ final class HousePanel {
         if (Double.isNaN(usedCost)) return "";
         Double subscription = HouseText.number(STATES.get(home.energySubscription));
         double eur = usedCost + (subscription == null ? 0 : subscription);
-        return activity.getString(R.string.tech_month, String.format(Locale.getDefault(), "%.2f €", eur));
+        return activity.getString(R.string.tech_month, HouseText.measure(String.format(Locale.getDefault(), "%.2f", eur), "€"));
     }
 
     private static String unit(HomeAssistant.State s) {
@@ -422,15 +473,20 @@ final class HousePanel {
         return unit(s).startsWith("k") ? 1000 : 1;
     }
 
-    private void tempoDot(TextView label, HomeAssistant.State s) {
+    /** "Tempo · today" over the day's colour in words, a dot of that colour before it; the line is gone while the day is unknown. */
+    private void tempoDay(int valueId, int labelId, int day, HomeAssistant.State s) {
+        TextView value = activity.findViewById(valueId);
+        TextView label = activity.findViewById(labelId);
+        ((View) value.getParent()).setVisibility(s == null ? View.GONE : View.VISIBLE);
+        if (s == null) return;
         GradientDrawable dot = new GradientDrawable();
         dot.setShape(GradientDrawable.OVAL);
-        label.setVisibility(s == null ? View.GONE : View.VISIBLE);
-        if (s == null) return;
         dot.setColor(HouseText.tempoColour(activity, s));
-        int size = activity.dp(6);
+        int size = activity.px(R.dimen.syn_espace_2);
         dot.setSize(size, size);
-        label.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null);
+        label.setText(activity.getString(R.string.tech_tempo) + " · " + activity.getString(day));
+        value.setText(HouseText.tempoName(s));
+        value.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null);
     }
 
     /** A tile's second line: brightness for a light that is on, otherwise the state in words. */
@@ -471,13 +527,13 @@ final class HousePanel {
     private Drawable keyDrawable(int colour) {
         GradientDrawable key = new GradientDrawable();
         key.setColor(colour);
-        key.setCornerRadius(activity.dp(KEY_RADIUS_DP));
-        key.setStroke(activity.dp(1), (KEY_CONTOUR_ALPHA << 24) | (activity.getColor(R.color.syn_encre) & 0xFFFFFF));
+        key.setCornerRadius(activity.px(R.dimen.syn_rayon_pastille));
+        key.setStroke(activity.px(R.dimen.syn_trait_filet), activity.getColor(R.color.syn_filet));
         LayerDrawable layer = new LayerDrawable(new Drawable[]{key});
         layer.setLayerSize(0, activity.dp(KEY_W_DP), activity.dp(KEY_H_DP));
         layer.setLayerGravity(0, Gravity.TOP | Gravity.END);
-        layer.setLayerInsetTop(0, activity.dp(KEY_EDGE_DP));
-        layer.setLayerInsetEnd(0, activity.dp(KEY_EDGE_DP));
+        layer.setLayerInsetTop(0, activity.px(R.dimen.syn_espace_2));
+        layer.setLayerInsetEnd(0, activity.px(R.dimen.syn_espace_2));
         return layer;
     }
 

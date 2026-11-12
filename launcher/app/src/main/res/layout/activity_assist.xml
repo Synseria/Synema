@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The assistant (AssistActivity): a panel at the bottom of the screen over whatever was showing. Its
      buttons grow when focused (Focus): every container round them keeps clipChildren off, and the mic
-     sits in a room as wide as its voice halo. -->
+     sits in a room as wide as its voice halo. Side margin 120dp and the mic's room 64dp:
+     jeton manquant: syn_assistant_marge, syn_halo_micro. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,26 +14,27 @@
         android:layout_gravity="bottom"
         android:layout_marginStart="120dp"
         android:layout_marginEnd="120dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="@dimen/syn_marge_y"
         android:background="@drawable/assist_bg"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="@dimen/syn_espace_6">
 
-        <!-- The assistants to talk to (home.json assistant.presets); the chosen one is lit. -->
+        <!-- The assistants to talk to (home.json assistant.presets), a single-choice group filled by code. -->
         <LinearLayout
             android:id="@+id/presets"
             android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/syn_espace_3"
             android:clipChildren="false"
             android:orientation="horizontal" />
 
         <ScrollView
             android:id="@+id/scroll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:focusable="false">
 
             <LinearLayout
@@ -46,27 +48,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="-8dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/syn_espace_1"
             android:clipChildren="false"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- The mic (40dp) in a room for its halo (VoiceRing) and its lift. -->
+            <!-- The mic (a touch target) in a room for its halo (VoiceRing) and its lift. -->
             <FrameLayout
                 android:id="@+id/micRoom"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:clipChildren="false">
 
                 <ImageView
                     android:id="@+id/btnMic"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="@dimen/syn_cible_min"
+                    android:layout_height="@dimen/syn_cible_min"
                     android:layout_gravity="center"
-                    android:padding="10dp"
+                    android:padding="@dimen/syn_espace_3"
                     android:background="@drawable/mic_button_bg"
                     android:src="@drawable/ic_mic"
-                    android:tint="@color/pill_text"
+                    android:tint="@color/syn_encre"
                     android:focusable="true"
                     android:clickable="true"
                     android:contentDescription="@string/assist_speak" />
@@ -75,16 +77,15 @@
             <EditText
                 android:id="@+id/input"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="@dimen/syn_cible_min"
                 android:layout_weight="1"
-                android:layout_marginStart="2dp"
+                android:layout_marginStart="@dimen/syn_espace_1"
                 android:background="@drawable/assist_field_bg"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:paddingStart="@dimen/syn_espace_4"
+                android:paddingEnd="@dimen/syn_espace_4"
+                style="@style/Role.Corps"
                 android:hint="@string/assist_hint"
-                android:textColorHint="@color/syn_encre_tertiaire"
-                android:textColor="@color/syn_encre"
-                android:textSize="13sp"
+                android:textColorHint="@color/syn_encre_secondaire"
                 android:singleLine="true"
                 android:imeOptions="actionSend"
                 android:inputType="text" />
@@ -94,17 +95,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="-4dp"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/syn_espace_2"
             android:layout_marginEnd="-4dp"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:padding="4dp"
+            android:padding="@dimen/syn_espace_1"
             android:scrollbars="none">
 
             <LinearLayout
                 android:id="@+id/chips"
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_height="wrap_content"
                 android:clipChildren="false"
                 android:orientation="horizontal" />
         </HorizontalScrollView>

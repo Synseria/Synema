@@ -2,6 +2,7 @@ package com.synseria.synema;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
@@ -29,7 +30,12 @@ import javax.microedition.khronos.opengles.GL10;
 final class MovingBackdrop extends GLSurfaceView {
     /** One loop of the drift, in seconds. */
     private static final float PERIOD_S = 60f;
-    private static final float FADE_S = 0.8f;
+    /** A fade, in seconds: the design system's longest duration (syn_duree_feuille). */
+    private final float fadeS;
+    /** The base colour the surface is cleared to, as GL floats. */
+    private final float[] clear = new float[3];
+    /** How much of the picture's light a side page takes away. */
+    private static final float DIM = 0.7f;
 
     private volatile long frameTimeNanos;
     private boolean running, ticking;
@@ -73,6 +79,11 @@ final class MovingBackdrop extends GLSurfaceView {
     private MovingBackdrop(Context ctx, int vsyncsPerFrame, int width, int height) {
         super(ctx);
         this.vsyncsPerFrame = vsyncsPerFrame;
+        fadeS = ctx.getResources().getInteger(R.integer.syn_duree_feuille) / 1000f;
+        int base = Backdrop.base(ctx);
+        clear[0] = Color.red(base) / 255f;
+        clear[1] = Color.green(base) / 255f;
+        clear[2] = Color.blue(base) / 255f;
         setEGLContextClientVersion(2);
         getHolder().setFixedSize(width, height);
         // The picture survives the dashboard going behind an app: no navy flash on coming back.
@@ -82,19 +93,19 @@ final class MovingBackdrop extends GLSurfaceView {
     }
 
     /**
-     * Puts a still surface under a full-screen activity's window, showing {@code color} until told
+     * Puts a still surface under a full-screen activity's window, showing the base colour until told
      * otherwise, and takes the window's own background away: the way every full-screen window of the
      * launcher gets the GPU to compose it. {@code pictures}: it will show Backdrop's pictures, at the
      * screen's size; else a plain colour, which a few pixels stretched show as well, in no memory.
      */
-    static MovingBackdrop under(android.app.Activity activity, int color, boolean pictures) {
+    static MovingBackdrop under(android.app.Activity activity, boolean pictures) {
         MovingBackdrop surface = pictures ? new MovingBackdrop(activity, 2) : new MovingBackdrop(activity, 2, 16, 9);
         surface.drift = false;
         ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).addView(surface, 0,
                 new android.widget.FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                         android.view.ViewGroup.LayoutParams.MATCH_PARENT));
         activity.getWindow().setBackgroundDrawable(null);
-        surface.show(Bitmap.createBitmap(new int[]{color}, 1, 1, Bitmap.Config.ARGB_8888));
+        surface.show(Bitmap.createBitmap(new int[]{Backdrop.base(activity)}, 1, 1, Bitmap.Config.ARGB_8888));
         return surface;
     }
 
@@ -136,7 +147,20 @@ final class MovingBackdrop extends GLSurfaceView {
         long now = System.nanoTime();
         long start = now - heldTotal;
         queueEvent(() -> renderer.next(picture, start));
-        busyUntil = now + (long) (FADE_S * 1e9) + 50_000_000L;
+        busyUntil = now + (long) (fadeS * 1e9) + 50_000_000L;
+        tick();
+    }
+
+    /**
+     * Darkens the picture (a side page is open: its figures must not compete with the artwork), the
+     * way a new picture arrives: a fade in the shader, never a view over the window.
+     */
+    void dim(boolean on) {
+        long now = System.nanoTime();
+        long start = now - heldTotal;
+        float to = on ? DIM : 0f;
+        queueEvent(() -> renderer.dim(to, start));
+        busyUntil = now + (long) (fadeS * 1e9) + 50_000_000L;
         tick();
     }
 
@@ -186,16 +210,16 @@ final class MovingBackdrop extends GLSurfaceView {
             + "  gl_Position = vec4(pos, 0.0, 1.0); }";
 
     private static final String FRAGMENT = "precision mediump float; varying vec2 uv;"
-            + "uniform sampler2D now; uniform sampler2D before; uniform float mixing; uniform float dither;"
+            + "uniform sampler2D now; uniform sampler2D before; uniform float mixing; uniform float dither; uniform float dim;"
             + "void main() {"
             + "  vec3 c = mix(texture2D(before, uv).rgb, texture2D(now, uv).rgb, mixing);"
             // A touch of noise breaks the bands an 8-bit gradient shows once stretched. A picture has
             // none, and the noise is the dearest part of a frame on this GPU at the screen's size.
             + "  if (dither > 0.5) c += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;"
-            + "  gl_FragColor = vec4(c, 1.0); }";
+            + "  gl_FragColor = vec4(c * (1.0 - dim), 1.0); }";
 
     private final class Renderer implements GLSurfaceView.Renderer {
-        private int program, pos, uT, uNow, uBefore, uMix, uMoving, uDither;
+        private int program, pos, uT, uNow, uBefore, uMix, uMoving, uDither, uDim;
         private final int[] textures = new int[2];
         /** Which texture holds the newest picture; the other the one fading out. */
         private int current;
@@ -205,9 +229,19 @@ final class MovingBackdrop extends GLSurfaceView {
         private boolean before;
         /** The newest is a small gradient, stretched: dithered. */
         private boolean gradient;
+        /** The darkening: where it was, where it goes, when it left, and what the last frame showed. */
+        private float dimFrom, dimTo, dimShown;
+        private long dimStart;
         private Bitmap pending;
         private final FloatBuffer quad = ByteBuffer.allocateDirect(8 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
                 .put(new float[]{-1, -1, 1, -1, -1, 1, 1, 1});
+
+        /** On the GL thread. */
+        void dim(float to, long nanos) {
+            dimFrom = dimShown;
+            dimTo = to;
+            dimStart = nanos;
+        }
 
         /** On the GL thread. */
         void next(Bitmap picture, long nanos) {
@@ -237,6 +271,7 @@ final class MovingBackdrop extends GLSurfaceView {
             uMix = GLES20.glGetUniformLocation(program, "mixing");
             uMoving = GLES20.glGetUniformLocation(program, "moving");
             uDither = GLES20.glGetUniformLocation(program, "dither");
+            uDim = GLES20.glGetUniformLocation(program, "dim");
             GLES20.glGenTextures(2, textures, 0);
             any = false;
             Bitmap p = pending != null ? pending : last;
@@ -255,17 +290,20 @@ final class MovingBackdrop extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 unused) {
             if (!any) {
-                GLES20.glClearColor(0.043f, 0.071f, 0.125f, 1f);   // Backdrop.NAVY
+                GLES20.glClearColor(clear[0], clear[1], clear[2], 1f);
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
                 return;
             }
             long now = frameTimeNanos;
             GLES20.glUseProgram(program);
             GLES20.glUniform1f(uT, (now / 1_000_000L % 3_600_000L) / 1000f / PERIOD_S * 6.2831853f);
-            float mix = Math.min(1f, (now - fadeStart) / 1e9f / FADE_S);
+            float mix = Math.min(1f, (now - fadeStart) / 1e9f / fadeS);
             GLES20.glUniform1f(uMix, mix);
             GLES20.glUniform1f(uMoving, drift ? 1f : 0f);
             GLES20.glUniform1f(uDither, gradient ? 1f : 0f);
+            float k = Math.max(0f, Math.min(1f, (now - dimStart) / 1e9f / fadeS));
+            dimShown = dimFrom + (dimTo - dimFrom) * k;
+            GLES20.glUniform1f(uDim, dimShown);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[current]);
             GLES20.glUniform1i(uNow, 0);

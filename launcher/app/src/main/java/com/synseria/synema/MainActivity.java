@@ -10,7 +10,6 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -42,6 +41,11 @@ import java.util.Random;
  */
 public class MainActivity extends Activity implements EditMenu.Host {
 
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
+
     private static final long REFRESH_MS = 30_000L;
     private static final long SHIFT_MS = 60_000L;
     private static final long PICKS_STALE_MS = 5 * 60_000L;
@@ -54,6 +58,9 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * drawn in a frame of their own, not in the slide's.
      */
     private static final long FEATURE_DELAY_MS = 200;
+    /** The icon of the line of words under a card (dp). */
+    // jeton manquant: syn_icone_moyenne (16)
+    private static final int UNDER_CARD_ICON_DP = 16;
     /** Placeholders while a row is read: more than ever fit, so the row is full whatever its width. */
     private static final int SKELETON_CARDS = 8;
 
@@ -80,8 +87,13 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private CardRow resumeRow, discoverRow;
     private CameraRow cameraRow;
     private View hero;
+    /** The focused room, in the featured title's place while the focus is in the House panel. */
+    private PlaceBlock place;
+    /** The House panel holds the focus, so the title's artwork and words wait for the focus to return to a title. */
+    private boolean inHouse;
+    /** The background now shows the theme because the focus is on something without artwork. */
+    private boolean onTheme;
     private FrameLayout heroProgress;
-    private ImageView heroArt;
     private TextView heroKicker, heroTitle, heroSub, heroDesc;
     private LinearLayout heroRatings;
     /** The title the featured band shows. */
@@ -134,8 +146,10 @@ public class MainActivity extends Activity implements EditMenu.Host {
         }
         Posters.keepOnDisk(this);
         setContentView(R.layout.activity_home);
+        FocusGuard.install(this);
         density = getResources().getDisplayMetrics().density;
         content = findViewById(R.id.content);
+        content.setPadding(Scale.marginX(this), Scale.marginY(this), Scale.marginX(this), Scale.marginY(this));
         dock = findViewById(R.id.dock);
         resumeRow = findViewById(R.id.resumeRow);
         discoverRow = findViewById(R.id.discoverRow);
@@ -143,22 +157,22 @@ public class MainActivity extends Activity implements EditMenu.Host {
         resumeLabel = findViewById(R.id.resumeLabel);
         discoverLabel = findViewById(R.id.discoverLabel);
         hero = findViewById(R.id.hero);
-        heroArt = findViewById(R.id.heroArt);
+        place = new PlaceBlock(this, findViewById(R.id.heroText), findViewById(R.id.placeBlock));
         heroKicker = findViewById(R.id.heroKicker);
         heroTitle = findViewById(R.id.heroTitle);
         heroSub = findViewById(R.id.heroSub);
         heroDesc = findViewById(R.id.heroDesc);
         heroRatings = findViewById(R.id.heroRatings);
         heroProgress = findViewById(R.id.heroProgress);
-        // The column's padding (room for a focused card, Focus) is taken back, so the band and the
-        // pictures start where the top line does.
+        // The column's padding (room for a focused card, Focus) is taken back, so the band's words and
+        // the pictures start where the top line does; the band's veil reaches its own padding past them.
         int room = Focus.cardRoom(this);
         ((ViewGroup.MarginLayoutParams) findViewById(R.id.main).getLayoutParams()).setMarginStart(-room);
         ViewGroup.MarginLayoutParams band = (ViewGroup.MarginLayoutParams) hero.getLayoutParams();
-        band.setMarginStart(room);
+        band.setMarginStart(room - getResources().getDimensionPixelSize(R.dimen.syn_espace_3));
         band.setMarginEnd(room);
         cameraRow = new CameraRow(this);
-        motion = MovingBackdrop.under(this, Backdrop.NAVY, true);
+        motion = MovingBackdrop.under(this, true);
         backdrop = new Backdrop(motion);
         side = new SidePage(this);
         house = new HousePanel(this, side);
@@ -168,6 +182,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         findViewById(R.id.btnAssist).setOnClickListener(v -> open(new Intent(this, AssistActivity.class)));
         findViewById(R.id.btnApps).setOnClickListener(v -> open(new Intent(this, AppsActivity.class)));
         findViewById(R.id.btnInputs).setOnClickListener(v -> sources.open(true));
+        findViewById(R.id.btnCustomize).setOnClickListener(v -> editMenu.customize());
         findViewById(R.id.btnSettings).setOnClickListener(v -> open(new Intent(Settings.ACTION_SETTINGS)));
         TextView caption = findViewById(R.id.topCaption);
         content.getViewTreeObserver().addOnGlobalFocusChangeListener((from, to) -> {
@@ -178,7 +193,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
             b.setOnKeyListener(this::buttonKey);
             // Icons only: the focused one grows (Focus) and says its name under the capsule.
             b.setOnFocusChangeListener((v, has) -> {
-                Focus.lift(v, has, Focus.BUTTON);
+                Focus.lift(v, has);
                 if (has) caption.setText(v.getContentDescription());
                 else if (!(getCurrentFocus() instanceof ImageView)) caption.setText("");
             });
@@ -212,7 +227,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         }
     }
 
-    private static final int[] TOP_BUTTONS = {R.id.btnAssist, R.id.btnApps, R.id.btnInputs, R.id.btnSettings};
+    private static final int[] TOP_BUTTONS = {R.id.btnAssist, R.id.btnApps, R.id.btnInputs, R.id.btnCustomize, R.id.btnSettings};
     /** What had the focus before it went up to the buttons: Down takes it back there. */
     private View cameUpFrom;
 
@@ -320,6 +335,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         if (mode.equals(backdropMode)) return;
         backdropMode = mode;
         backdropUri = null;
+        onTheme = false;
         motion.setDrift(cfg.backdropMotion);
         handler.removeCallbacks(backdropForFocus);
         switch (cfg.backdrop) {
@@ -338,7 +354,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
                 if (resumeCache != null && !resumeCache.isEmpty()) setBackdrop(resumeCache.get(0));
                 break;
             default:
-                backdrop.gradient(Backdrop.theme(cfg.backdrop));
+                backdrop.gradient(Backdrop.theme(this, cfg.backdrop));
         }
     }
 
@@ -374,6 +390,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * yet known is asked for, and the band completes itself when it comes, in the room kept for it.
      */
     private void feature(TvListings.Item shown, String kicker) {
+        if (inHouse) return;
+        place.hide();
         Tmdb.Info known = tmdb == null || shown.completed ? null : tmdb.known(shown);
         TvListings.Item item = known != null ? shown.with(known) : shown;
         setBackdrop(item);
@@ -387,8 +405,6 @@ public class MainActivity extends Activity implements EditMenu.Host {
             });
         }
         hero.setVisibility(View.VISIBLE);
-        PackageManager pm = getPackageManager();
-        Posters.into(this, item.posterUri, dp(200), heroArt, Favourites.bannerOrIcon(pm, item.pkg));
         heroKicker.setText(kicker);
         heroTitle.setText(item.title);
         String facts = item.facts(this);
@@ -398,7 +414,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
         heroDesc.setText(item.description);
         showRatings(item);
         heroProgress.removeAllViews();
-        heroProgress.setVisibility(item.progress >= 0 ? View.VISIBLE : View.GONE);
+        // Invisible, not gone: the band keeps its height whatever is known.
+        heroProgress.setVisibility(item.progress >= 0 ? View.VISIBLE : View.INVISIBLE);
         if (item.progress >= 0) heroProgress.addView(progress(item.progress), new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
@@ -410,15 +427,14 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private void showRatings(TvListings.Item item) {
         heroRatings.removeAllViews();
         if (item.audience < 0) return;
-        TextView capsule = text(getString(R.string.rating, item.audience), 9, getColor(R.color.syn_encre_secondaire));
+        TextView capsule = Tokens.line(this, HouseText.units(this, getString(R.string.rating, item.audience), false), R.style.Role_Note);
         capsule.setIncludeFontPadding(false);
-        capsule.setTypeface(heroKicker.getTypeface());
         capsule.setContentDescription(getString(R.string.rating_audience, item.audience));
         capsule.setBackgroundResource(R.drawable.dash_capsule_bg);
-        capsule.setPadding(dp(5), dp(1), dp(6), dp(1));
+        capsule.setPadding(px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_1));
         capsule.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_audience, 0, 0, 0);
         capsule.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.syn_encre_secondaire)));
-        capsule.setCompoundDrawablePadding(dp(3));
+        capsule.setCompoundDrawablePadding(px(R.dimen.syn_espace_1));
         heroRatings.addView(capsule);
     }
 
@@ -429,14 +445,51 @@ public class MainActivity extends Activity implements EditMenu.Host {
      */
     private void setBackdrop(TvListings.Item item) {
         String uri = item.backdropUri != null ? item.backdropUri : item.posterUri;
-        if (!Config.BACKDROP_ARTWORK.equals(cfg.backdrop) || uri == null || uri.equals(backdropUri)) return;
+        if (uri == null) {
+            themeBackdrop();
+            return;
+        }
+        if (!Config.BACKDROP_ARTWORK.equals(cfg.backdrop) || uri.equals(backdropUri)) return;
         backdropUri = uri;
         handler.removeCallbacks(backdropForFocus);
         handler.postDelayed(backdropForFocus, 400);
     }
 
     private String backdropUri;
-    private final Runnable backdropForFocus = () -> Posters.load(this, backdropUri, Backdrop.SCENE_W, backdrop::show);
+    private final Runnable backdropForFocus = () -> {
+        String wanted = backdropUri;
+        // A picture that arrives after the focus moved on (another title, or the House panel) is dropped.
+        Posters.load(this, wanted, Backdrop.SCENE_W, bmp -> {
+            if (inHouse || wanted == null || !wanted.equals(backdropUri)) return;
+            if (bmp != null) onTheme = false;
+            backdrop.show(bmp);
+        });
+    };
+
+    /**
+     * What has no artwork of its own (the House panel, an app that publishes none): the first colour theme
+     * as Theme ▸ Background draws it, faded in like any other picture. A chosen theme or picture is already
+     * there.
+     */
+    private void themeBackdrop() {
+        if (!Config.BACKDROP_ARTWORK.equals(cfg.backdrop) || onTheme) return;
+        onTheme = true;
+        backdropUri = null;
+        handler.removeCallbacks(backdropForFocus);
+        backdrop.gradient(Backdrop.themes(this)[0]);
+    }
+
+    /**
+     * The focus is on a room or a thing of the House panel ({@code room} null when its room is not known):
+     * the background goes to the theme and, in the title's place, the room shows; with no room known the
+     * block keeps what it had.
+     */
+    void houseFocused(Rooms.Room room, Place readings, HaLive live) {
+        focusMoved();
+        inHouse = true;
+        themeBackdrop();
+        if (room != null && hero.getVisibility() == View.VISIBLE) place.show(room, readings, live);
+    }
     private Runnable featureForFocus;
 
     /**
@@ -444,6 +497,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * way stops where it is, so nothing redraws the whole screen while a row slides.
      */
     private void focusMoved() {
+        inHouse = false;
+        handler.removeCallbacks(picksForFocus);
         if (featureForFocus != null) handler.removeCallbacks(featureForFocus);
         handler.removeCallbacks(backdropForFocus);
         backdropUri = null;
@@ -467,7 +522,12 @@ public class MainActivity extends Activity implements EditMenu.Host {
             card.setTag(pkg);
             card.setOnFocusChangeListener(chain(card.getOnFocusChangeListener(), () -> {
                 focusMoved();
-                if (moving != null || !fav.isApp()) return;
+                if (moving != null) return;
+                if (!fav.isApp()) {
+                    place.hide();
+                    themeBackdrop();
+                    return;
+                }
                 picksPkg = pkg;
                 handler.removeCallbacks(picksForFocus);
                 handler.postDelayed(picksForFocus, 180);   // not on every card crossed on the way
@@ -535,9 +595,22 @@ public class MainActivity extends Activity implements EditMenu.Host {
         fillRow(resumeRow, items, true);
     }
 
+    /** Without what "continue watching" already shows (when that block is shown); null stays null. */
+    private List<TvListings.Item> withoutResumed(List<TvListings.Item> items) {
+        List<TvListings.Item> resume = visible(resumeCache);
+        if (items == null || resume == null || cfg.hiddenBlocks.contains(EditMenu.BLOCK_RESUME)) return items;
+        List<TvListings.Item> out = new ArrayList<>();
+        for (TvListings.Item it : items) {
+            boolean seen = false;
+            for (TvListings.Item r : resume) seen |= it.sameAs(r);
+            if (!seen) out.add(it);
+        }
+        return out;
+    }
+
     /** Every app's picks, interleaved; {@code items} null: not read yet, placeholders. */
     private void showDiscover(List<TvListings.Item> all) {
-        List<TvListings.Item> items = visible(all);
+        List<TvListings.Item> items = withoutResumed(visible(all));
         boolean shown = (items == null || !items.isEmpty()) && !cfg.hiddenBlocks.contains(EditMenu.BLOCK_PICKS);
         section(discoverLabel, shown);
         String signature = items == null ? SKELETON : signature(items);
@@ -611,8 +684,15 @@ public class MainActivity extends Activity implements EditMenu.Host {
             Focus.card(card);
             card.setContentDescription(item.title);
             ImageView img = new RoundedImageView(this);
-            Posters.into(this, item.posterUri, dp(150), img, Favourites.bannerOrIcon(pm, item.pkg));
+            Posters.into(this, item.posterUri, dp(Focus.WIDEST_CARD_DP), img, Favourites.bannerOrIcon(pm, item.pkg));
             card.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            if (resume && item.progress >= 0) {
+                // Along the picture's foot, off its rounded corners.
+                int corner = getResources().getDimensionPixelSize(R.dimen.card_corner);
+                FrameLayout.LayoutParams foot = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(R.dimen.progress_height), Gravity.BOTTOM);
+                foot.setMargins(corner, 0, corner, corner);
+                card.addView(progress(item.progress), foot);
+            }
             card.setOnFocusChangeListener(chain(card.getOnFocusChangeListener(), () -> {
                 focusMoved();
                 featureForFocus = () -> feature(item, resume);
@@ -726,9 +806,9 @@ public class MainActivity extends Activity implements EditMenu.Host {
         Actions.run(this, ha, action, house::pressed);
     }
 
-    /** The line under a card: 9 dp of icon or words, below the room a focused card's ring needs (Focus). */
+    /** The line under a card: a line of words (syn_espace_4), below the room a focused card's ring needs (Focus). */
     int underCard() {
-        return underCardTop() + dp(9);
+        return underCardTop() + px(R.dimen.syn_espace_4);
     }
 
     /** From the card's frame to the line under it: the frame's inset already keeps part of the room. */
@@ -737,8 +817,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
     }
 
     /**
-     * Under a title to continue, nothing over its artwork: the app's icon, then how far in (a bar) or,
-     * without a position, the app's name. Aligned with the picture inside the card's frame.
+     * Under a title to continue: where it plays, the app's icon and name, whatever is known of it.
+     * Aligned with the picture inside the card's frame.
      */
     private LinearLayout meta(PackageManager pm, TvListings.Item item) {
         LinearLayout line = new LinearLayout(this);
@@ -750,16 +830,10 @@ public class MainActivity extends Activity implements EditMenu.Host {
             icon.setImageDrawable(pm.getApplicationIcon(item.pkg));
         } catch (PackageManager.NameNotFoundException ignored) {
         }
-        line.addView(icon, new LinearLayout.LayoutParams(dp(9), dp(9)));
-        if (item.progress >= 0) {
-            LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(0, dp(3), 1f);
-            plp.setMarginStart(dp(5));
-            line.addView(progress(item.progress), plp);
-        } else {
-            TextView name = text(appLabel(pm, item.pkg), 7, getColor(R.color.syn_encre_secondaire));
-            name.setPadding(dp(4), 0, 0, 0);
-            line.addView(name);
-        }
+        line.addView(icon, new LinearLayout.LayoutParams(dp(UNDER_CARD_ICON_DP), dp(UNDER_CARD_ICON_DP)));
+        TextView name = Tokens.line(this, appLabel(pm, item.pkg), R.style.Role_Note);
+        name.setPadding(px(R.dimen.syn_espace_1), 0, 0, 0);
+        line.addView(name);
         return line;
     }
 
@@ -782,18 +856,13 @@ public class MainActivity extends Activity implements EditMenu.Host {
         };
     }
 
-    TextView text(CharSequence s, float sp, int color) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        if (color != 0) t.setTextColor(color);
-        t.setSingleLine(true);
-        t.setEllipsize(TextUtils.TruncateAt.END);
-        return t;
-    }
-
     int dp(int v) {
         return Math.round(v * density);
+    }
+
+    /** A design-system dimension (jetons.xml), in pixels. */
+    int px(int dimen) {
+        return getResources().getDimensionPixelSize(dimen);
     }
 
     void open(Intent i) {

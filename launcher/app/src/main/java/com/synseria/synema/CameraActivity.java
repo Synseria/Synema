@@ -22,9 +22,14 @@ import org.webrtc.SurfaceViewRenderer;
  * Talking goes through the camera's speaker. The remote's microphone streams only once its own button
  * is pressed, so that button talks here (RemoteKeyService leaves it to this screen): pressed, the mic
  * opens until pressed again; held, it stays open while held. OK on the talk button does the same, and
- * says to press the remote's button when nothing is heard.
+ * says when nothing is heard: the remote's mic sleeps until its own button is pressed.
  */
 public class CameraActivity extends Activity {
+
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
     /** Which camera to open first, from the dashboard's cameras row. */
     static final String EXTRA_INDEX = "index";
     /** The remote's voice buttons: the Assistant button (F12 once renamed, KeyLayouts) and Search. */
@@ -54,7 +59,7 @@ public class CameraActivity extends Activity {
     private boolean heard;
 
     private final Runnable silence = () -> {
-        if (rtc != null && rtc.talking() && !heard) caption.setText(R.string.camera_press_mic);
+        if (rtc != null && rtc.talking() && !heard) caption.setText(R.string.assist_not_heard);
     };
 
     @Override
@@ -73,7 +78,7 @@ public class CameraActivity extends Activity {
         talkButton.setOnClickListener(v -> {
             if (rtc != null) setTalking(!rtc.talking());
         });
-        talkButton.setOnFocusChangeListener((v, has) -> Focus.lift(v, has, Focus.BUTTON));
+        talkButton.setOnFocusChangeListener(Focus::lift);
         home = HomeConfig.load(this);
         ha = HomeAssistant.load(this);
         if (ha == null || home.cameras.isEmpty()) finish();

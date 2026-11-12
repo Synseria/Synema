@@ -7,14 +7,15 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.TypefaceSpan;
+import android.text.TextUtils;
+import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -41,6 +42,9 @@ final class Alerts implements HaSocket.Listener {
     private static final int NOTICE_SECONDS = 8;
     /** The AirPlay code stays this long at most, should the receiver never say it is given. */
     private static final int PIN_SECONDS = 120;
+    /** Enlarged, what the card keeps under the picture (dp): its bar and its row of title and buttons. */
+    private static final int ENLARGED_CHROME_DP = 96;   // jeton manquant: syn_alerte_pied
+    private static final int MESSAGE_MAX_DP = 420;   // jeton manquant: syn_largeur_message
     /** The same alert is not shown again within this delay (people walking past a camera). */
     private static final long COOLDOWN_MS = 120_000;
     static final String NOTIFY_EVENT = "synema_notify";
@@ -182,19 +186,17 @@ final class Alerts implements HaSocket.Listener {
         // The receiver's notification changes for other reasons too.
         if (code.equals(shownPin) || code.equals(closedPin)) return;
         dismissPin();
+        Tokens.apply(ctx);   // the accent may have changed since the service started
         View v = LayoutInflater.from(ctx).inflate(R.layout.overlay_pin, null);
         LinearLayout digits = v.findViewById(R.id.digits);
-        float d = ctx.getResources().getDisplayMetrics().density;
         for (int i = 0; i < code.length(); i++) {
-            TextView digit = new TextView(ctx);
-            digit.setText(code.substring(i, i + 1));
-            digit.setTextSize(26);
+            TextView digit = Tokens.text(ctx, code.substring(i, i + 1), R.style.Role_GrandChiffre);
             digit.setTextColor(ctx.getColor(R.color.syn_nuit_profond));
-            digit.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            digit.setIncludeFontPadding(false);
             digit.setGravity(Gravity.CENTER);
             digit.setBackgroundResource(R.drawable.pin_digit_bg);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams((int) (36 * d), (int) (46 * d));
-            if (i > 0) lp.setMarginStart((int) (6 * d));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(px(R.dimen.syn_cible_min), px(R.dimen.syn_cible_min) + px(R.dimen.syn_espace_4));
+            if (i > 0) lp.setMarginStart(px(R.dimen.syn_espace_2));
             digits.addView(digit, lp);
         }
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
@@ -203,8 +205,8 @@ final class Alerts implements HaSocket.Listener {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.TOP | Gravity.END;
-        lp.x = (int) (28 * d);
-        lp.y = (int) (28 * d);
+        lp.x = Scale.marginX(ctx);
+        lp.y = Scale.marginY(ctx);
         try {
             wm.addView(v, lp);
         } catch (Exception e) {
@@ -250,19 +252,29 @@ final class Alerts implements HaSocket.Listener {
         }
         dismiss();
         boolean live = !a.camera.isEmpty();
+        Tokens.apply(ctx);   // the accent may have changed since the service started
         View v = LayoutInflater.from(ctx).inflate(R.layout.overlay_alert, null);
         TextView title = v.findViewById(R.id.title);
-        if (message.isEmpty()) {
+        if (live) {
+            // The camera's title has its own full-width line: two lines rather than a cut word.
+            title.setTextAppearance(R.style.Role_CorpsFort);
+            title.setMaxLines(2);
+            title.setEllipsize(TextUtils.TruncateAt.END);
+            ((ViewGroup.MarginLayoutParams) title.getLayoutParams()).bottomMargin = 0;
+            title.setText(a.title);
+            TextView note = v.findViewById(R.id.message);
+            if (!message.isEmpty()) {
+                note.setText(message);
+                note.setVisibility(View.VISIBLE);
+            }
+        } else if (message.isEmpty()) {
             title.setText(a.title);
         } else {
-            SpannableString text = new SpannableString(a.title + "\n" + message);
-            int start = a.title.length() + 1;
-            text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            text.setSpan(new TypefaceSpan("sans-serif"), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            title.setText(text);
-            title.setMaxWidth((int) (420 * ctx.getResources().getDisplayMetrics().density));
+            title.setText(withMessage(a.title, message));
+            title.setMaxWidth((int) (MESSAGE_MAX_DP * ctx.getResources().getDisplayMetrics().density));
         }
         v.findViewById(R.id.media).setVisibility(live ? View.VISIBLE : View.GONE);
+        v.findViewById(R.id.countdownBar).setVisibility(live ? View.VISIBLE : View.GONE);
         v.findViewById(R.id.buttons).setVisibility(live ? View.VISIBLE : View.GONE);
         v.findViewById(R.id.btnClose).setOnClickListener(x -> dismiss());
         v.findViewById(R.id.btnFull).setOnClickListener(x -> setEnlarged(!enlarged));
@@ -281,15 +293,14 @@ final class Alerts implements HaSocket.Listener {
         });
 
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
+                live ? px(R.dimen.house_panel_width) : WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
                 // A notice never takes the remote away from the app; a live alert does, to be answered.
                 live ? 0 : WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT);
-        float d = ctx.getResources().getDisplayMetrics().density;
         lp.gravity = live ? Gravity.TOP | Gravity.END : Gravity.BOTTOM | Gravity.START;
-        lp.x = (int) (28 * d);
-        lp.y = (int) (28 * d);
+        lp.x = Scale.marginX(ctx);
+        lp.y = Scale.marginY(ctx);
         try {
             wm.addView(v, lp);
         } catch (Exception e) {
@@ -343,11 +354,25 @@ final class Alerts implements HaSocket.Listener {
                 return;
             }
             boolean live = !shownAlert.camera.isEmpty();
-            ((TextView) shown.findViewById(R.id.countdown)).setText(live ? ctx.getString(R.string.alert_closes_in, secondsLeft) : "");
+            if (live) {
+                View fill = shown.findViewById(R.id.countdown);
+                fill.setPivotX(0);
+                fill.setScaleX(secondsLeft / (float) SHOW_SECONDS);
+            }
             secondsLeft--;
             main.postDelayed(this, 1000);
         }
     };
+
+    private CharSequence withMessage(String title, String message) {
+        SpannableString text = new SpannableString(title + "\n" + message);
+        text.setSpan(new TextAppearanceSpan(ctx, R.style.Role_Corps), title.length() + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return text;
+    }
+
+    private int px(int dimen) {
+        return ctx.getResources().getDimensionPixelSize(dimen);
+    }
 
     /** The card in the corner, or the whole screen; enlarged, it stays until Close or Back. */
     private void setEnlarged(boolean on) {
@@ -355,17 +380,17 @@ final class Alerts implements HaSocket.Listener {
         enlarged = on;
         float d = ctx.getResources().getDisplayMetrics().density;
         WindowManager.LayoutParams lp = (WindowManager.LayoutParams) shown.getLayoutParams();
-        lp.width = on ? WindowManager.LayoutParams.MATCH_PARENT : WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.width = on ? WindowManager.LayoutParams.MATCH_PARENT : px(R.dimen.house_panel_width);
         lp.height = on ? WindowManager.LayoutParams.MATCH_PARENT : WindowManager.LayoutParams.WRAP_CONTENT;
-        lp.x = on ? 0 : (int) (28 * d);
-        lp.y = on ? 0 : (int) (28 * d);
+        lp.x = on ? 0 : Scale.marginX(ctx);
+        lp.y = on ? 0 : Scale.marginY(ctx);
         ImageView frame = shown.findViewById(R.id.frame);
-        shown.findViewById(R.id.media).getLayoutParams().height = on ? ctx.getResources().getDisplayMetrics().heightPixels - (int) (110 * d) : (int) (180 * d);
+        shown.findViewById(R.id.media).getLayoutParams().height = on ? ctx.getResources().getDisplayMetrics().heightPixels - (int) (ENLARGED_CHROME_DP * d) : px(R.dimen.alert_media_height);
         frame.setScaleType(on ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP);
         ((TextView) shown.findViewById(R.id.btnFull)).setText(on ? R.string.alert_shrink : R.string.alert_full_screen);
         if (on) {
             main.removeCallbacks(countdown);
-            ((TextView) shown.findViewById(R.id.countdown)).setText("");
+            shown.findViewById(R.id.countdownBar).setVisibility(View.GONE);
         }
         wm.updateViewLayout(shown, lp);
     }

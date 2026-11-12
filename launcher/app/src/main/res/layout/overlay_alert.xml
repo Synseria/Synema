@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- An alert over any app (Alerts): live camera, title, and its buttons (enlarge, optional reply,
-     close). Without a camera only the title row shows, as a small notice. -->
+<!-- An alert over any app (Alerts): live camera, a bar that empties, then the title, its message and a row of buttons (enlarge:
+     secondary, optional reply: primary, close: tertiary). Without a camera only the title shows, as a small notice.
+     The window is as wide as the House panel (Alerts sets it). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="320dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/alert_bg"
-    android:elevation="12dp">
+    android:elevation="12dp"><!-- jeton manquant: syn_ombre_flottant (elevation), syn_hauteur_alerte_media (16:9 of the panel) -->
 
     <!-- The camera: Home Assistant's pictures at once, the WebRTC video over them from its first frame. -->
     <FrameLayout
         android:id="@+id/media"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_height="@dimen/alert_media_height"
+        android:layout_marginStart="@dimen/syn_espace_2"
+        android:layout_marginTop="@dimen/syn_espace_2"
+        android:layout_marginEnd="@dimen/syn_espace_2"
         android:background="@color/syn_tv_carte">
 
         <org.webrtc.SurfaceViewRenderer
@@ -32,51 +33,73 @@
             android:importantForAccessibility="no" />
     </FrameLayout>
 
-    <LinearLayout
+    <!-- Time left, emptying from the right (Alerts); gone for a notice. -->
+    <FrameLayout
+        android:id="@+id/countdownBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="14dp">
+        android:layout_height="@dimen/syn_espace_1"
+        android:layout_marginStart="@dimen/syn_espace_2"
+        android:layout_marginEnd="@dimen/syn_espace_2"
+        android:background="@color/syn_filet"><!-- jeton manquant: syn_progress_height (4dp stands) -->
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/syn_encre"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif-medium" />
-
-        <TextView
+        <View
             android:id="@+id/countdown"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/syn_encre_secondaire"
-            android:textSize="10sp" />
+            android:layout_height="match_parent"
+            android:background="?attr/syn_primaire" />
+    </FrameLayout>
 
-        <LinearLayout
-            android:id="@+id/buttons"
-            android:layout_width="match_parent"
-            android:layout_height="34dp"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+    <!-- The title has the whole width; a notice keeps it alone (Alerts sets the camera's role and margins). -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/syn_espace_3"
+        android:paddingEnd="@dimen/syn_espace_2"
+        style="@style/Role.Titre" />
 
-            <TextView
-                android:id="@+id/btnFull"
-                style="@style/AlertButton"
-                android:layout_marginEnd="8dp"
-                android:text="@string/alert_full_screen" />
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/syn_espace_3"
+        android:layout_marginEnd="@dimen/syn_espace_3"
+        android:layout_marginBottom="@dimen/syn_espace_1"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:visibility="gone"
+        style="@style/Role.Note" />
 
-            <TextView
-                android:id="@+id/btnReply"
-                style="@style/AlertButton"
-                android:layout_marginEnd="8dp"
-                android:visibility="gone" />
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/syn_cible_min"
+        android:layout_margin="@dimen/syn_espace_3"
+        android:layout_marginTop="@dimen/syn_espace_2"
+        android:gravity="end"
+        android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/btnClose"
-                style="@style/AlertButton"
-                android:text="@string/alert_close" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/btnFull"
+            style="@style/AlertButton"
+            android:layout_marginEnd="@dimen/syn_espace_2"
+            android:background="@drawable/button_secondary_bg"
+            android:textColor="@color/syn_encre"
+            android:text="@string/alert_full_screen" />
+
+        <TextView
+            android:id="@+id/btnReply"
+            style="@style/AlertButton"
+            android:layout_marginEnd="@dimen/syn_espace_2"
+            android:background="@drawable/button_primary_bg"
+            android:textColor="@color/syn_encre_sur_primaire"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/btnClose"
+            style="@style/AlertButton"
+            android:background="@drawable/button_tertiary_bg"
+            android:textColor="?attr/syn_primaire_encre"
+            android:text="@string/alert_close" />
     </LinearLayout>
 </LinearLayout>

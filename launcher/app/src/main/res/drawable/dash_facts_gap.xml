@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The space between a place's readings laid side by side, as a divider: an absent reading leaves no double gap. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <size android:width="@dimen/syn_espace_3" />
+</shape>

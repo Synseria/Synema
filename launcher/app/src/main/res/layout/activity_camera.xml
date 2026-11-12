@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A camera full screen (CameraActivity): the WebRTC video or the pictures (MJPEG), its name bottom
-     left, and the talk button bottom centre with what it does under it. -->
+     left, and the talk button bottom centre with its state under it. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,28 +25,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
-        android:layout_margin="24dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
+        android:layout_marginStart="@dimen/syn_marge_x"
+        android:layout_marginBottom="@dimen/syn_marge_y"
+        android:paddingStart="@dimen/syn_espace_3"
+        android:paddingEnd="@dimen/syn_espace_3"
+        android:paddingTop="@dimen/syn_espace_2"
+        android:paddingBottom="@dimen/syn_espace_2"
         android:background="@drawable/dash_badge_bg"
-        android:textColor="@color/syn_encre"
-        android:textSize="14sp" />
+        style="@style/Role.Corps" />
 
     <LinearLayout
         android:id="@+id/talk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/syn_marge_y"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:visibility="gone">
 
-        <!-- The button (48dp) in a room for its halo (VoiceRing). -->
+        <!-- The button (a touch target) in a room for its halo (VoiceRing); jeton manquant: syn_halo_micro (76dp). -->
         <FrameLayout
             android:id="@+id/talkRoom"
             android:layout_width="76dp"
@@ -55,13 +55,13 @@
 
             <ImageView
                 android:id="@+id/btnTalk"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="@dimen/syn_cible_min"
+                android:layout_height="@dimen/syn_cible_min"
                 android:layout_gravity="center"
-                android:padding="13dp"
+                android:padding="@dimen/syn_espace_3"
                 android:background="@drawable/talk_button_bg"
                 android:src="@drawable/ic_mic"
-                android:tint="@color/talk_icon"
+                android:tint="@color/syn_encre"
                 android:focusable="true"
                 android:clickable="true"
                 android:contentDescription="@string/camera_talk" />
@@ -71,12 +71,11 @@
             android:id="@+id/talkCaption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
+            android:paddingStart="@dimen/syn_espace_3"
+            android:paddingEnd="@dimen/syn_espace_3"
+            android:paddingTop="@dimen/syn_espace_1"
+            android:paddingBottom="@dimen/syn_espace_1"
             android:background="@drawable/dash_badge_bg"
-            android:textColor="@color/syn_encre"
-            android:textSize="11sp" />
+            style="@style/Role.Corps" />
     </LinearLayout>
 </FrameLayout>

@@ -21,6 +21,11 @@ import android.view.accessibility.AccessibilityEvent;
  */
 public class RemoteKeyService extends AccessibilityService {
 
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
+
     private static final String TAG = "TvHome.RemoteKey";
     private HomeConfig config;
     private HomeAssistant ha;

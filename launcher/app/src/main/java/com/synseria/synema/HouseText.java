@@ -2,11 +2,17 @@ package com.synseria.synema;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** How the house reads in words, shared by the dashboard and the screensaver. */
 final class HouseText {
@@ -15,7 +21,36 @@ final class HouseText {
     /** EDF's Tempo integrations name the colours in French; red is the dear day. */
     private static final String TEMPO_BLUE = "bleu", TEMPO_WHITE = "blanc", TEMPO_RED = "rouge";
 
+    /**
+     * A figure's unit: the no-break space and the word after a digit. Text that carries a figure is written in
+     * this shape, and {@link #units} gives every such unit the same look. The degree sign is part of the figure:
+     * smaller, it floats loose beside it.
+     */
+    private static final Pattern UNIT = Pattern.compile("(?<=\\d)\u00A0(?:%|€|\\p{L}+)");
+    /** A unit is one step smaller than its figure. */
+    // jeton manquant: syn_unite_echelle (0.8)
+    private static final float UNIT_SCALE = 0.8f;
+
     private HouseText() {
+    }
+
+    /**
+     * {@code text} with each unit after a figure in secondary ink and, when {@code smaller}, a step down; the
+     * small roles (12 sp) are the design system's floor, so their units only change ink.
+     */
+    static SpannableStringBuilder units(Context ctx, CharSequence text, boolean smaller) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(text);
+        Matcher m = UNIT.matcher(text);
+        while (m.find()) {
+            sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (smaller) sb.setSpan(new RelativeSizeSpan(UNIT_SCALE), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return sb;
+    }
+
+    /** A figure and its unit, in the shape {@link #units} reads. */
+    static String measure(String figure, String unit) {
+        return figure + (unit.equals("°") ? "" : "\u00A0") + unit;
     }
 
     /** Something out of the ordinary: a capsule on the dashboard's top line, a line in the screensaver. */
@@ -68,7 +103,7 @@ final class HouseText {
         Double va = number(power);
         if (va != null && va > home.energyLimit) {
             String unit = power.attrs.optString("unit_of_measurement");
-            out.add(problem(ctx.getString(R.string.power_high, whole(va) + (unit.isEmpty() ? "" : "\u00A0" + unit))));
+            out.add(problem(ctx.getString(R.string.power_high, unit.isEmpty() ? whole(va) : measure(whole(va), unit))));
         }
         if (tempoRed(home.energyTempo, states)) out.add(problem(ctx.getString(R.string.tempo_red_today)));
         if (tempoRed(home.energyTempoTomorrow, states)) out.add(problem(ctx.getString(R.string.tempo_red_tomorrow)));
@@ -91,7 +126,7 @@ final class HouseText {
      */
     static final int[][] TEMPO = {
             {0xFF0A84FF, 0xFF1C5BB3}, // off-palette: EDF's Tempo blue
-            {0xFFE5E5EA, 0xFF8E8E93}, // off-palette: EDF's Tempo white
+            {0xFFC7C7CC, 0xFF8E8E93}, // off-palette: EDF's Tempo white, a light grey so it does not outshine the others
             {0xFFFF453A, 0xFFA8322B}}; // off-palette: EDF's Tempo red
 
     /** A Tempo day's colour for its dot; grey until EDF says (tomorrow's comes late in the morning). */
@@ -99,6 +134,12 @@ final class HouseText {
         String c = s.state.toLowerCase(Locale.ROOT);
         return c.contains(TEMPO_RED) ? TEMPO[2][0] : c.contains(TEMPO_WHITE) ? TEMPO[1][0]
                 : c.contains(TEMPO_BLUE) ? TEMPO[0][0] : ctx.getColor(R.color.syn_encre_tertiaire);
+    }
+
+    /** The day's colour in words as Home Assistant states it: "Bleu". */
+    static String tempoName(HomeAssistant.State s) {
+        if (!s.available() || s.state.isEmpty()) return "";
+        return s.state.substring(0, 1).toUpperCase(Locale.getDefault()) + s.state.substring(1).toLowerCase(Locale.getDefault());
     }
 
     /** Whom or what a status entry is about: its label, else the entity's name in Home Assistant. */
@@ -148,5 +189,16 @@ final class HouseText {
 
     static String degrees(double v) {
         return String.format(Locale.getDefault(), "%.0f°", v);
+    }
+
+    /** "702 VA / 6 kVA": the power, then the subscription in the secondary ink when known. */
+    static SpannableStringBuilder power(Context ctx, double va, HomeAssistant.State power, Double max,
+                                        HomeAssistant.State subscribed) {
+        SpannableStringBuilder sb = units(ctx, measure(whole(va), power.attrs.optString("unit_of_measurement")), true);
+        if (max == null) return sb;
+        int at = sb.length();
+        sb.append(units(ctx, " / " + measure(whole(max), subscribed.attrs.optString("unit_of_measurement")), true));
+        sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return sb;
     }
 }
