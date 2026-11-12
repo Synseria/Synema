@@ -175,6 +175,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         findViewById(R.id.btnAssist).setOnClickListener(v -> open(new Intent(this, AssistActivity.class)));
         findViewById(R.id.btnApps).setOnClickListener(v -> open(new Intent(this, AppsActivity.class)));
         findViewById(R.id.btnInputs).setOnClickListener(v -> sources.open(true));
+        findViewById(R.id.btnCustomize).setOnClickListener(v -> editMenu.customize());
         findViewById(R.id.btnSettings).setOnClickListener(v -> open(new Intent(Settings.ACTION_SETTINGS)));
         TextView caption = findViewById(R.id.topCaption);
         content.getViewTreeObserver().addOnGlobalFocusChangeListener((from, to) -> {
@@ -219,7 +220,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         }
     }
 
-    private static final int[] TOP_BUTTONS = {R.id.btnAssist, R.id.btnApps, R.id.btnInputs, R.id.btnSettings};
+    private static final int[] TOP_BUTTONS = {R.id.btnAssist, R.id.btnApps, R.id.btnInputs, R.id.btnCustomize, R.id.btnSettings};
     /** What had the focus before it went up to the buttons: Down takes it back there. */
     private View cameUpFrom;
 

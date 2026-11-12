@@ -120,6 +120,12 @@
                     android:contentDescription="@string/inputs" />
 
                 <ImageView
+                    android:id="@+id/btnCustomize"
+                    style="@style/IconButton"
+                    android:src="@drawable/ic_palette"
+                    android:contentDescription="@string/customize" />
+
+                <ImageView
                     android:id="@+id/btnSettings"
                     style="@style/IconButton"
                     android:src="@drawable/ic_settings"
