@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Engendré par Synseria-Design — ne pas retoucher : changer jetons.json ou apps/Synema.json, puis sh propager.sh. -->
-<!-- jetons.json 8e252f614957292a · contenu f5425149dbeff641 -->
+<!-- jetons.json 8e252f614957292a · contenu e026efdc4bea86d9 -->
 <resources>
     <color name="syn_fenetre">#FF12151D</color>
     <color name="syn_surface">#FF1A1E2A</color>
@@ -34,6 +34,39 @@
     <color name="syn_touche_verte">#FF46A758</color>
     <color name="syn_touche_jaune">#FFF5D90A</color>
     <color name="syn_touche_bleue">#FF3E8EF7</color>
+    <attr name="syn_primaire" format="color" />
+    <attr name="syn_primaire_encre" format="color" />
+    <attr name="syn_primaire_fond" format="color" />
+    <style name="SynCouleur.Azur">
+        <item name="syn_primaire">#FF7CADFF</item>
+        <item name="syn_primaire_encre">#FFB1CEFF</item>
+        <item name="syn_primaire_fond">#387CADFF</item>
+    </style>
+    <style name="SynCouleur.Jade">
+        <item name="syn_primaire">#FF4BCBA9</item>
+        <item name="syn_primaire_encre">#FF9FE2CC</item>
+        <item name="syn_primaire_fond">#384BCBA9</item>
+    </style>
+    <style name="SynCouleur.Violet">
+        <item name="syn_primaire">#FFB79CFF</item>
+        <item name="syn_primaire_encre">#FFD3C5FF</item>
+        <item name="syn_primaire_fond">#38B79CFF</item>
+    </style>
+    <style name="SynCouleur.Framboise">
+        <item name="syn_primaire">#FFF27F93</item>
+        <item name="syn_primaire_encre">#FFF9B1BB</item>
+        <item name="syn_primaire_fond">#38F27F93</item>
+    </style>
+    <style name="SynCouleur.Corail">
+        <item name="syn_primaire">#FFEA8869</item>
+        <item name="syn_primaire_encre">#FFF3B6A3</item>
+        <item name="syn_primaire_fond">#38EA8869</item>
+    </style>
+    <style name="SynCouleur.Ardoise">
+        <item name="syn_primaire">#FFB6BECC</item>
+        <item name="syn_primaire_encre">#FFD9DEE7</item>
+        <item name="syn_primaire_fond">#38B6BECC</item>
+    </style>
     <dimen name="syn_rayon_pastille">4dp</dimen>
     <dimen name="syn_rayon_controle">8dp</dimen>
     <dimen name="syn_rayon_carte">12dp</dimen>
