@@ -456,10 +456,15 @@ public class MainActivity extends Activity implements EditMenu.Host {
     }
 
     private String backdropUri;
-    private final Runnable backdropForFocus = () -> Posters.load(this, backdropUri, Backdrop.SCENE_W, bmp -> {
-        if (bmp != null) onTheme = false;
-        backdrop.show(bmp);
-    });
+    private final Runnable backdropForFocus = () -> {
+        String wanted = backdropUri;
+        // A picture that arrives after the focus moved on (another title, or the House panel) is dropped.
+        Posters.load(this, wanted, Backdrop.SCENE_W, bmp -> {
+            if (inHouse || wanted == null || !wanted.equals(backdropUri)) return;
+            if (bmp != null) onTheme = false;
+            backdrop.show(bmp);
+        });
+    };
 
     /**
      * What has no artwork of its own (the House panel, an app that publishes none): the first colour theme
