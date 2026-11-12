@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A destructive button: solid danger, a white ring when focused. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_danger_plein" />
+                    <corners android:radius="@dimen/syn_rayon_controle" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_controle" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/syn_danger_plein" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
+        </shape>
+    </item>
+</selector>
