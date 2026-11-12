@@ -19,7 +19,7 @@
     <string name="state_off">Off</string>
     <string name="state_open">Open</string>
     <string name="state_closed">Closed</string>
-    <string name="state_brightness">On · %1$d %%</string>
+    <string name="state_brightness">On · %1$d&#160;%%</string>
     <!-- Home Assistant weather states, in the order of weather_condition_names. -->
     <string-array name="weather_condition_keys" translatable="false">
         <item>clear-night</item>
@@ -136,10 +136,10 @@
     <plurals name="edit_show_titles"><item quantity="one">Show %d hidden title again</item><item quantity="other">Show the %d hidden titles again</item></plurals>
     <string name="hero_app">App</string>
     <string name="unit_hpa" translatable="false">hPa</string>
-    <string name="unit_co2" translatable="false">ppm CO₂</string>
+    <string name="unit_co2" translatable="false">ppm</string>
     <string name="unit_db" translatable="false">dB</string>
     <!-- What is out of the ordinary, read from the measures (HouseText.notices). -->
-    <string name="co2_high" translatable="false">CO₂ %1$s ppm · %2$s</string>
+    <string name="co2_high" translatable="false">CO₂ %1$s&#160;ppm · %2$s</string>
     <string name="power_high">Power %1$s</string>
     <string name="tempo_red_today">Red Tempo day</string>
     <string name="tempo_red_tomorrow">Red Tempo day tomorrow</string>
@@ -157,7 +157,7 @@
     <string name="tech_month">%1$s this month</string>
     <string name="tech_today">today</string>
     <string name="tmdb_credit">Film and series data: TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
-    <string name="rating" translatable="false">%1$d %%</string>
+    <string name="rating" translatable="false">%1$d&#160;%%</string>
     <string name="rating_audience">Audience %1$d %%</string>
     <string name="tech_tomorrow">tomorrow</string>
     <string name="graph_history">History</string>
@@ -181,8 +181,8 @@
     <string name="energy_none">No electricity meter in Home Assistant\'s Energy dashboard</string>
     <string name="graph_co2" translatable="false">CO₂</string>
     <string name="energy_consumption">Consumption</string>
-    <string name="energy_per_hour">kWh per hour</string>
-    <string name="energy_per_day">kWh per day</string>
-    <string name="energy_per_month">kWh per month</string>
+    <string name="energy_per_hour">kWh / hour</string>
+    <string name="energy_per_day">kWh / day</string>
+    <string name="energy_per_month">kWh / month</string>
     <string name="assist_actions">What you may offer to switch in the house (entity | name (room) | state):\n%1$s\nWhen it helps, end your answer with one to three offered actions, each on its own line, exactly so: ⚡ short label | domain.service | entity. Services: turn_on, turn_off or toggle; cover: cover.open_cover or cover.close_cover; vacuum: vacuum.start or vacuum.return_to_base; scene: scene.turn_on. Only these entities; otherwise, no line.</string>
 </resources>

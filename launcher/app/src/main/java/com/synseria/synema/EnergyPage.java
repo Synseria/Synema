@@ -1,6 +1,7 @@
 package com.synseria.synema;
 
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -64,8 +65,8 @@ final class EnergyPage {
         readings.addView(power);
         LinearLayout facts = new LinearLayout(activity);
         facts.setOrientation(LinearLayout.VERTICAL);
-        cost = activity.text("", 11, 0xE0F2F2F5);
-        tempo = activity.text("", 11, 0xE0F2F2F5);
+        cost = activity.text("", 11, activity.getColor(R.color.syn_encre));
+        tempo = activity.text("", 11, activity.getColor(R.color.syn_encre));
         facts.addView(cost);
         facts.addView(tempo);
         LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -79,6 +80,13 @@ final class EnergyPage {
         totals = new LinearLayout(activity);
         LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         tlp.topMargin = activity.dp(16);
+        // On the picture, as the chart below: a light picture would swallow the figures.
+        GradientDrawable veil = new GradientDrawable();
+        veil.setColor(activity.getColor(R.color.syn_tv_voile));
+        veil.setCornerRadius(activity.getResources().getDimension(R.dimen.syn_rayon_carte));
+        totals.setBackground(veil);
+        int pad = activity.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
+        totals.setPadding(pad, activity.dp(12), pad, activity.dp(12));
         content.addView(totals, tlp);
         for (int name : new int[]{R.string.energy_today, R.string.energy_yesterday, R.string.energy_this_month, R.string.energy_last_month}) {
             LinearLayout cell = new LinearLayout(activity);
@@ -86,7 +94,7 @@ final class EnergyPage {
             TextView label = new TextView(activity, null, 0, R.style.DashCaps);
             label.setText(name);
             cell.addView(label);
-            TextView value = activity.text("–", 20, 0xFFF2F2F5);
+            TextView value = activity.text("–", 20, activity.getColor(R.color.syn_encre));
             value.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
             value.setFontFeatureSettings("tnum");
             LinearLayout.LayoutParams vlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -115,7 +123,7 @@ final class EnergyPage {
         LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
         clp.topMargin = activity.dp(8);
         content.addView(chart, clp);
-        legend = activity.text("", 9.5f, 0xA6F2F2F5);
+        legend = activity.text("", 9.5f, activity.getColor(R.color.syn_encre_secondaire));
         LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         llp.topMargin = activity.dp(6);
         content.addView(legend, llp);
@@ -168,7 +176,7 @@ final class EnergyPage {
         sb.append(activity.getString(R.string.tech_tempo)).append(' ').append(activity.getString(day)).append("  ");
         int at = sb.length();
         sb.append("●");
-        sb.setSpan(new ForegroundColorSpan(HouseText.tempoColour(s)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        sb.setSpan(new ForegroundColorSpan(HouseText.tempoColour(activity, s)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         sb.append(' ').append(s.state.substring(0, 1).toUpperCase(Locale.getDefault())).append(s.state.substring(1).toLowerCase(Locale.getDefault()));
     }
 
@@ -318,11 +326,11 @@ final class EnergyPage {
         return tempoOf(id) * 2 + (offPeak(id) ? 0 : 1);
     }
 
-    private static final int[][] COLOURS = {
-            {0xFF0A84FF, 0xFF1C5BB3}, {0xFFE5E5EA, 0xFF8E8E93}, {0xFFFF453A, 0xFFA8322B}, {0xFF64D2FF, 0xFF2F7C99}};
-
-    private static int colour(String id) {
-        return COLOURS[tempoOf(id)][offPeak(id) ? 1 : 0];
+    private int colour(String id) {
+        int t = tempoOf(id);
+        boolean off = offPeak(id);
+        if (t < 3) return HouseText.TEMPO[t][off ? 1 : 0];
+        return activity.getColor(off ? R.color.syn_safran : R.color.syn_primaire);
     }
 
     private String name(String id) {

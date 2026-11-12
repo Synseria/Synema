@@ -3,20 +3,20 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <solid android:color="#F5FFFFFF" />
-            <corners android:radius="10dp" />
+            <solid android:color="@color/syn_encre" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
         </shape>
     </item>
     <item android:state_activated="true">
         <shape android:shape="rectangle">
-            <solid android:color="#2EFFFFFF" />
-            <corners android:radius="10dp" />
+            <solid android:color="@color/syn_pression" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#0FFFFFFF" />
-            <corners android:radius="10dp" />
+            <solid android:color="@color/syn_survol" />
+            <corners android:radius="@dimen/syn_rayon_controle" />
         </shape>
     </item>
 </selector>

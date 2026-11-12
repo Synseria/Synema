@@ -34,7 +34,8 @@ public final class CardRow extends ViewGroup {
      * background through, but costs this GPU a layer per frame of a slide.
      */
     private static final int FADE_DP = 40;
-    private static final int FADE_COLOR = 0xE60B1220;
+    /** The backdrop's own colour, so the row fades into it. */
+    private static final int FADE_COLOR = 0xE6 << 24 | (Backdrop.NAVY & 0xFFFFFF);
     /** Short: every frame of a slide redraws the row. */
     private static final long SLIDE_MS = 180;
 

@@ -46,6 +46,8 @@ final class SourcesPage {
         content.addView(cards, lp);
     }
 
+    private static final String AIRPLAY = "AirPlay";
+
     /** The Home intent that brings the dashboard with this page open, from any app (a remote button). */
     static Intent intent(Context ctx) {
         return new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(ctx.getPackageName())
@@ -64,7 +66,11 @@ final class SourcesPage {
         cards.removeAllViews();
         add(Favourites.resolve(activity, LIVE_TV));
         for (String[] input : Favourites.inputs(activity)) add(Favourites.resolve(activity, input[0]));
-        add(Favourites.resolve(activity, AirPlayPin.RECEIVER));
+        // The receiver's own banner is a bare white icon: it gets a named tile like the inputs beside it.
+        Favourites.Entry airPlay = Favourites.resolve(activity, AirPlayPin.RECEIVER);
+        if (airPlay != null) {
+            add(new Favourites.Entry(airPlay.id, AIRPLAY, Favourites.inputBanner(activity, AIRPLAY), airPlay.launch));
+        }
         String all = activity.getString(R.string.sources_all);
         Card more = Card.of(activity, Favourites.inputBanner(activity, all), all);
         more.setOnClickListener(v -> activity.open(new Intent(VIEW_INPUTS), v));

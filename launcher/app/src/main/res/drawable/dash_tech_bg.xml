@@ -2,16 +2,26 @@
 <!-- The panel's technical corner: a shade darker than the panel; focused, a tile's veil and ring (Focus.block). -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <solid android:color="#2EFFFFFF" />
-            <stroke android:width="2dp" android:color="#FFFFFFFF" />
-            <corners android:radius="11dp" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_tv_fond" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_pression" />
+                    <stroke android:width="2dp" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#2E000000" />
-            <corners android:radius="11dp" />
+            <solid android:color="@color/syn_tv_fond" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>
 </selector>

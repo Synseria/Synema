@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A tile's second line: dim, light while the thing is on. The name is always light. -->
+<!-- A tile's second line: secondary, primary while the thing is on. The name is always primary. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_activated="true" android:color="#FFF2F2F5" />
-    <item android:color="#FFA1A1A6" />
+    <item android:state_activated="true" android:color="@color/syn_encre" />
+    <item android:color="@color/syn_encre_secondaire" />
 </selector>

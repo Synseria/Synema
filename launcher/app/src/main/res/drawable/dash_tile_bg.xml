@@ -1,24 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A tile (Focus.tile): faint glass at rest, brighter when on, and focused a white veil under a white
-     ring; never a solid white fill. -->
+<!-- A tile (Focus.tile): a card, lighter when its thing is on; focused, a veil under a ring, never a solid
+     white fill. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_activated="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_tv_carte_allumee" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/focus_veil" />
+                    <stroke android:width="2dp" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
     <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <solid android:color="#2EFFFFFF" />
-            <stroke android:width="2dp" android:color="#FFFFFFFF" />
-            <corners android:radius="10dp" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_tv_carte" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/focus_veil" />
+                    <stroke android:width="2dp" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_pastille" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item android:state_activated="true">
         <shape android:shape="rectangle">
-            <solid android:color="#33FFFFFF" />
-            <corners android:radius="10dp" />
+            <solid android:color="@color/syn_tv_carte_allumee" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#0DFFFFFF" />
-            <corners android:radius="10dp" />
+            <solid android:color="@color/syn_tv_carte" />
+            <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>
 </selector>
