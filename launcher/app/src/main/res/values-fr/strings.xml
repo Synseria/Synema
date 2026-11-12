@@ -61,6 +61,13 @@
     <string name="home_key_name">Bouton Accueil</string>
     <string name="home_key_description">Fait ouvrir ce launcher par le bouton Accueil de la télécommande.</string>
     <string name="backdrop">Fond</string>
+    <string name="colour">Couleur</string>
+    <string name="colour_azur">Azur</string>
+    <string name="colour_jade">Jade</string>
+    <string name="colour_violet">Violet</string>
+    <string name="colour_framboise">Framboise</string>
+    <string name="colour_corail">Corail</string>
+    <string name="colour_ardoise">Ardoise</string>
     <string name="backdrop_artwork">Auto</string>
     <string name="backdrop_picture">Image</string>
     <string name="assistant_key_layout">Bouton Assistant : assistant maison</string>

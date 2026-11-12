@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A cell's label in a single-choice group: accent ink once chosen. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_activated="true" android:color="@color/syn_primaire_encre" />
+    <item android:state_activated="true" android:color="?attr/syn_primaire_encre" />
     <item android:color="@color/syn_encre_secondaire" />
 </selector>

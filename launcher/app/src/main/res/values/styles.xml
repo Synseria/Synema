@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- The implicit parent of jetons.xml's SynCouleur.* presets. -->
+    <style name="SynCouleur" />
+
     <style name="Theme.TvHome" parent="android:Theme.Material.NoActionBar.Fullscreen">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>

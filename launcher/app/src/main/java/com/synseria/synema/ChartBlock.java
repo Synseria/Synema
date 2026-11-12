@@ -22,7 +22,7 @@ final class ChartBlock extends FrameLayout {
         chart = new Chart(ctx);
         addView(chart, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         retry = Tokens.text(ctx, ctx.getString(R.string.action_retry), R.style.Role_CorpsFort);
-        retry.setTextColor(ctx.getColor(R.color.syn_primaire_encre));
+        retry.setTextColor(Tokens.primaryInk(ctx));
         retry.setBackgroundResource(R.drawable.button_tertiary_bg);
         retry.setGravity(Gravity.CENTER);
         retry.setMinHeight(retryHeight(ctx));

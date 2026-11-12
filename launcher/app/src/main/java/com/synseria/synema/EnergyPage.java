@@ -336,7 +336,7 @@ final class EnergyPage {
         int t = tempoOf(id);
         boolean off = offPeak(id);
         if (t < 3) return HouseText.TEMPO[t][off ? 1 : 0];
-        return activity.getColor(off ? R.color.syn_encre_secondaire : R.color.syn_primaire);
+        return off ? activity.getColor(R.color.syn_encre_secondaire) : Tokens.primary(activity);
     }
 
     private String name(String id) {

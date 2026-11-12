@@ -390,7 +390,7 @@ public class AssistActivity extends Activity {
         t.setMaxWidth(dp(BUBBLE_DP));
         t.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setColor(getColor(mine ? R.color.syn_primaire : R.color.syn_creux));
+        bg.setColor(mine ? Tokens.primary(this) : getColor(R.color.syn_creux));
         float r = getResources().getDimension(R.dimen.syn_rayon_carte), tail = getResources().getDimension(R.dimen.syn_rayon_pastille);
         bg.setCornerRadii(mine ? new float[]{r, r, r, r, tail, tail, r, r} : new float[]{r, r, r, r, r, r, tail, tail});
         t.setBackground(bg);
@@ -472,7 +472,7 @@ public class AssistActivity extends Activity {
         line.addView(t);
         if (retry != null) {
             TextView again = Tokens.text(this, getString(R.string.action_retry), R.style.Role_CorpsFort);
-            again.setTextColor(getColor(R.color.syn_primaire_encre));
+            again.setTextColor(Tokens.primaryInk(this));
             again.setBackgroundResource(R.drawable.button_tertiary_bg);
             again.setGravity(android.view.Gravity.CENTER);
             again.setMinHeight(px(R.dimen.syn_cible_min));

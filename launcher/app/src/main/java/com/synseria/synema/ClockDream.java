@@ -105,7 +105,7 @@ public class ClockDream extends DreamService {
         }
         chart.setVisibility(View.VISIBLE);
         List<Chart.Series> s = new ArrayList<>();
-        s.add(new Chart.Series("", getColor(R.color.syn_primaire), Chart.Unit.DEGREES, points));
+        s.add(new Chart.Series("", Tokens.primary(this), Chart.Unit.DEGREES, points));
         chart.lines(Stats.Span.DAY, s);
     }
 
