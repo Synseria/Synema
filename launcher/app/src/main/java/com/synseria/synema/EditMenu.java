@@ -381,7 +381,7 @@ final class EditMenu {
 
     /**
      * A label with the chosen name at its end over a single-choice group of swatches: the arrows choose, the
-     * chosen swatch is outlined, and the save waits for the arrows to rest.
+     * chosen swatch is outlined while the group has the focus (swatchCell), and the save waits for the arrows to rest.
      */
     private void swatchRow(LinearLayout rows, String label, List<String[]> choices, String current,
                            java.util.function.Function<String, Drawable> look, java.util.function.Consumer<String> save) {
@@ -431,37 +431,41 @@ final class EditMenu {
         save.run();
     }
 
-    /** An accent's swatch: its colour, ringed in ink once chosen (activated). */
+    /** An accent's swatch: its colour. */
     private Drawable colourSwatch(String id) {
-        float radius = activity.getResources().getDimension(R.dimen.syn_rayon_controle);
         GradientDrawable fill = new GradientDrawable();
-        fill.setCornerRadius(radius);
         fill.setColor(Tokens.preset(activity, Tokens.colour(id)));
-        GradientDrawable chosen = new GradientDrawable();
-        chosen.setCornerRadius(radius);
-        chosen.setStroke(activity.getResources().getDimensionPixelSize(R.dimen.syn_trait_etat), activity.getColor(R.color.syn_encre));
-        StateListDrawable ring = new StateListDrawable();
-        ring.addState(new int[]{android.R.attr.state_activated}, chosen);
-        ring.addState(new int[0], new ColorDrawable(Color.TRANSPARENT));
-        return new LayerDrawable(new Drawable[]{fill, ring});
+        return swatchCell(fill);
     }
 
-    /** A background's swatch: its colours in miniature, outlined once chosen (activated). */
+    /** A background's swatch: its colours in miniature. */
     private Drawable swatch(String id) {
         Backdrop.Theme t = Backdrop.theme(activity, id);
-        GradientDrawable fill = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
+        return swatchCell(new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                 t != null ? new int[]{Backdrop.lit(t, 1, 0), t.base, Backdrop.lit(t, 0, 1)}
                         : id.equals(Config.BACKDROP_PICTURE) ? new int[]{0xFF0F3D4A, 0xFF2A1F55} // off-palette: hints of a photo
-                        : new int[]{0xFF6B4A3A, 0xFF22303F, 0xFF3A2E5A}); // off-palette: hints of a photo
+                        : new int[]{0xFF6B4A3A, 0xFF22303F, 0xFF3A2E5A})); // off-palette: hints of a photo
+    }
+
+    /**
+     * A swatch's cell, as a ChoiceGroup cell: the chosen one outlined in the accent only while its group has the
+     * focus (activated and selected); without the focus, the name at the row's end says the choice. The swatch
+     * always sits inset, the outline at the cell's edge: a swatch in the accent itself keeps its outline apart,
+     * and the cell is the same size in every state.
+     */
+    private Drawable swatchCell(GradientDrawable fill) {
         float radius = activity.getResources().getDimension(R.dimen.syn_rayon_controle);
-        fill.setCornerRadius(radius);
-        GradientDrawable chosen = new GradientDrawable();
-        chosen.setCornerRadius(radius);
-        chosen.setStroke(activity.getResources().getDimensionPixelSize(R.dimen.syn_trait_etat), Tokens.primary(activity));
+        int inset = px(R.dimen.syn_espace_1);
+        fill.setCornerRadius(Math.max(0, radius - inset));   // concentric with the outline
+        GradientDrawable outline = new GradientDrawable();
+        outline.setCornerRadius(radius);
+        outline.setStroke(px(R.dimen.syn_trait_etat), Tokens.primary(activity));
         StateListDrawable ring = new StateListDrawable();
-        ring.addState(new int[]{android.R.attr.state_activated}, chosen);
+        ring.addState(new int[]{android.R.attr.state_activated, android.R.attr.state_selected}, outline);
         ring.addState(new int[0], new ColorDrawable(Color.TRANSPARENT));
-        return new LayerDrawable(new Drawable[]{fill, ring});
+        LayerDrawable cell = new LayerDrawable(new Drawable[]{fill, ring});
+        cell.setLayerInset(0, inset, inset, inset, inset);
+        return cell;
     }
 
     /** A switch drawn at a row's end: accent and knob right when on, grey and knob left when off. */
