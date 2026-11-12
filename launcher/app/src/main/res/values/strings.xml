@@ -146,7 +146,6 @@
         <item quantity="other">%d rooms lit</item>
     </plurals>
     <!-- A room's page. -->
-    <string name="room_back">‹ Home</string>
     <string name="room_lights">Lights</string>
     <string name="room_devices">Devices</string>
     <string name="tech_tempo" translatable="false">Tempo</string>
@@ -160,10 +159,14 @@
     <string name="graph_history">History</string>
     <string name="graph_climate">Temperature · Humidity</string>
     <string name="graph_noise">Noise</string>
+    <string name="graph_none">No reading</string>
+    <string name="graph_loading">Loading</string>
+    <string name="stats_unavailable">Statistics unavailable</string>
+    <string name="unit_hours">%1$d&#160;h</string>
+    <string name="unit_days">%1$d&#160;d</string>
     <string name="energy_title">Electricity</string>
     <string name="sources_all">More</string>
     <string name="energy_range_today">Today</string>
-    <string name="energy_range_days">30&#160;days</string>
     <string name="energy_range_months">12&#160;months</string>
     <string name="energy_today">Today</string>
     <string name="energy_yesterday">Yesterday</string>

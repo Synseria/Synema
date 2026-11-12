@@ -23,8 +23,10 @@ import java.util.Map;
 final class RoomPage {
     private static final int PER_ROW = 4;
     /** The camera column's width (dp), its picture the widest card of the page. */
+    // jeton manquant: syn_colonne_camera (300dp)
     private static final int CAMERA_DP = 300;
     /** The graphs' height when the tiles fill the page, and at most when they leave room. */
+    // jeton manquant: syn_graphique_hauteur (128dp), syn_graphique_hauteur_max (230dp)
     private static final int CHART_DP = 128, CHART_MAX_DP = 230;
     /** The span last chosen, kept for every room. */
     private static Stats.Span span = Stats.Span.DAY;
@@ -107,7 +109,7 @@ final class RoomPage {
         head.addView(label, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL));
         String[] spans = new String[Stats.Span.values().length];
-        for (int i = 0; i < spans.length; i++) spans[i] = Stats.Span.values()[i].label;
+        for (int i = 0; i < spans.length; i++) spans[i] = Stats.Span.values()[i].label(activity);
         head.addView(Chips.row(activity, spans, span.ordinal(), i -> {
             span = Stats.Span.values()[i];
             readCharts();
@@ -166,7 +168,7 @@ final class RoomPage {
     }
 
     private void chart(int title) {
-        Chart c = new Chart(activity);
+        ChartBlock c = new ChartBlock(activity);
         c.title(activity.getString(title));
         c.setTag(title);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
@@ -180,17 +182,24 @@ final class RoomPage {
         List<String> sensors = new ArrayList<>();
         p.addSensors(sensors);
         if (sensors.isEmpty()) return;
-        for (int i = 0; i < charts.getChildCount(); i++) ((Chart) charts.getChildAt(i)).reading();
+        for (int i = 0; i < charts.getChildCount(); i++) ((ChartBlock) charts.getChildAt(i)).reading();
         Stats.Span asked = span;
         Stats.readings(live.get(), sensors, asked, read -> {
             if (!shownRoom.equals(shown()) || asked != span) return;
-            side.whenStill(() -> drawCharts(p, read));
+            side.whenStill(() -> {
+                if (read.isEmpty()) failedCharts();
+                else drawCharts(p, read);
+            });
         });
+    }
+
+    private void failedCharts() {
+        for (int i = 0; i < charts.getChildCount(); i++) ((ChartBlock) charts.getChildAt(i)).failed(this::readCharts);
     }
 
     private void drawCharts(Place p, Map<String, List<Stats.Point>> read) {
         for (int i = 0; i < charts.getChildCount(); i++) {
-            Chart c = (Chart) charts.getChildAt(i);
+            ChartBlock c = (ChartBlock) charts.getChildAt(i);
             List<Chart.Series> s = new ArrayList<>();
             int title = (Integer) c.getTag();
             if (title == R.string.graph_climate) {
@@ -205,10 +214,10 @@ final class RoomPage {
         }
     }
 
-    /** A chart's first curve is the primary accent, its second the saffron one. */
+    /** A chart's first curve is the primary accent, its second the same hue's lighter ink (saffron is never a series). */
     private void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, Chart.Unit unit) {
         List<Stats.Point> points = read.get(sensor);
-        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_safran);
+        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_primaire_encre);
         if (points != null && !points.isEmpty()) out.add(new Chart.Series("", color, unit, points));
     }
 

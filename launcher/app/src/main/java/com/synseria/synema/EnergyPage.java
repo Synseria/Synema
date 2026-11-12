@@ -38,7 +38,7 @@ final class EnergyPage {
     private final SidePage side;
     private final LinearLayout content, totals;
     private final TextView power, cost, tempo, legend;
-    private final Chart chart;
+    private final ChartBlock chart;
     private final ChoiceGroup chips;
     private HomeConfig home;
     /** The dashboard's connection of the moment (a new one on each return to Home). */
@@ -106,7 +106,7 @@ final class EnergyPage {
         head.addView(label, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL));
         chips = Chips.row(activity, new String[]{activity.getString(R.string.energy_range_today),
-                activity.getString(R.string.energy_range_days), activity.getString(R.string.energy_range_months)}, range.ordinal(), i -> {
+                activity.getString(R.string.unit_days, 30), activity.getString(R.string.energy_range_months)}, range.ordinal(), i -> {
             range = RANGES[i];
             draw();
         });
@@ -115,7 +115,7 @@ final class EnergyPage {
         hlp.topMargin = px(R.dimen.syn_espace_4);
         content.addView(head, hlp);
 
-        chart = new Chart(activity);
+        chart = new ChartBlock(activity);
         LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
         clp.topMargin = px(R.dimen.syn_espace_2);
         content.addView(chart, clp);
@@ -192,11 +192,16 @@ final class EnergyPage {
     private void read() {
         if (meters == null) return;
         if (meters.isEmpty()) {
-            legend.setText(R.string.energy_none);
+            legend.setText("");
+            chart.empty(activity.getString(R.string.energy_none));
             return;
         }
         chart.reading();
         Stats.consumption(live.get(), meters, "day", Stats.Range.MONTHS.start(), d -> {
+            if (d.isEmpty()) {
+                if (isOpen()) chart.failed(this::read);
+                return;
+            }
             Map<String, List<Stats.Point>> byDay = usable(d, false);
             Stats.consumption(live.get(), meters, "hour", Stats.Range.TODAY.start(), h -> {
                 days = byDay;
@@ -264,7 +269,7 @@ final class EnergyPage {
 
     private void total(int cell, double kwh) {
         TextView value = (TextView) ((LinearLayout) totals.getChildAt(cell)).getChildAt(1);
-        value.setText(Double.isNaN(kwh) ? "–" : Chart.Unit.KWH.value(kwh));
+        value.setText(Double.isNaN(kwh) ? "–" : HouseText.units(activity, Chart.Unit.KWH.value(kwh), true));
     }
 
     /** The range chosen, from what was read: per hour today, per day over 30 days, per month over a year. */
@@ -331,7 +336,7 @@ final class EnergyPage {
         int t = tempoOf(id);
         boolean off = offPeak(id);
         if (t < 3) return HouseText.TEMPO[t][off ? 1 : 0];
-        return activity.getColor(off ? R.color.syn_safran : R.color.syn_primaire);
+        return activity.getColor(off ? R.color.syn_primaire_encre : R.color.syn_primaire);
     }
 
     private String name(String id) {

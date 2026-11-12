@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 /**
  * A page beside the dashboard (a room, the electricity, the sources): OK pushes the home out to the left
  * as the page comes in from the right, edge to edge; Back pushes it back, onto what opened it. The page
- * has the clock and the way back at the top, its title, then what RoomPage, EnergyPage or SourcesPage
+ * has the clock at the top (the remote's Back is the way back), its title, then what RoomPage, EnergyPage or SourcesPage
  * puts in it.
  *
  * On this GPU the home and the page each slide as one hardware layer, prepared a step per frame before
@@ -67,8 +67,6 @@ final class SidePage {
         page.setVisibility(View.GONE);
 
         FrameLayout top = new FrameLayout(activity);
-        TextView back = Tokens.text(activity, activity.getString(R.string.room_back), R.style.Role_Note);
-        top.addView(back, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.START | Gravity.CENTER_VERTICAL));
         TextClock clock = new TextClock(activity, null, 0, R.style.Role_GrandChiffre);
         clock.setFormat12Hour("h:mm");
         clock.setFormat24Hour("HH:mm");
