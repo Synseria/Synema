@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 
 /**
  * The one look of focus, everywhere, the design system's: a white ring (syn_trait_focus wide) and a
@@ -98,10 +99,17 @@ final class Focus {
     static void lift(View v, boolean has) {
         float s = has ? scale(v.getContext()) : 1f;
         v.setTag(R.id.lift, s);
-        v.animate().scaleX(s).scaleY(s)
-                .setDuration(v.getResources().getInteger(R.integer.syn_duree_survol))
-                .setInterpolator(AnimationUtils.loadInterpolator(v.getContext(), R.interpolator.syn_courbe)).start();
+        if (ease == null) {
+            Context app = v.getContext().getApplicationContext();
+            ease = AnimationUtils.loadInterpolator(app, R.interpolator.syn_courbe);
+            liftMs = app.getResources().getInteger(R.integer.syn_duree_survol);
+        }
+        v.animate().scaleX(s).scaleY(s).setDuration(liftMs).setInterpolator(ease).start();
     }
+
+    // Read from XML once: lift runs at every move of the focus.
+    private static Interpolator ease;
+    private static int liftMs;
 
     /**
      * Ends {@code v}'s lift at once, at its size: over a page about to slide, a lift under way would
