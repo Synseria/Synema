@@ -6,13 +6,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,9 +43,8 @@ final class EditMenu {
     static final String BLOCK_HERO = "hero", BLOCK_RESUME = "resume", BLOCK_PICKS = "picks", BLOCK_HOUSE = "house",
             BLOCK_CAMERAS = "cameras";
 
-    /** The menus read like the TV's own settings: Roboto, crisp at small sizes where Outfit blurs. */
-    private static final Typeface REGULAR = Typeface.create("sans-serif", Typeface.NORMAL);
-    private static final Typeface MEDIUM = Typeface.create("sans-serif-medium", Typeface.NORMAL);
+    /** The panel's width, room for a name over its row. */
+    private static final int PANEL_DP = 320;
 
     private final Activity activity;
     private final Host host;
@@ -165,10 +162,8 @@ final class EditMenu {
         });
         // TMDB's terms ask for this credit wherever its data shows.
         if (Tmdb.get(activity) != null) {
-            TextView credit = text(activity.getString(R.string.tmdb_credit), 10);
-            credit.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
-            credit.setSingleLine(false);
-            credit.setPadding(dp(14), dp(14), dp(14), dp(4));
+            TextView credit = text(activity.getString(R.string.tmdb_credit), R.style.Role_Note);
+            credit.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_4), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_1));
             rows.addView(credit);
         }
         show(d, rows);
@@ -245,12 +240,11 @@ final class EditMenu {
     private void backdropSwatches(LinearLayout rows) {
         List<String[]> choices = new ArrayList<>();
         choices.add(new String[]{Config.BACKDROP_ARTWORK, activity.getString(R.string.backdrop_artwork)});
-        for (Backdrop.Theme t : Backdrop.THEMES) choices.add(new String[]{t.id, activity.getString(t.label)});
+        for (Backdrop.Theme t : Backdrop.themes(activity)) choices.add(new String[]{t.id, activity.getString(t.label)});
         if (Config.load(activity).wallpaper != null) choices.add(new String[]{Config.BACKDROP_PICTURE, activity.getString(R.string.backdrop_picture)});
         LinearLayout strip = new LinearLayout(activity);
-        TextView name = text("", 12);
-        name.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
-        name.setPadding(dp(4), dp(8), 0, 0);
+        TextView name = text("", R.style.Role_Note);
+        name.setPadding(px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_2), 0, 0);
         List<View> swatches = new ArrayList<>();
         for (String[] c : choices) {
             View sw = new View(activity);
@@ -272,8 +266,8 @@ final class EditMenu {
             sw.setActivated(c[0].equals(Config.load(activity).backdrop));
             swatches.add(sw);
             // Equal shares of the panel's width, however many backgrounds there are.
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(34), 1f);
-            lp.setMarginEnd(dp(6));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, px(R.dimen.syn_rangee_palette), 1f);
+            lp.setMarginEnd(px(R.dimen.syn_espace_2));
             strip.addView(sw, lp);
         }
         rows.addView(strip);
@@ -288,15 +282,16 @@ final class EditMenu {
 
     /** A background's swatch: its colours in miniature, with a white ring once chosen (activated). */
     private Drawable swatch(String id) {
-        Backdrop.Theme t = Backdrop.theme(id);
+        Backdrop.Theme t = Backdrop.theme(activity, id);
         GradientDrawable fill = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                 t != null ? new int[]{Backdrop.lit(t, 1, 0), t.base, Backdrop.lit(t, 0, 1)}
                         : id.equals(Config.BACKDROP_PICTURE) ? new int[]{0xFF0F3D4A, 0xFF2A1F55} // off-palette: hints of a photo
                         : new int[]{0xFF6B4A3A, 0xFF22303F, 0xFF3A2E5A}); // off-palette: hints of a photo
-        fill.setCornerRadius(dp(10));
+        float radius = activity.getResources().getDimension(R.dimen.syn_rayon_controle);
+        fill.setCornerRadius(radius);
         GradientDrawable chosen = new GradientDrawable();
-        chosen.setCornerRadius(dp(10));
-        chosen.setStroke(dp(2), activity.getColor(R.color.syn_encre));
+        chosen.setCornerRadius(radius);
+        chosen.setStroke(activity.getResources().getDimensionPixelSize(R.dimen.syn_trait_etat), activity.getColor(R.color.syn_primaire));
         StateListDrawable ring = new StateListDrawable();
         ring.addState(new int[]{android.R.attr.state_activated}, chosen);
         ring.addState(new int[0], new ColorDrawable(Color.TRANSPARENT));
@@ -305,18 +300,19 @@ final class EditMenu {
 
     /** A switch drawn at a row's end: accent and knob right when on, grey and knob left when off. */
     private Drawable toggle(boolean on) {
+        int width = px(R.dimen.syn_interrupteur_largeur), height = px(R.dimen.syn_interrupteur_hauteur), knobSize = px(R.dimen.syn_case);
         GradientDrawable track = new GradientDrawable();
-        track.setCornerRadius(dp(9));
+        track.setCornerRadius(height / 2f);
         track.setColor(activity.getColor(on ? R.color.syn_primaire : R.color.syn_filet));
-        track.setSize(dp(30), dp(18));
+        track.setSize(width, height);
         GradientDrawable knob = new GradientDrawable();
         knob.setShape(GradientDrawable.OVAL);
         knob.setColor(activity.getColor(R.color.syn_encre));
-        knob.setSize(dp(14), dp(14));
+        knob.setSize(knobSize, knobSize);
         LayerDrawable l = new LayerDrawable(new Drawable[]{track, knob});
-        int m = dp(2);
-        l.setLayerInset(1, on ? dp(14) : m, m, on ? m : dp(14), m);
-        l.setBounds(0, 0, dp(30), dp(18));
+        int m = (height - knobSize) / 2;
+        l.setLayerInset(1, on ? width - knobSize - m : m, m, on ? m : width - knobSize - m, m);
+        l.setBounds(0, 0, width, height);
         return l;
     }
 
@@ -351,21 +347,17 @@ final class EditMenu {
     private LinearLayout rows(String title) {
         LinearLayout rows = new LinearLayout(activity);
         rows.setOrientation(LinearLayout.VERTICAL);
-        rows.setPadding(dp(22), dp(26), dp(22), dp(22));
-        TextView t = text(title, 20);
-        t.setTypeface(MEDIUM);
-        t.setPadding(dp(4), 0, 0, dp(6));
+        rows.setPadding(px(R.dimen.syn_espace_6), Scale.marginY(activity), px(R.dimen.syn_espace_6), Scale.marginY(activity));
+        TextView t = text(title, R.style.Role_Titre);
+        t.setPadding(px(R.dimen.syn_espace_1), 0, 0, px(R.dimen.syn_espace_2));
         rows.addView(t);
         return rows;
     }
 
-    /** A small grey title above a group of rows. */
+    /** A quiet title above a group of rows. */
     private void header(LinearLayout rows, int label) {
-        TextView h = text(activity.getString(label), 10);
-        h.setTypeface(MEDIUM);
-        h.setLetterSpacing(0.02f);
-        h.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
-        h.setPadding(dp(4), dp(18), 0, dp(4));
+        TextView h = text(activity.getString(label), R.style.Role_Note);
+        h.setPadding(px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_4), 0, px(R.dimen.syn_espace_1));
         rows.addView(h);
     }
 
@@ -374,17 +366,17 @@ final class EditMenu {
     }
 
     private TextView rowText(LinearLayout rows, String label, Runnable action) {
-        TextView t = text(label, 14);
+        TextView t = text(label, R.style.Role_Corps);
         t.setBackgroundResource(R.drawable.menu_row_bg);
         t.setTextColor(activity.getColorStateList(R.color.menu_row_text));
         t.setFocusable(true);
         t.setClickable(true);
         t.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        t.setMinHeight(dp(40));
-        t.setPadding(dp(14), dp(8), dp(14), dp(8));
+        t.setMinHeight(px(R.dimen.syn_cible_min));
+        t.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
         if (action != null) t.setOnClickListener(v -> action.run());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.topMargin = dp(4);
+        lp.topMargin = px(R.dimen.syn_espace_1);
         rows.addView(t, lp);
         return t;
     }
@@ -399,7 +391,7 @@ final class EditMenu {
             // A panel along the right edge, the full height, like the TV's own settings.
             w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             w.setGravity(android.view.Gravity.END | android.view.Gravity.FILL_VERTICAL);
-            w.setLayout(dp(320), ViewGroup.LayoutParams.MATCH_PARENT);
+            w.setLayout(Math.round(PANEL_DP * activity.getResources().getDisplayMetrics().density), ViewGroup.LayoutParams.MATCH_PARENT);
             w.setDimAmount(0.5f);
         }
         // The menu opens while OK is still held (a long press): its repeats and release must not
@@ -415,16 +407,11 @@ final class EditMenu {
         rows.requestFocus();   // the first focusable row
     }
 
-    private TextView text(String s, float sp) {
-        TextView t = new TextView(activity);
-        t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        t.setTextColor(activity.getColor(R.color.syn_encre));
-        t.setTypeface(REGULAR);
-        return t;
+    private TextView text(String s, int role) {
+        return Tokens.text(activity, s, role);
     }
 
-    private int dp(int v) {
-        return Math.round(v * activity.getResources().getDisplayMetrics().density);
+    private int px(int dimen) {
+        return activity.getResources().getDimensionPixelSize(dimen);
     }
 }

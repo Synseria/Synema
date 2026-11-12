@@ -82,7 +82,7 @@ final class Config {
             hiddenTitles = stringList(json, "hidden_titles", hiddenTitles);
             hiddenBlocks = stringList(json, "hidden_blocks", hiddenBlocks);
             String b = json.optString("backdrop");
-            if (b.equals(BACKDROP_PICTURE) || Backdrop.theme(b) != null) backdrop = b;
+            if (b.equals(BACKDROP_PICTURE) || Backdrop.theme(ctx, b) != null) backdrop = b;
             motion = json.optBoolean("backdrop_motion");
         }
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;

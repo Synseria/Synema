@@ -84,15 +84,16 @@ final class Place {
     }
 
     enum Trend {
-        STEADY("→", R.color.syn_encre), RISING("↗", R.color.syn_encre), FALLING("↘", R.color.syn_encre),
-        FALLING_FAST("↘", R.color.syn_alerte);
+        STEADY(R.drawable.ic_trend_steady, R.color.syn_encre), RISING(R.drawable.ic_trend_up, R.color.syn_encre),
+        FALLING(R.drawable.ic_trend_down, R.color.syn_encre), FALLING_FAST(R.drawable.ic_trend_down, R.color.syn_alerte);
 
-        final String arrow;
+        /** A drawable resource: the arrow. */
+        final int icon;
         /** A colour resource, read where the arrow is drawn. */
         final int color;
 
-        Trend(String arrow, int color) {
-            this.arrow = arrow;
+        Trend(int icon, int color) {
+            this.icon = icon;
             this.color = color;
         }
     }

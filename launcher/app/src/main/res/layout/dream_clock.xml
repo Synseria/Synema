@@ -17,6 +17,7 @@
             android:orientation="horizontal"
             android:baselineAligned="true">
 
+            <!-- The one text outside the roles: a screensaver's clock is read from across the room. -->
             <TextClock
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -32,24 +33,22 @@
             <TextClock
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="@dimen/syn_espace_3"
                 android:format12Hour="a"
                 android:format24Hour=""
-                android:textColor="@color/syn_encre_secondaire"
-                android:textSize="22sp"
-                android:fontFamily="sans-serif-medium" />
+                style="@style/Role.Titre"
+                android:textColor="@color/syn_encre_secondaire" />
         </LinearLayout>
 
         <TextClock
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginStart="@dimen/syn_espace_2"
+            android:layout_marginTop="@dimen/syn_espace_1"
             android:format12Hour="@string/date_format"
             android:format24Hour="@string/date_format"
-            android:textColor="@color/syn_encre_secondaire"
-            android:textSize="18sp"
-            android:letterSpacing="0.02" />
+            style="@style/Role.Titre"
+            android:textColor="@color/syn_encre_secondaire" />
 
         <!-- Outside and the TV's room as the top line shows them (HouseHeader.column), larger (ClockDream). -->
         <LinearLayout
@@ -57,7 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="-8dp"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/syn_espace_4"
             android:orientation="horizontal">
 
             <include
@@ -80,10 +79,10 @@
             android:id="@+id/dreamHouse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginTop="10dp"
-            android:textColor="@color/syn_encre_tertiaire"
-            android:textSize="15sp"
-            android:lineSpacingExtra="4dp" />
+            android:layout_marginStart="@dimen/syn_espace_2"
+            android:layout_marginTop="@dimen/syn_espace_3"
+            style="@style/Role.Corps"
+            android:textColor="@color/syn_encre_secondaire"
+            android:lineSpacingExtra="@dimen/syn_espace_1" />
     </LinearLayout>
 </FrameLayout>

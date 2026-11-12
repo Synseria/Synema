@@ -60,53 +60,49 @@ final class EnergyPage {
 
         LinearLayout readings = new LinearLayout(activity);
         readings.setGravity(Gravity.CENTER_VERTICAL);
-        power = new TextView(activity, null, 0, R.style.BigReading);
-        power.setTextSize(40);
+        power = Tokens.text(activity, "", R.style.Role_GrandChiffre);
+        power.setIncludeFontPadding(false);
         readings.addView(power);
         LinearLayout facts = new LinearLayout(activity);
         facts.setOrientation(LinearLayout.VERTICAL);
-        cost = activity.text("", 11, activity.getColor(R.color.syn_encre));
-        tempo = activity.text("", 11, activity.getColor(R.color.syn_encre));
+        cost = Tokens.text(activity, "", R.style.Role_Corps);
+        tempo = Tokens.text(activity, "", R.style.Role_Corps);
         facts.addView(cost);
         facts.addView(tempo);
         LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        flp.setMarginStart(activity.dp(16));
+        flp.setMarginStart(px(R.dimen.syn_espace_4));
         readings.addView(facts, flp);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rlp.topMargin = activity.dp(4);
+        rlp.topMargin = px(R.dimen.syn_espace_1);
         content.addView(readings, rlp);
 
         // Today, yesterday, this month, the last: a small label over each figure.
         totals = new LinearLayout(activity);
         LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tlp.topMargin = activity.dp(16);
+        tlp.topMargin = px(R.dimen.syn_espace_4);
         // On the picture, as the chart below: a light picture would swallow the figures.
         GradientDrawable veil = new GradientDrawable();
         veil.setColor(activity.getColor(R.color.syn_tv_voile));
         veil.setCornerRadius(activity.getResources().getDimension(R.dimen.syn_rayon_carte));
         totals.setBackground(veil);
-        int pad = activity.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
-        totals.setPadding(pad, activity.dp(12), pad, activity.dp(12));
+        int pad = px(R.dimen.syn_espace_4);
+        totals.setPadding(pad, px(R.dimen.syn_espace_3), pad, px(R.dimen.syn_espace_3));
         content.addView(totals, tlp);
         for (int name : new int[]{R.string.energy_today, R.string.energy_yesterday, R.string.energy_this_month, R.string.energy_last_month}) {
             LinearLayout cell = new LinearLayout(activity);
             cell.setOrientation(LinearLayout.VERTICAL);
-            TextView label = new TextView(activity, null, 0, R.style.DashCaps);
-            label.setText(name);
-            cell.addView(label);
-            TextView value = activity.text("–", 20, activity.getColor(R.color.syn_encre));
-            value.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+            cell.addView(Tokens.text(activity, activity.getString(name), R.style.Role_Note));
+            TextView value = Tokens.text(activity, "–", R.style.Role_Titre);
             value.setFontFeatureSettings("tnum");
             LinearLayout.LayoutParams vlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            vlp.topMargin = activity.dp(4);
+            vlp.topMargin = px(R.dimen.syn_espace_1);
             cell.addView(value, vlp);
             totals.addView(cell, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         }
 
         FrameLayout head = new FrameLayout(activity);
         head.setClipChildren(false);
-        TextView label = new TextView(activity, null, 0, R.style.DashCaps);
-        label.setText(R.string.energy_consumption);
+        TextView label = Tokens.text(activity, activity.getString(R.string.energy_consumption), R.style.Role_Note);
         head.addView(label, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL));
         chips = Chips.row(activity, new String[]{activity.getString(R.string.energy_range_today),
@@ -116,17 +112,21 @@ final class EnergyPage {
         });
         head.addView(chips, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.END));
         LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        hlp.topMargin = activity.dp(18);
+        hlp.topMargin = px(R.dimen.syn_espace_4);
         content.addView(head, hlp);
 
         chart = new Chart(activity);
         LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-        clp.topMargin = activity.dp(8);
+        clp.topMargin = px(R.dimen.syn_espace_2);
         content.addView(chart, clp);
-        legend = activity.text("", 9.5f, activity.getColor(R.color.syn_encre_secondaire));
+        legend = Tokens.text(activity, "", R.style.Role_Note);
         LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        llp.topMargin = activity.dp(6);
+        llp.topMargin = px(R.dimen.syn_espace_2);
         content.addView(legend, llp);
+    }
+
+    private int px(int dimen) {
+        return activity.getResources().getDimensionPixelSize(dimen);
     }
 
     boolean isOpen() {
@@ -178,7 +178,7 @@ final class EnergyPage {
         int at = sb.length();
         sb.append("●");
         sb.setSpan(new ForegroundColorSpan(HouseText.tempoColour(activity, s)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        sb.append(' ').append(s.state.substring(0, 1).toUpperCase(Locale.getDefault())).append(s.state.substring(1).toLowerCase(Locale.getDefault()));
+        sb.append(' ').append(HouseText.tempoName(s));
     }
 
     // ---- what was used ------------------------------------------------------------------------------

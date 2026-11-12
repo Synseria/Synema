@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.util.TypedValue;
 import android.view.View;
 
 import java.time.Instant;
@@ -85,6 +84,10 @@ final class Chart extends View {
     private final float corner;
 
     private final float d;
+    /** The text roles' sizes in px (syn_typo_*_taille): the labels are notes, the readings figures. */
+    private final float note, figure;
+    /** Where the last label of a row ended: the next one is left out rather than drawn over it. */
+    private float labelEnd;
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG),
             text = new Paint(Paint.ANTI_ALIAS_FLAG), grid = new Paint();
     private final Path path = new Path();
@@ -103,6 +106,8 @@ final class Chart extends View {
     Chart(Context ctx) {
         super(ctx);
         d = ctx.getResources().getDisplayMetrics().density;
+        note = ctx.getResources().getDimension(R.dimen.syn_typo_note_taille);
+        figure = ctx.getResources().getDimension(R.dimen.syn_typo_chiffre_taille);
         gridColor = ctx.getColor(R.color.syn_filet);
         labelColor = ctx.getColor(R.color.syn_encre_secondaire);
         ink = ctx.getColor(R.color.syn_encre);
@@ -153,10 +158,6 @@ final class Chart extends View {
         invalidate();
     }
 
-    private float sp(float v) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, v, getResources().getDisplayMetrics());
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         float w = getWidth(), h = getHeight(), pad = 10 * d;
@@ -169,18 +170,18 @@ final class Chart extends View {
         rect.set(0, 0, w, h);
         canvas.drawRoundRect(rect, corner, corner, fill);
 
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(labelColor);
         text.setTextAlign(Paint.Align.LEFT);
-        float titleY = pad + sp(8.5f);
+        float titleY = pad + note;
         canvas.drawText(title, pad, titleY, text);
         if (waiting || !anyPoint()) return;
         header(canvas, w - pad, titleY + d);
 
         boolean second = range == null && series.size() > 1;
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         float left = pad + text.measureText("8888") + 4 * d, right = w - pad - (second ? text.measureText("88 %") + 6 * d : 2 * d);
-        float top = titleY + 12 * d, bottom = h - pad - sp(8.5f) - 4 * d;
+        float top = titleY + 16 * d, bottom = h - pad - note - 4 * d;
         if (range != null) drawBars(canvas, left, right, top, bottom);
         else drawLines(canvas, left, right, top, bottom, second);
     }
@@ -192,7 +193,7 @@ final class Chart extends View {
 
     /** At the top right: each curve's last value in its colour, or the bars' summary. */
     private void header(Canvas canvas, float x, float y) {
-        text.setTextSize(sp(10));
+        text.setTextSize(figure);
         text.setTextAlign(Paint.Align.RIGHT);
         if (range != null) {
             text.setColor(ink);
@@ -208,7 +209,7 @@ final class Chart extends View {
             canvas.drawText(v, x, y, text);
             x -= text.measureText(v);
             fill.setColor(s.color);
-            canvas.drawCircle(x - 6 * d, y - sp(10) / 3, 2.5f * d, fill);
+            canvas.drawCircle(x - 6 * d, y - figure / 3, 2.5f * d, fill);
             x -= 16 * d;
         }
     }
@@ -427,13 +428,13 @@ final class Chart extends View {
     /** Lines at round values, labelled at the left ({@code onLeft}) or the right. */
     private void valueGrid(Canvas canvas, float left, float right, float top, float bottom, double[] scale, Unit unit,
                            boolean onLeft, int color) {
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(color);
         text.setTextAlign(onLeft ? Paint.Align.RIGHT : Paint.Align.LEFT);
         for (double v = scale[0]; v <= scale[1] + scale[2] / 2; v += scale[2]) {
             float y = y(v, scale, top, bottom);
             if (onLeft) canvas.drawLine(left, y, right, y, grid);
-            canvas.drawText(unit.tick(v, scale[2]), onLeft ? left - 5 * d : right + 5 * d, y + sp(8.5f) / 3, text);
+            canvas.drawText(unit.tick(v, scale[2]), onLeft ? left - 5 * d : right + 5 * d, y + note / 3, text);
         }
     }
 
@@ -467,18 +468,27 @@ final class Chart extends View {
                 stepHours = 24 * 5;
                 label = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault());
         }
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(labelColor);
         text.setTextAlign(Paint.Align.CENTER);
-        float labelY = bottom + 4 * d + sp(8.5f);
+        float labelY = bottom + 4 * d + note;
+        labelEnd = Float.NEGATIVE_INFINITY;
         for (; t.toInstant().toEpochMilli() < t1; t = t.plusHours(stepHours)) {
             float x = x(t.toInstant().toEpochMilli(), left, right, t0, t1);
             canvas.drawLine(x, top, x, bottom, grid);
             // A day's name sits under its middle, a time under its line.
             float lx = span == Stats.Span.WEEK ? x + (right - left) * 12 * History.HOUR_MS / (float) (t1 - t0) : x;
-            if (lx < right) canvas.drawText(label.format(t), lx, labelY, text);
+            if (lx < right) tick(canvas, label.format(t), lx, labelY);
         }
         canvas.drawLine(left, bottom, right, bottom, grid);
+    }
+
+    /** A label centred on {@code cx}, unless it would touch the one before: a cut or crowded label tells nothing. */
+    private void tick(Canvas canvas, String label, float cx, float y) {
+        float half = text.measureText(label) / 2;
+        if (cx - half < labelEnd + 4 * d) return;
+        canvas.drawText(label, cx, y, text);
+        labelEnd = cx + half;
     }
 
     // ---- bars --------------------------------------------------------------------------------------
@@ -521,17 +531,18 @@ final class Chart extends View {
             }
         }
         // Labels: every third hour, every fifth day, every month.
-        text.setTextSize(sp(8.5f));
+        text.setTextSize(note);
         text.setColor(labelColor);
         text.setTextAlign(Paint.Align.CENTER);
-        float labelY = bottom + 4 * d + sp(8.5f);
+        float labelY = bottom + 4 * d + note;
+        labelEnd = Float.NEGATIVE_INFINITY;
         LocalDate first = Instant.ofEpochMilli(range.start()).atZone(ZoneId.systemDefault()).toLocalDate();
         for (int i = 0; i < slots; i++) {
             String l = null;
             if (range == Stats.Range.TODAY && i % 3 == 0) l = i + "h";
             else if (range == Stats.Range.DAYS && first.plusDays(i).getDayOfMonth() % 5 == 0) l = String.valueOf(first.plusDays(i).getDayOfMonth());
             else if (range == Stats.Range.MONTHS) l = DateTimeFormatter.ofPattern("MMM", Locale.getDefault()).format(first.plusMonths(i));
-            if (l != null) canvas.drawText(l, left + slot * (i + 0.5f), labelY, text);
+            if (l != null) tick(canvas, l, left + slot * (i + 0.5f), labelY);
         }
         canvas.drawLine(left, bottom, right, bottom, grid);
     }

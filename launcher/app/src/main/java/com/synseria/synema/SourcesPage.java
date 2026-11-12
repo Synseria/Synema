@@ -40,7 +40,7 @@ final class SourcesPage {
         // The plate reaches past the pictures by a card's room, taken back so they line up with the title.
         int room = Focus.cardRoom(activity);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.topMargin = activity.dp(18) - room;
+        lp.topMargin = activity.getResources().getDimensionPixelSize(R.dimen.syn_espace_4) - room;
         lp.setMarginStart(-room);
         lp.setMarginEnd(-room);
         content.addView(cards, lp);

@@ -1,15 +1,13 @@
 package com.synseria.synema;
 
 import android.content.Context;
-import android.graphics.Typeface;
-import android.util.TypedValue;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
+import android.text.style.ImageSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +27,12 @@ import java.util.Map;
  * ordinary (HouseText.notices): violet for an activity, light red for a problem, nothing when calm.
  */
 final class HouseHeader {
+    /** The readings beside a temperature on the top line: two lines of text fit the height of the temperature. */
+    private static final int HEADER_FACTS = 2;
+    /** A reading's icon (dp), a touch under its text. */
+    private static final int FACT_ICON_DP = 14;
+    /** A status capsule's height (dp): a line of words and its padding. */
+    private static final int CHIP_DP = 24;
     private final MainActivity activity;
     private final View outside, room;
     private final FlowRow chips;
@@ -58,8 +62,8 @@ final class HouseHeader {
 
     void render(Map<String, HomeAssistant.State> states) {
         shown = states;
-        if (outside.getVisibility() == View.VISIBLE) column(activity, outside, home, home.outside, states, true, 9.5f);
-        if (room.getVisibility() == View.VISIBLE) column(activity, room, home, home.temperatures.get(0), states, false, 9.5f);
+        if (outside.getVisibility() == View.VISIBLE) column(activity, outside, home, home.outside, states, true, HEADER_FACTS);
+        if (room.getVisibility() == View.VISIBLE) column(activity, room, home, home.temperatures.get(0), states, false, HEADER_FACTS);
         showChips(states);
     }
 
@@ -73,15 +77,21 @@ final class HouseHeader {
 
     /**
      * A place's column (dash_climate): its name, the sky with {@code sky}, its temperature large and
-     * its other readings beside it at {@code sp}; the top line's, and the screensaver's. Unchanged: no
-     * relayout.
+     * its first {@code maxFacts} other readings beside it; the top line's, and the screensaver's.
+     * Unchanged: no relayout.
      */
+    @Deprecated
     static void column(Context ctx, View column, HomeConfig home, HomeConfig.Climate c, Map<String, HomeAssistant.State> states,
                        boolean sky, float sp) {
+        column(ctx, column, home, c, states, sky, Integer.MAX_VALUE);
+    }
+
+    static void column(Context ctx, View column, HomeConfig home, HomeConfig.Climate c, Map<String, HomeAssistant.State> states,
+                       boolean sky, int maxFacts) {
         HomeAssistant.State w = sky ? states.get(home.weather) : null;
         String condition = w != null && w.available() ? w.state : null;
         Place place = Place.of(c, states);
-        String signature = c.label + "|" + condition + "|" + place.signature();
+        String signature = c.label + "|" + condition + "|" + place.signature() + "|" + maxFacts;
         if (signature.equals(column.getTag())) return;
         column.setTag(signature);
 
@@ -90,81 +100,89 @@ final class HouseHeader {
         skyText.setVisibility(condition != null ? View.VISIBLE : View.GONE);
         if (condition != null) {
             skyText.setText(HouseText.condition(ctx, condition));
-            skyText.setCompoundDrawablesRelativeWithIntrinsicBounds(HouseText.conditionIcon(ctx, condition), 0, 0, 0);
+            Drawable icon = ctx.getDrawable(HouseText.conditionIcon(ctx, condition)).mutate();
+            icon.setBounds(0, 0, dp(ctx, FACT_ICON_DP), dp(ctx, FACT_ICON_DP));
+            icon.setTint(ctx.getColor(R.color.syn_encre_secondaire));
+            skyText.setCompoundDrawablesRelative(icon, null, null, null);
         }
         ((TextView) column.findViewById(R.id.climateTemp)).setText(degrees(ctx, place, "–"));
-        facts(ctx, column.findViewById(R.id.climateFacts), sp, place);
+        facts(ctx, column.findViewById(R.id.climateFacts), place, maxFacts);
     }
 
-    /** The place's temperature, its trend's arrow small after it; {@code none} when unknown. */
+    /** The place's temperature, its trend's arrow after it as tall as the readings beside; {@code none} when unknown. */
     static CharSequence degrees(Context ctx, Place p, String none) {
         if (p.temperature.value == null) return none;
         SpannableStringBuilder sb = new SpannableStringBuilder(HouseText.degrees(p.temperature.value));
         Place.Trend trend = Place.Kind.TEMPERATURE.trend(p.temperature.sensor);
-        if (trend != null) {
-            int at = sb.length();
-            sb.append(trend.arrow);
-            sb.setSpan(new RelativeSizeSpan(0.4f), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
+        if (trend != null) arrow(ctx, sb, trend, ctx.getColor(R.color.syn_encre_secondaire),
+                ctx.getResources().getDimensionPixelSize(R.dimen.syn_typo_chiffre_taille));
         return sb;
     }
 
+    /** {@code trend}'s arrow, {@code size} px square, after a space: an icon, for the font's arrow glyphs come out tiny. */
+    private static void arrow(Context ctx, SpannableStringBuilder sb, Place.Trend trend, int color, int size) {
+        Drawable d = ctx.getDrawable(trend.icon).mutate();
+        d.setTint(color);
+        d.setBounds(0, 0, size, size);
+        sb.append(' ');
+        int at = sb.length();
+        sb.append('\uFFFC');
+        sb.setSpan(new ImageSpan(d, ImageSpan.ALIGN_BASELINE), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
     /**
-     * A place's readings beside its temperature, one per line of {@code facts} at {@code sp}: humidity,
-     * pressure, CO₂ (with its dot), noise, those known, each with its unit and its trend.
+     * A place's readings beside its temperature, one per line of {@code facts}, the first {@code max} of:
+     * humidity, pressure, CO₂ (with its dot), noise, those known, each with its unit and its trend.
      */
+    @Deprecated
     static void facts(Context ctx, LinearLayout facts, float sp, Place p) {
+        facts(ctx, facts, p, Integer.MAX_VALUE);
+    }
+
+    static void facts(Context ctx, LinearLayout facts, Place p, int max) {
         facts.removeAllViews();
         List<TextView> lines = new ArrayList<>();
         if (p.humidity.value != null) {
-            lines.add(fact(ctx, sp, R.drawable.ic_drop, 0, HouseText.whole(p.humidity.value), "%",
+            lines.add(fact(ctx, R.drawable.ic_drop, 0, HouseText.whole(p.humidity.value), "%",
                     Place.Kind.HUMIDITY.trend(p.humidity.sensor)));
         }
         if (p.pressure.value != null) {
-            lines.add(fact(ctx, sp, R.drawable.ic_gauge, 0, HouseText.whole(p.pressure.value), ctx.getString(R.string.unit_hpa),
+            lines.add(fact(ctx, R.drawable.ic_gauge, 0, HouseText.whole(p.pressure.value), ctx.getString(R.string.unit_hpa),
                     Place.Kind.PRESSURE.trend(p.pressure.sensor)));
         }
         if (p.co2.value != null) {
             double co2 = p.co2.value;
             int dot = ctx.getColor(co2 < HouseText.CO2_FRESH ? R.color.syn_succes : co2 < HouseText.CO2_STALE ? R.color.syn_alerte
                     : R.color.syn_danger);
-            lines.add(fact(ctx, sp, 0, dot, HouseText.whole(co2), ctx.getString(R.string.unit_co2),
+            lines.add(fact(ctx, 0, dot, HouseText.whole(co2), ctx.getString(R.string.unit_co2),
                     Place.Kind.CO2.trend(p.co2.sensor)));
         }
         if (p.noise.value != null) {
-            lines.add(fact(ctx, sp, R.drawable.ic_noise, 0, HouseText.whole(p.noise.value), ctx.getString(R.string.unit_db),
+            lines.add(fact(ctx, R.drawable.ic_noise, 0, HouseText.whole(p.noise.value), ctx.getString(R.string.unit_db),
                     Place.Kind.NOISE.trend(p.noise.sensor)));
         }
-        for (TextView line : lines) facts.addView(line);
+        for (TextView line : lines.subList(0, Math.min(max, lines.size()))) facts.addView(line);
     }
 
     /**
      * One reading on its line: an icon (or, with {@code dot}, a dot of that colour), the value, its unit
-     * (after a no-break space) smaller and secondary, and its trend's arrow.
+     * (after a no-break space) in secondary ink, and its trend's arrow.
      */
-    private static TextView fact(Context ctx, float sp, int icon, int dot, String value, String unit, Place.Trend trend) {
+    private static TextView fact(Context ctx, int icon, int dot, String value, String unit, Place.Trend trend) {
         SpannableStringBuilder sb = new SpannableStringBuilder(value);
         if (unit != null) {
             int at = sb.length();
             sb.append('\u00A0').append(unit);
-            sb.setSpan(new RelativeSizeSpan((sp - 1) / sp), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
-        if (trend != null) {
-            int at = sb.length();
-            sb.append(' ').append(trend.arrow);
-            sb.setSpan(new ForegroundColorSpan(ctx.getColor(trend.color)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
         TextView line = new TextView(ctx);
+        line.setTextAppearance(R.style.Role_Chiffre);
+        if (trend != null) arrow(ctx, sb, trend, ctx.getColor(trend.color), Math.round(line.getTextSize()));
         line.setText(sb);
-        line.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        line.setTextColor(ctx.getColor(R.color.syn_encre));
         line.setSingleLine(true);
         line.setIncludeFontPadding(false);
-        // The icons a dp under the text's size; a dot of five ninths of it, centred in the same slot, so
-        // every value starts at the same place.
-        int slot = dp(ctx, Math.round(sp) - 1);
+        // A dot of five ninths of the icon's size, centred in the same slot, so every value starts at the same place.
+        int slot = dp(ctx, FACT_ICON_DP);
         Drawable d;
         if (dot != 0) {
             int size = slot * 5 / 9;
@@ -200,7 +218,7 @@ final class HouseHeader {
         chipsShown = sig.toString();
         chips.removeAllViews();
         for (HouseText.Notice n : notices) {
-            chips.addView(chip(n), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, activity.dp(20)));
+            chips.addView(chip(n), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, activity.dp(CHIP_DP)));
         }
     }
 
@@ -214,18 +232,18 @@ final class HouseHeader {
         chip.setGravity(Gravity.CENTER_VERTICAL);
         chip.setBackgroundResource(R.drawable.dash_capsule_bg);
         boolean person = !n.problem && "person".equals(n.domain);
-        chip.setPadding(activity.dp(person ? 3 : 7), 0, activity.dp(7), 0);
+        chip.setPadding(activity.dp(person ? 2 : 8), 0, activity.dp(8), 0);
         View sign;
-        int size = activity.dp(10);
+        int size = activity.dp(14);
         if (person) {
             String letter = n.name.isEmpty() ? "" : n.name.substring(0, 1).toUpperCase(Locale.getDefault());
-            TextView initial = activity.text(letter, 7.5f, activity.getColor(R.color.syn_nuit_profond));
-            initial.setTypeface(Typeface.DEFAULT_BOLD);
+            TextView initial = activity.text(letter, R.style.Role_CorpsFort);
+            initial.setTextColor(activity.getColor(R.color.syn_nuit_profond));
             initial.setIncludeFontPadding(false);
             initial.setGravity(Gravity.CENTER);
-            initial.setBackground(dot(activity.getColor(R.color.syn_succes), activity.dp(14)));
+            initial.setBackground(dot(activity.getColor(R.color.syn_succes), activity.dp(20)));
             sign = initial;
-            size = activity.dp(14);
+            size = activity.dp(20);
         } else if (n.problem || "vacuum".equals(n.domain)) {
             ImageView icon = new ImageView(activity);
             icon.setImageResource(n.problem ? R.drawable.ic_warn : R.drawable.ic_vacuum);
@@ -233,15 +251,16 @@ final class HouseHeader {
             sign = icon;
         } else {
             sign = new View(activity);
-            sign.setBackground(dot(color, activity.dp(6)));
-            size = activity.dp(6);
+            sign.setBackground(dot(color, activity.dp(8)));
+            size = activity.dp(8);
         }
         chip.addView(sign, new LinearLayout.LayoutParams(size, size));
-        TextView words = activity.text(n.text, 9.5f, color);
+        TextView words = activity.text(n.text, R.style.Role_Note);
+        words.setTextColor(color);
         words.setIncludeFontPadding(false);
         int wrap = ViewGroup.LayoutParams.WRAP_CONTENT;
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(wrap, wrap);
-        lp.setMarginStart(activity.dp(5));
+        lp.setMarginStart(activity.dp(4));
         chip.addView(words, lp);
         return chip;
     }

@@ -10,7 +10,7 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.PathInterpolator;
+import android.view.animation.AnimationUtils;
 
 import java.util.ArrayList;
 
@@ -34,10 +34,6 @@ public final class CardRow extends ViewGroup {
      * background through, but costs this GPU a layer per frame of a slide.
      */
     private static final int FADE_DP = 40;
-    /** The backdrop's own colour, so the row fades into it. */
-    private static final int FADE_COLOR = 0xE6 << 24 | (Backdrop.NAVY & 0xFFFFFF);
-    /** Short: every frame of a slide redraws the row. */
-    private static final long SLIDE_MS = 180;
 
     private final int inset, gap, min, widest, fadeWidth;
     private final float corner;
@@ -61,21 +57,26 @@ public final class CardRow extends ViewGroup {
         min = Math.round(MIN_DP * d);
         widest = Math.round(Focus.WIDEST_CARD_DP * d);
         fadeWidth = Math.round(FADE_DP * d);
-        int clear = FADE_COLOR & 0x00FFFFFF;
-        fadeLeft.setShader(new LinearGradient(0, 0, fadeWidth, 0, FADE_COLOR, clear, Shader.TileMode.CLAMP));
-        fadeRight.setShader(new LinearGradient(0, 0, fadeWidth, 0, clear, FADE_COLOR, Shader.TileMode.CLAMP));
+        // The backdrop's own colour, so the row fades into it.
+        int fade = 0xE6 << 24 | (Backdrop.base(ctx) & 0xFFFFFF);
+        int clear = fade & 0x00FFFFFF;
+        fadeLeft.setShader(new LinearGradient(0, 0, fadeWidth, 0, fade, clear, Shader.TileMode.CLAMP));
+        fadeRight.setShader(new LinearGradient(0, 0, fadeWidth, 0, clear, fade, Shader.TileMode.CLAMP));
         setChildrenDrawingOrderEnabled(true);
         setClipChildren(false);
         setClipToPadding(false);
     }
 
-    /** The window reaches the room past the column's content on each side: margins out, padding back in. */
+    /**
+     * The window reaches the room past the column's content on each side: margins out, padding back in.
+     * Left and right, not start and end: a relative margin set here is never resolved again, and would not count.
+     */
     @Override
     protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) getLayoutParams();
-        lp.setMarginStart(-gap);
-        lp.setMarginEnd(-gap);
+        lp.leftMargin = -gap;
+        lp.rightMargin = -gap;
+        super.onAttachedToWindow();
         setPaddingRelative(gap - inset, getPaddingTop(), gap - inset, getPaddingBottom());
     }
 
@@ -141,8 +142,8 @@ public final class CardRow extends ViewGroup {
         first = target;
         if (slide != null) slide.cancel();
         slide = ValueAnimator.ofInt(getScrollX(), Math.round(first * step));
-        slide.setDuration(SLIDE_MS);
-        slide.setInterpolator(new PathInterpolator(0.22f, 0.8f, 0.24f, 1f));
+        slide.setDuration(getResources().getInteger(R.integer.syn_duree_etat));
+        slide.setInterpolator(AnimationUtils.loadInterpolator(getContext(), R.interpolator.syn_courbe));
         slide.addUpdateListener(a -> setScrollX((int) a.getAnimatedValue()));
         slide.start();
     }

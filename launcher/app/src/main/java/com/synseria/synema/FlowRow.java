@@ -8,11 +8,11 @@ import android.view.ViewGroup;
 import java.util.Arrays;
 
 /**
- * Children in lines aligned to the right, wrapping onto {@link #MAX_LINES} lines at most, the lines
+ * Children in lines aligned to the left, wrapping onto {@link #MAX_LINES} lines at most, the lines
  * centred in the height. What does not fit is left out whole rather than squeezed or cut.
  */
 public final class FlowRow extends ViewGroup {
-    private static final int MAX_LINES = 2;
+    private static final int MAX_LINES = 1;
     private final int gap;
     /** Each child's line (-1 when left out), each line's width and height, and theirs together; set by onMeasure. */
     private int[] lineOf = new int[0];
@@ -21,7 +21,7 @@ public final class FlowRow extends ViewGroup {
 
     public FlowRow(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
-        gap = Math.round(4 * ctx.getResources().getDisplayMetrics().density);
+        gap = Math.round(8 * ctx.getResources().getDisplayMetrics().density);
     }
 
     @Override
@@ -56,7 +56,7 @@ public final class FlowRow extends ViewGroup {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int top = getPaddingTop() + (getHeight() - getPaddingTop() - getPaddingBottom() - contentHeight) / 2;
         for (int line = 0; line < lines; line++) {
-            int x = getWidth() - getPaddingRight() - lineWidth[line];
+            int x = getPaddingLeft();
             for (int i = 0; i < getChildCount(); i++) {
                 if (lineOf[i] != line) continue;
                 View c = getChildAt(i);

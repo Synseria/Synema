@@ -29,39 +29,32 @@
         <item name="android:taskToBackExitAnimation">@anim/fade_out</item>
     </style>
 
-    <!-- A round icon button in the top line's capsule; its name shows under the capsule while focused. -->
+    <!-- A round icon button in the top line's capsule, a touch target (syn_cible_min); its name shows under
+         the capsule while focused. -->
     <style name="IconButton">
-        <item name="android:layout_width">30dp</item>
-        <item name="android:layout_height">30dp</item>
-        <item name="android:padding">7dp</item>
+        <item name="android:layout_width">@dimen/syn_cible_min</item>
+        <item name="android:layout_height">@dimen/syn_cible_min</item>
+        <item name="android:padding">@dimen/syn_espace_3</item>
         <item name="android:background">@drawable/icon_button_bg</item>
-        <item name="android:tint">@color/pill_text</item>
+        <item name="android:tint">@color/syn_encre</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>
 
     <!-- A small label on the top line: the day, a column's place, the sky. -->
-    <style name="DashCaps">
+    <style name="DashCaps" parent="Role.Note">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/syn_encre_secondaire</item>
-        <item name="android:textSize">8.5sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <!-- A reading in large thin figures on the top line, like the clock beside it. -->
-    <style name="BigReading">
+    <style name="BigReading" parent="Role.GrandChiffre">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/syn_encre</item>
-        <item name="android:textSize">32sp</item>
-        <item name="android:fontFamily">@font/outfit</item>
-        <item name="android:fontVariationSettings">\'wght\' 200</item>
-        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <!-- The assistant panel over whatever was showing. -->
@@ -75,20 +68,16 @@
     <style name="DashSection">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">9dp</item>
+        <item name="android:layout_marginTop">@dimen/syn_espace_2</item>
         <item name="android:orientation">vertical</item>
         <item name="android:clipChildren">false</item>
     </style>
 
-    <!-- Section title on the dashboard: small and quiet. -->
-    <style name="DashLabel">
+    <!-- Section title on the dashboard. -->
+    <style name="DashLabel" parent="Role.Titre">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">2dp</item>
-        <item name="android:layout_marginBottom">3dp</item>
-        <item name="android:textColor">@color/syn_encre_secondaire</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:layout_marginBottom">@dimen/syn_espace_1</item>
     </style>
 
     <!-- A CardRow: up and down, padding as room for a lifted card taken back by margins; across, CardRow
@@ -110,7 +99,7 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="TechLabel">
+    <style name="TechLabel" parent="Role.Chiffre">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
@@ -118,30 +107,74 @@
         <item name="android:gravity">center_vertical</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:textColor">@color/syn_encre_secondaire</item>
-        <item name="android:textSize">9.5sp</item>
     </style>
 
-    <style name="TechValue">
+    <style name="TechValue" parent="Role.Chiffre">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">@color/syn_encre</item>
-        <item name="android:textSize">9.5sp</item>
-        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
-    <!-- Button in an alert over another app: focusable pill, white when focused. -->
-    <style name="AlertButton">
+    <!-- Button in an alert over another app: focusable pill, ringed in white when focused. -->
+    <style name="AlertButton" parent="Role.CorpsFort">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
         <item name="android:background">@drawable/pill_bg</item>
         <item name="android:textColor">@color/pill_text</item>
-        <item name="android:textSize">12sp</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
+    </style>
+
+    <!-- The design system's text roles for the TV (jetons.xml): every text takes one, never a size of its own.
+         Roboto has no 600: medium stands for it. Outfit is variable: its weight is set by wght. -->
+    <style name="Role" />
+    <style name="Role.TitrePage">
+        <item name="android:textSize">@dimen/syn_typo_titre_page_taille</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:fontVariationSettings">\'wght\' 600</item>
+        <item name="android:textColor">@color/syn_encre</item>
+    </style>
+    <style name="Role.Titre">
+        <item name="android:textSize">@dimen/syn_typo_titre_taille</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:fontVariationSettings">\'wght\' 600</item>
+        <item name="android:textColor">@color/syn_encre</item>
+    </style>
+    <style name="Role.Corps">
+        <item name="android:textSize">@dimen/syn_typo_corps_taille</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/syn_encre</item>
+    </style>
+    <style name="Role.CorpsFort">
+        <item name="android:textSize">@dimen/syn_typo_corps_fort_taille</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/syn_encre</item>
+    </style>
+    <style name="Role.Note">
+        <item name="android:textSize">@dimen/syn_typo_note_taille</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/syn_encre_secondaire</item>
+    </style>
+    <style name="Role.Petit">
+        <item name="android:textSize">@dimen/syn_typo_petit_taille</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/syn_encre_secondaire</item>
+    </style>
+    <style name="Role.Chiffre">
+        <item name="android:textSize">@dimen/syn_typo_chiffre_taille</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:textColor">@color/syn_encre</item>
+    </style>
+    <style name="Role.GrandChiffre">
+        <item name="android:textSize">@dimen/syn_typo_grand_chiffre_taille</item>
+        <item name="android:fontFamily">@font/outfit</item>
+        <item name="android:fontVariationSettings">\'wght\' 200</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:textColor">@color/syn_encre</item>
     </style>
 </resources>

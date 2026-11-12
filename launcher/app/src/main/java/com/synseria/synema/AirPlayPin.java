@@ -15,6 +15,11 @@ import java.util.regex.Pattern;
  * given. Notification access is granted over adb by build-and-install.sh.
  */
 public class AirPlayPin extends NotificationListenerService {
+
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
     static final String RECEIVER = "io.github.jqssun.airplay";
     /** The receiver's text while it waits: "PIN: 1234". */
     private static final Pattern PIN = Pattern.compile("PIN:\\s*(\\d{4})");

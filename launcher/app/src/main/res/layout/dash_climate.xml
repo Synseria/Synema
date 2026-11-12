@@ -4,8 +4,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:paddingStart="14dp"
-    android:paddingEnd="14dp"
+    android:paddingStart="@dimen/syn_espace_4"
+    android:paddingEnd="@dimen/syn_espace_4"
     android:gravity="center_vertical"
     android:orientation="vertical">
 
@@ -22,8 +22,8 @@
         <TextView
             android:id="@+id/climateSky"
             style="@style/DashCaps"
-            android:layout_marginStart="4dp"
-            android:drawablePadding="4dp"
+            android:layout_marginStart="@dimen/syn_espace_1"
+            android:drawablePadding="@dimen/syn_espace_1"
             android:drawableTint="@color/syn_encre_secondaire"
             android:visibility="gone" />
     </LinearLayout>
@@ -31,8 +31,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:gravity="center_vertical"
+                android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
@@ -43,7 +42,7 @@
             android:id="@+id/climateFacts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="9dp"
+            android:layout_marginStart="@dimen/syn_espace_2"
             android:orientation="vertical" />
     </LinearLayout>
 </LinearLayout>

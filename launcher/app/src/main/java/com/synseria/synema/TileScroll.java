@@ -34,7 +34,7 @@ public final class TileScroll extends ScrollView {
     @Override
     protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
         lifted.set(rect);
-        lifted.inset(0, -Focus.tileReach(rect.height()));
+        lifted.inset(0, -Focus.tileReach(getContext(), rect.height()));
         return super.computeScrollDeltaToGetChildRectOnScreen(lifted);
     }
 

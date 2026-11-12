@@ -10,7 +10,6 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,8 +47,15 @@ import java.util.regex.Pattern;
  */
 public class AssistActivity extends Activity {
 
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
+
     /** Messages kept in the panel, the oldest leaving first. */
     private static final int MAX_MESSAGES = 6;
+    /** The widest a message grows, in dp: a line of a sentence, not of the panel. */
+    private static final int BUBBLE_DP = 460;
 
     private HomeConfig home;
     private HomeAssistant ha;
@@ -113,24 +119,24 @@ public class AssistActivity extends Activity {
         }, "assist-resume").start();
         LinearLayout presets = findViewById(R.id.presets);
         for (HomeConfig.Preset p : home.assistantPresets) {
-            TextView chip = Chips.capsule(this, p.name, 11);
+            TextView chip = Chips.capsule(this, p.name);
             chip.setOnClickListener(v -> choose(p, presets));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            lp.setMarginEnd(dp(6));
+            lp.setMarginEnd(px(R.dimen.syn_espace_2));
             presets.addView(chip, lp);
         }
         presets.setVisibility(home.assistantPresets.size() > 1 ? android.view.View.VISIBLE : android.view.View.GONE);
         if (!home.assistantPresets.isEmpty()) choose(home.assistantPresets.get(0), presets);
         LinearLayout chips = findViewById(R.id.chips);
         for (String s : home.assistantSuggestions) {
-            TextView chip = Chips.capsule(this, s, 11);
+            TextView chip = Chips.capsule(this, s);
             chip.setOnClickListener(v -> ask(s));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            lp.setMarginEnd(dp(8));
+            lp.setMarginEnd(px(R.dimen.syn_espace_2));
             chips.addView(chip, lp);
         }
         mic().setOnClickListener(v -> listen());
-        mic().setOnFocusChangeListener((v, has) -> Focus.lift(v, has, Focus.BUTTON));
+        mic().setOnFocusChangeListener(Focus::lift);
         ring = new VoiceRing(this, mic(), getColor(R.color.syn_encre));
         ((FrameLayout) findViewById(R.id.micRoom)).addView(ring, 0, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -381,19 +387,19 @@ public class AssistActivity extends Activity {
 
     /** A message: {@code mine} on the right in the accent, else on the left on a recessed grey, its corner by its side squarer. */
     private TextView bubble(String text, boolean mine) {
-        TextView t = line(text, 13, getColor(mine ? R.color.syn_encre_sur_primaire : R.color.syn_encre));
-        t.setSingleLine(false);
-        t.setLineSpacing(dp(2), 1f);
-        t.setMaxWidth(dp(460));
-        t.setPadding(dp(12), dp(7), dp(12), dp(8));
+        TextView t = Tokens.text(this, text, R.style.Role_Corps);
+        t.setTextColor(getColor(mine ? R.color.syn_encre_sur_primaire : R.color.syn_encre));
+        t.setLineHeight(getResources().getDimensionPixelSize(R.dimen.syn_typo_corps_interligne));
+        t.setMaxWidth(dp(BUBBLE_DP));
+        t.setPadding(px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_3), px(R.dimen.syn_espace_2));
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
         bg.setColor(getColor(mine ? R.color.syn_primaire : R.color.syn_creux));
-        float r = dp(16), tail = dp(4);
+        float r = getResources().getDimension(R.dimen.syn_rayon_carte), tail = getResources().getDimension(R.dimen.syn_rayon_pastille);
         bg.setCornerRadii(mine ? new float[]{r, r, r, r, tail, tail, r, r} : new float[]{r, r, r, r, r, r, tail, tail});
         t.setBackground(bg);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.gravity = mine ? android.view.Gravity.END : android.view.Gravity.START;
-        lp.topMargin = dp(6);
+        lp.topMargin = px(R.dimen.syn_espace_2);
         add(t, lp);
         return t;
     }
@@ -407,12 +413,12 @@ public class AssistActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setClipChildren(false);
         row.setClipToPadding(false);
-        row.setPadding(dp(2), dp(2), dp(2), dp(2));
+        row.setPadding(px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_1));
         for (HouseActions.Action a : offered) {
-            TextView card = Chips.capsule(this, a.label, 11);
+            TextView card = Chips.capsule(this, a.label);
             card.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_bolt, 0, 0, 0);
             card.setCompoundDrawableTintList(getColorStateList(R.color.pill_text));
-            card.setCompoundDrawablePadding(dp(5));
+            card.setCompoundDrawablePadding(px(R.dimen.syn_espace_1));
             card.setOnClickListener(v -> {
                 card.setEnabled(false);
                 ha.call(a.service, a.entity, null, ok -> {
@@ -422,12 +428,12 @@ public class AssistActivity extends Activity {
                     card.setClickable(false);
                 });
             });
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(30));
-            lp.setMarginEnd(dp(8));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMarginEnd(px(R.dimen.syn_espace_2));
             row.addView(card, lp);
         }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.topMargin = dp(6);
+        lp.topMargin = px(R.dimen.syn_espace_2);
         add(row, lp);
     }
 
@@ -534,13 +540,8 @@ public class AssistActivity extends Activity {
         return findViewById(R.id.btnMic);
     }
 
-    private TextView line(String s, float sp, int color) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        if (color != 0) t.setTextColor(color);
-        t.setSingleLine(true);
-        return t;
+    private int px(int dimen) {
+        return getResources().getDimensionPixelSize(dimen);
     }
 
     private int dp(int v) {

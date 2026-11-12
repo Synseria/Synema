@@ -104,6 +104,11 @@ final class HouseText {
                 : c.contains(TEMPO_BLUE) ? TEMPO[0][0] : ctx.getColor(R.color.syn_encre_tertiaire);
     }
 
+    /** The day's colour in words as Home Assistant states it: "Bleu". */
+    static String tempoName(HomeAssistant.State s) {
+        return s.state.substring(0, 1).toUpperCase(Locale.getDefault()) + s.state.substring(1).toLowerCase(Locale.getDefault());
+    }
+
     /** Whom or what a status entry is about: its label, else the entity's name in Home Assistant. */
     private static String who(HomeConfig.Status st, HomeAssistant.State s) {
         return st.label.isEmpty() ? s.name() : st.label;

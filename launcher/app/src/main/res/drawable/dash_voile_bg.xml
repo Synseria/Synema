@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The veil under the featured title's words: they lie over a picture. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/syn_tv_voile" />
+    <corners android:radius="@dimen/syn_rayon_carte" />
+</shape>
