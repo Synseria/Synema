@@ -162,10 +162,11 @@ final class HouseHeader {
      */
     private static TextView fact(Context ctx, int style, int icon, int dot, String value, String unit, Place.Trend trend) {
         SpannableStringBuilder sb = HouseText.units(ctx, HouseText.measure(value, unit), true);
-        TextView line = new TextView(ctx);
+        FactLine line = new FactLine(ctx);
         line.setTextAppearance(style);
+        SpannableStringBuilder bare = new SpannableStringBuilder(sb);
         if (trend != null) arrow(ctx, sb, trend, ctx.getColor(trend.color), Math.round(line.getTextSize()));
-        line.setText(sb);
+        line.setTexts(sb, bare);
         line.setSingleLine(true);
         line.setIncludeFontPadding(false);
         // A dot of five ninths of the icon's size, centred in the same slot, so every value starts at the same place.
@@ -182,6 +183,39 @@ final class HouseHeader {
         line.setCompoundDrawablesRelative(d, null, null, null);
         line.setCompoundDrawablePadding(ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_1));
         return line;
+    }
+
+    /**
+     * A reading's line: its trend's arrow comes last and is the first to go, when the line is given less
+     * width than the whole needs; the value and its unit are never cut.
+     */
+    private static final class FactLine extends TextView {
+        private CharSequence whole = "", bare = "";
+        private boolean showsWhole = true;
+
+        FactLine(Context ctx) {
+            super(ctx);
+        }
+
+        void setTexts(CharSequence whole, CharSequence bare) {
+            this.whole = whole;
+            this.bare = bare;
+            showsWhole = true;
+            setText(whole);
+        }
+
+        @Override
+        protected void onMeasure(int widthSpec, int heightSpec) {
+            if (MeasureSpec.getMode(widthSpec) != MeasureSpec.UNSPECIFIED) {
+                int room = MeasureSpec.getSize(widthSpec) - getCompoundPaddingLeft() - getCompoundPaddingRight();
+                boolean fits = Math.ceil(android.text.Layout.getDesiredWidth(whole, getPaint())) <= room;
+                if (fits != showsWhole) {
+                    showsWhole = fits;
+                    setText(fits ? whole : bare);
+                }
+            }
+            super.onMeasure(widthSpec, heightSpec);
+        }
     }
 
     private static int dp(Context ctx, int v) {
