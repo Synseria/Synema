@@ -17,7 +17,7 @@
             android:orientation="horizontal"
             android:baselineAligned="true">
 
-            <!-- The one text outside the roles: a screensaver's clock is read from across the room. -->
+            <!-- The one text outside the roles: a screensaver's clock is read from across the room. jeton manquant: syn_typo_horloge_veille (120sp, graisse 200, interlettre -0.04) -->
             <TextClock
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -50,7 +50,7 @@
             style="@style/Role.Titre"
             android:textColor="@color/syn_encre_secondaire" />
 
-        <!-- Outside and the TV's room as the top line shows them (HouseHeader.column), larger (ClockDream). -->
+        <!-- Outside and the TV's room as the top line shows them (HouseHeader.column), larger (ClockDream). The -8dp pulls the first column's plate edge back to the clock: jeton manquant: syn_espace_negatif_2 -->
         <LinearLayout
             android:id="@+id/dreamPlaces"
             android:layout_width="wrap_content"
