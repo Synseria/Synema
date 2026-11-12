@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- An alert over any app (Alerts): live camera, title, and its buttons (enlarge, optional reply,
-     close). Without a camera only the title row shows, as a small notice. -->
+<!-- An alert over any app (Alerts): live camera, title, and its buttons (enlarge: secondary,
+     optional reply: primary, close: tertiary). Without a camera only the title row shows, as a small notice. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="360dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/alert_bg"
-    android:elevation="12dp">
+    android:elevation="12dp"><!-- jeton manquant: syn_ombre_flottant (elevation), syn_largeur_alerte (360dp), syn_hauteur_alerte_media (180dp) -->
 
     <!-- The camera: Home Assistant's pictures at once, the WebRTC video over them from its first frame. -->
     <FrameLayout
@@ -62,17 +62,23 @@
                 android:id="@+id/btnFull"
                 style="@style/AlertButton"
                 android:layout_marginEnd="@dimen/syn_espace_2"
+                android:background="@drawable/button_secondary_bg"
+                android:textColor="@color/syn_encre"
                 android:text="@string/alert_full_screen" />
 
             <TextView
                 android:id="@+id/btnReply"
                 style="@style/AlertButton"
                 android:layout_marginEnd="@dimen/syn_espace_2"
+                android:background="@drawable/button_primary_bg"
+                android:textColor="@color/syn_encre_sur_primaire"
                 android:visibility="gone" />
 
             <TextView
                 android:id="@+id/btnClose"
                 style="@style/AlertButton"
+                android:background="@drawable/button_tertiary_bg"
+                android:textColor="@color/syn_primaire_encre"
                 android:text="@string/alert_close" />
         </LinearLayout>
     </LinearLayout>

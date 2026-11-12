@@ -2,8 +2,6 @@ package com.synseria.synema;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +19,7 @@ import org.webrtc.SurfaceViewRenderer;
  *
  * Talking goes through the camera's speaker. The remote's microphone streams only once its own button
  * is pressed, so that button talks here (RemoteKeyService leaves it to this screen): pressed, the mic
- * opens until pressed again; held, it stays open while held. OK on the talk button does the same, and
- * says to press the remote's button when nothing is heard.
+ * opens until pressed again; held, it stays open while held. OK on the talk button does the same.
  */
 public class CameraActivity extends Activity {
 
@@ -37,12 +34,7 @@ public class CameraActivity extends Activity {
             KeyEvent.KEYCODE_VOICE_ASSIST, KeyEvent.KEYCODE_ASSIST};
     /** A voice button held at least this long talks only while held. */
     private static final long HOLD_MS = 600;
-    /** Talking this long without a voice from the mic: the remote's mic sleeps, and the caption says so. */
-    private static final long SILENT_MS = 2_000;
-    /** The level from which the mic counts as hearing a voice (CameraRtc.level). */
-    private static final float VOICE = 0.15f;
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
     private HomeConfig home;
     private HomeAssistant ha;
     private ImageView frame;
@@ -55,12 +47,6 @@ public class CameraActivity extends Activity {
     private int index;
     /** The mic opened with the voice button now down, at this time; -1 otherwise. */
     private long openedByPressAt = -1;
-    /** The mic has heard a voice since it opened. */
-    private boolean heard;
-
-    private final Runnable silence = () -> {
-        if (rtc != null && rtc.talking() && !heard) caption.setText(R.string.camera_press_mic);
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +86,6 @@ public class CameraActivity extends Activity {
     }
 
     private void stop() {
-        handler.removeCallbacks(silence);
         if (stream != null) stream.stop();
         stream = null;
         if (rtc != null) rtc.release();
@@ -148,11 +133,8 @@ public class CameraActivity extends Activity {
         if (rtc == null) return;
         rtc.talk(on);
         talkButton.setActivated(on);
-        heard = false;
         ring.level(on ? 0 : -1);
         caption.setText(on ? R.string.camera_talking : R.string.camera_talk);
-        handler.removeCallbacks(silence);
-        if (on) handler.postDelayed(silence, SILENT_MS);
     }
 
     private void show(int i) {
@@ -190,10 +172,6 @@ public class CameraActivity extends Activity {
             @Override
             public void onMicLevel(float level) {
                 ring.level(level);
-                if (level >= VOICE && !heard) {
-                    heard = true;
-                    caption.setText(R.string.camera_talking);
-                }
             }
         });
         rtc.start();
