@@ -22,10 +22,11 @@ final class HouseText {
     private static final String TEMPO_BLUE = "bleu", TEMPO_WHITE = "blanc", TEMPO_RED = "rouge";
 
     /**
-     * A figure's unit: the no-break space and the word after a digit, or the degree sign glued to it. Text that
-     * carries a figure is written in this shape, and {@link #units} gives every such unit the same look.
+     * A figure's unit: the no-break space and the word after a digit. Text that carries a figure is written in
+     * this shape, and {@link #units} gives every such unit the same look. The degree sign is part of the figure:
+     * smaller, it floats loose beside it.
      */
-    private static final Pattern UNIT = Pattern.compile("(?<=\\d)(?:\u00A0(?:%|€|\\p{L}+)|°)");
+    private static final Pattern UNIT = Pattern.compile("(?<=\\d)\u00A0(?:%|€|\\p{L}+)");
     /** A unit is one step smaller than its figure. */
     // jeton manquant: syn_unite_echelle (0.8)
     private static final float UNIT_SCALE = 0.8f;

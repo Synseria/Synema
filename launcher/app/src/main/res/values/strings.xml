@@ -162,8 +162,8 @@
     <string name="graph_none">No reading</string>
     <string name="graph_loading">Loading</string>
     <string name="stats_unavailable">Statistics unavailable</string>
-    <string name="unit_hours">%1$d&#160;h</string>
-    <string name="unit_days">%1$d&#160;d</string>
+    <string name="unit_hours">%1$d&#160;hours</string>
+    <string name="unit_days">%1$d&#160;days</string>
     <string name="energy_title">Electricity</string>
     <string name="sources_all">More</string>
     <string name="energy_range_today">Today</string>

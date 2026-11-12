@@ -117,8 +117,8 @@
     <string name="graph_none">Aucun relevé</string>
     <string name="graph_loading">Chargement</string>
     <string name="stats_unavailable">Statistiques indisponibles</string>
-    <string name="unit_hours">%1$d&#160;h</string>
-    <string name="unit_days">%1$d&#160;j</string>
+    <string name="unit_hours">%1$d&#160;heures</string>
+    <string name="unit_days">%1$d&#160;jours</string>
     <string name="energy_title">Électricité</string>
     <string name="sources_all">Autres</string>
     <string name="energy_range_today">Aujourd\'hui</string>
