@@ -27,12 +27,20 @@ public final class SidePanel extends LinearLayout {
         LayoutParams lp = (LayoutParams) scroll.getLayoutParams();
         lp.height = LayoutParams.WRAP_CONTENT;
         super.onMeasure(widthSpec, heightSpec);
+        // The others at their natural height: measured after the rooms took the space, the last of them comes
+        // out already squeezed, and the overflow would be undercounted (the electricity cut at the bottom).
         int used = getPaddingTop() + getPaddingBottom();
+        int unbounded = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         for (int i = 0; i < getChildCount(); i++) {
             View c = getChildAt(i);
             if (c.getVisibility() == GONE) continue;
             LayoutParams clp = (LayoutParams) c.getLayoutParams();
-            used += c.getMeasuredHeight() + clp.topMargin + clp.bottomMargin;
+            int h = c.getMeasuredHeight();
+            if (c != scroll) {
+                c.measure(MeasureSpec.makeMeasureSpec(c.getMeasuredWidth(), MeasureSpec.EXACTLY), unbounded);
+                h = c.getMeasuredHeight();
+            }
+            used += h + clp.topMargin + clp.bottomMargin;
         }
         int over = used - getMeasuredHeight();
         if (over > 0) {

@@ -34,7 +34,7 @@ final class HousePanel {
      * target (syn_cible_min), the space between lines syn_espace_1.
      */
     // jeton manquant: syn_tuile_piece_hauteur (56)
-    private static final int ROOM_DP = 64;
+    private static final int ROOM_DP = 68;
     /** A remote key as drawn on its tile (dp): its size; its corner is syn_rayon_pastille, its distance from the edges syn_espace_2. */
     // jeton manquant: syn_touche_tuile_largeur (14), syn_touche_tuile_hauteur (8)
     private static final int KEY_W_DP = 14, KEY_H_DP = 8;
