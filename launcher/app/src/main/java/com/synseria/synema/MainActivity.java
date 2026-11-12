@@ -134,6 +134,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         }
         Posters.keepOnDisk(this);
         setContentView(R.layout.activity_home);
+        FocusGuard.install(this);
         density = getResources().getDisplayMetrics().density;
         content = findViewById(R.id.content);
         dock = findViewById(R.id.dock);
@@ -535,9 +536,22 @@ public class MainActivity extends Activity implements EditMenu.Host {
         fillRow(resumeRow, items, true);
     }
 
+    /** Without what "continue watching" already shows (when that block is shown); null stays null. */
+    private List<TvListings.Item> withoutResumed(List<TvListings.Item> items) {
+        List<TvListings.Item> resume = visible(resumeCache);
+        if (items == null || resume == null || cfg.hiddenBlocks.contains(EditMenu.BLOCK_RESUME)) return items;
+        List<TvListings.Item> out = new ArrayList<>();
+        for (TvListings.Item it : items) {
+            boolean seen = false;
+            for (TvListings.Item r : resume) seen |= it.sameAs(r);
+            if (!seen) out.add(it);
+        }
+        return out;
+    }
+
     /** Every app's picks, interleaved; {@code items} null: not read yet, placeholders. */
     private void showDiscover(List<TvListings.Item> all) {
-        List<TvListings.Item> items = visible(all);
+        List<TvListings.Item> items = withoutResumed(visible(all));
         boolean shown = (items == null || !items.isEmpty()) && !cfg.hiddenBlocks.contains(EditMenu.BLOCK_PICKS);
         section(discoverLabel, shown);
         String signature = items == null ? SKELETON : signature(items);
@@ -737,8 +751,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
     }
 
     /**
-     * Under a title to continue, nothing over its artwork: the app's icon, then how far in (a bar) or,
-     * without a position, the app's name. Aligned with the picture inside the card's frame.
+     * Under a title to continue, nothing over its artwork: the app's icon, then what is left to watch
+     * when known, else the app's name. Aligned with the picture inside the card's frame.
      */
     private LinearLayout meta(PackageManager pm, TvListings.Item item) {
         LinearLayout line = new LinearLayout(this);
@@ -751,15 +765,10 @@ public class MainActivity extends Activity implements EditMenu.Host {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
         line.addView(icon, new LinearLayout.LayoutParams(dp(9), dp(9)));
-        if (item.progress >= 0) {
-            LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(0, dp(3), 1f);
-            plp.setMarginStart(dp(5));
-            line.addView(progress(item.progress), plp);
-        } else {
-            TextView name = text(appLabel(pm, item.pkg), 7, getColor(R.color.syn_encre_secondaire));
-            name.setPadding(dp(4), 0, 0, 0);
-            line.addView(name);
-        }
+        String timeLeft = item.timeLeft(this);
+        TextView name = text(timeLeft != null ? timeLeft : appLabel(pm, item.pkg), 7, getColor(R.color.syn_encre_secondaire));
+        name.setPadding(dp(4), 0, 0, 0);
+        line.addView(name);
         return line;
     }
 

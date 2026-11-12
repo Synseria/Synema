@@ -3,9 +3,6 @@ package com.synseria.synema;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -379,16 +376,12 @@ final class HousePanel {
         powerValue.setVisibility(va == null ? View.INVISIBLE : View.VISIBLE);
         gauge.setVisibility(va == null || max == null ? View.GONE : View.VISIBLE);
         if (va != null) {
-            SpannableStringBuilder sb = new SpannableStringBuilder(HouseText.whole(va) + "\u00A0" + unit(power));
             if (max != null) {
-                int at = sb.length();
-                sb.append(" / ").append(HouseText.whole(max)).append('\u00A0').append(unit(subscribed));
-                sb.setSpan(new ForegroundColorSpan(activity.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 gauge.removeAllViews();
                 gauge.addView(activity.progress((float) Math.min(1, va / (max * kilo(subscribed) / kilo(power)))),
                         new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
-            powerValue.setText(sb);
+            powerValue.setText(HouseText.power(activity, va, power, max, subscribed));
         }
         String month = monthCost();
         TextView cost = activity.findViewById(R.id.costValue);

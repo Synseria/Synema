@@ -77,6 +77,9 @@ final class Chart extends View {
         }
     }
 
+    /** The bar of the period still running is faint: it is not a drop, only a period not over. */
+    private static final float PARTIAL_ALPHA = 0.45f;
+
     /** A dark card: a busy picture behind does not cross the curves. */
     private final int gridColor, labelColor, ink, card;
     private final float corner;
@@ -497,12 +500,14 @@ final class Chart extends View {
         valueGrid(canvas, left, right, top, bottom, scale, unit, true, labelColor);
         float slot = (right - left) / slots, bar = slot * 0.64f, radius = Math.min(3 * d, bar / 2);
         double[] base = new double[slots];
+        int now = slot(System.currentTimeMillis());
         for (int k = 0; k < series.size(); k++) {
             Series s = series.get(k);
-            fill.setColor(s.color);
+            int soft = (s.color & 0x00FFFFFF) | Math.round(255 * PARTIAL_ALPHA) << 24;
             for (Stats.Point p : s.points) {
                 int i = slot(p.start);
                 if (i < 0 || i >= slots || Double.isNaN(p.change) || p.change <= 0) continue;
+                fill.setColor(i == now ? soft : s.color);
                 float x = left + slot * i + (slot - bar) / 2;
                 float yLow = y(base[i], scale, top, bottom), yHigh = y(base[i] + p.change, scale, top, bottom);
                 base[i] += p.change;

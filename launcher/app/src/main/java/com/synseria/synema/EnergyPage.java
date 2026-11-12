@@ -162,7 +162,8 @@ final class EnergyPage {
         Map<String, HomeAssistant.State> states = HaLive.STATES;
         HomeAssistant.State p = states.get(home.energyPower);
         Double va = HouseText.number(p);
-        power.setText(va == null ? "–" : HouseText.whole(va) + " " + p.attrs.optString("unit_of_measurement"));
+        HomeAssistant.State subscribed = states.get(home.energySubscribed);
+        power.setText(va == null ? "–" : HouseText.power(activity, va, p, HouseText.number(subscribed), subscribed));
         cost.setText(monthCost.get());
         SpannableStringBuilder sb = new SpannableStringBuilder();
         tempoDay(sb, R.string.tech_today, states.get(home.energyTempo));

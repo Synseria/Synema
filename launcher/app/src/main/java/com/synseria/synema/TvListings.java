@@ -109,8 +109,31 @@ final class TvListings {
         String facts(Context ctx) {
             List<String> out = new ArrayList<>();
             for (String f : new String[]{genre, year, rating}) if (!f.isEmpty()) out.add(f);
-            if (left >= 0) out.add(ctx.getString(R.string.time_left, minutes(left)));
+            String timeLeft = timeLeft(ctx);
+            if (timeLeft != null) out.add(timeLeft);
             return android.text.TextUtils.join(" · ", out);
+        }
+
+        /** "reste 23 min", or null when what is left is not known. */
+        String timeLeft(Context ctx) {
+            return left >= 0 ? ctx.getString(R.string.time_left, minutes(left)) : null;
+        }
+
+        /** Whether {@code other} is this same title: the same words, or the same link. */
+        boolean sameAs(Item other) {
+            // Apps name one show differently ("Les Anneaux de pouvoir", "… – Saison 2"): compare letters
+            // and digits only, and a title held whole in the other counts.
+            String a = plain(title), b = plain(other.title);
+            if (!a.isEmpty() && !b.isEmpty() && (a.equals(b) || Math.min(a.length(), b.length()) >= 8 && (a.contains(b) || b.contains(a)))) {
+                return true;
+            }
+            String link = intent == null ? null : intent.toUri(0);
+            return link != null && intent.getData() != null && link.equals(other.intent == null ? null : other.intent.toUri(0));
+        }
+
+        private static String plain(String s) {
+            String n = java.text.Normalizer.normalize(s == null ? "" : s, java.text.Normalizer.Form.NFD);
+            return n.replaceAll("[^\\p{L}\\p{N}]", "").toLowerCase(java.util.Locale.ROOT);
         }
 
         /** The title in its app, whatever the progress: what hiding a title remembers. */

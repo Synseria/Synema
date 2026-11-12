@@ -116,6 +116,7 @@ final class SidePage {
         page.animate().cancel();
         if (!isOpen()) homeX = home.getTranslationX();
         shown = key;
+        activity.motion().dim(true);
         this.back = back;
         title.setText(name);
         if (content.getParent() != body) {
@@ -157,6 +158,7 @@ final class SidePage {
     boolean close(boolean slide) {
         if (!isOpen()) return false;
         shown = null;
+        activity.motion().dim(false);
         View to = back.get();
         back = null;
         home.animate().cancel();

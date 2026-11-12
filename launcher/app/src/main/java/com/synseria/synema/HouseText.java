@@ -2,6 +2,9 @@ package com.synseria.synema;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +94,7 @@ final class HouseText {
      */
     static final int[][] TEMPO = {
             {0xFF0A84FF, 0xFF1C5BB3}, // off-palette: EDF's Tempo blue
-            {0xFFE5E5EA, 0xFF8E8E93}, // off-palette: EDF's Tempo white
+            {0xFFC7C7CC, 0xFF8E8E93}, // off-palette: EDF's Tempo white, a light grey so it does not outshine the others
             {0xFFFF453A, 0xFFA8322B}}; // off-palette: EDF's Tempo red
 
     /** A Tempo day's colour for its dot; grey until EDF says (tomorrow's comes late in the morning). */
@@ -148,5 +151,16 @@ final class HouseText {
 
     static String degrees(double v) {
         return String.format(Locale.getDefault(), "%.0f°", v);
+    }
+
+    /** "702 VA / 6 kVA": the power, then the subscription in the secondary ink when known. */
+    static SpannableStringBuilder power(Context ctx, double va, HomeAssistant.State power, Double max,
+                                        HomeAssistant.State subscribed) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(whole(va) + "\u00A0" + power.attrs.optString("unit_of_measurement"));
+        if (max == null) return sb;
+        int at = sb.length();
+        sb.append(" / ").append(whole(max)).append('\u00A0').append(subscribed.attrs.optString("unit_of_measurement"));
+        sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return sb;
     }
 }

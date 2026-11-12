@@ -51,6 +51,7 @@ public class AppsActivity extends Activity implements EditMenu.Host {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apps);
+        FocusGuard.install(this);
         // Its plain colour comes from a surface under the window, so the GPU composes it (MovingBackdrop).
         MovingBackdrop.under(this, Backdrop.NAVY, false);
         density = getResources().getDisplayMetrics().density;

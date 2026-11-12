@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Engendré par Synseria-Design — ne pas retoucher : changer jetons.json ou apps/Synema.json, puis sh propager.sh. -->
-<!-- jetons.json 62bb9e43bf029f2a · contenu 5409562594534b09 -->
+<!-- jetons.json 62bb9e43bf029f2a · contenu fc1a11fd44d0bf5d -->
 <resources>
     <color name="syn_fenetre">#FF12151D</color>
     <color name="syn_surface">#FF1A1E2A</color>
@@ -26,7 +26,7 @@
     <color name="syn_succes">#FF5DD68A</color>
     <color name="syn_tv_fond">#FF0B1020</color>
     <color name="syn_tv_carte">#FF1A2036</color>
-    <color name="syn_tv_carte_allumee">#FF252A3A</color>
+    <color name="syn_tv_carte_allumee">#FF2F3854</color>
     <color name="syn_tv_voile">#B80B1020</color>
     <color name="syn_touche_rouge">#FFE5484D</color>
     <color name="syn_touche_verte">#FF46A758</color>
