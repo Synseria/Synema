@@ -398,42 +398,48 @@
                         android:textAppearance="@style/Role.Note" />
                 </LinearLayout>
 
-                <!-- home.json's tiles, fixed; the margins are room for a focused tile's lift (Focus). -->
-                <LinearLayout
-                    android:id="@+id/tiles"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/syn_espace_2"
-                    android:layout_marginStart="@dimen/syn_espace_1"
-                    android:layout_marginEnd="@dimen/syn_espace_1"
-                    android:orientation="vertical"
-                    android:clipChildren="false" />
-
-                <View
-                    android:id="@+id/houseRule"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/syn_trait_filet"
-                    android:layout_marginStart="@dimen/syn_espace_2"
-                    android:layout_marginEnd="@dimen/syn_espace_2"
-                    android:layout_marginTop="@dimen/syn_espace_1"
-                    android:background="@color/syn_filet" />
-
-                <!-- The rooms, as tall as they are and no taller than the panel leaves (SidePanel), so the electricity
-                     follows them; scrolling alone beyond. Their padding is room for a focused room's lift. -->
+                <!-- The rooms first, then home.json's tiles (the remote's shortcuts, the vacuum) under a rule, as
+                     tall as they are and no taller than the panel leaves (SidePanel), so the electricity follows
+                     them; scrolling alone beyond. The padding is room for a focused tile's lift (Focus). -->
                 <com.synseria.synema.TileScroll
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/syn_espace_1"
                     android:scrollbars="none"
                     android:overScrollMode="never">
 
                     <LinearLayout
-                        android:id="@+id/rooms"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="@dimen/syn_espace_1"
                         android:orientation="vertical"
                         android:clipChildren="false"
-                        android:clipToPadding="false" />
+                        android:clipToPadding="false">
+
+                        <LinearLayout
+                            android:id="@+id/rooms"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:clipChildren="false" />
+
+                        <View
+                            android:id="@+id/houseRule"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/syn_trait_filet"
+                            android:layout_marginStart="@dimen/syn_espace_1"
+                            android:layout_marginEnd="@dimen/syn_espace_1"
+                            android:layout_marginTop="@dimen/syn_espace_2"
+                            android:background="@color/syn_filet" />
+
+                        <LinearLayout
+                            android:id="@+id/tiles"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/syn_espace_2"
+                            android:orientation="vertical"
+                            android:clipChildren="false" />
+                    </LinearLayout>
                 </com.synseria.synema.TileScroll>
 
                 <!-- The electricity on two lines: the power against the subscription (and its bar) and
