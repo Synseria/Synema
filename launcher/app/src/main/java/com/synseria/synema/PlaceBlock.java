@@ -68,6 +68,13 @@ final class PlaceBlock {
     /** The room in the title's place; its curves when the focus rests, at once when kept. */
     void show(Rooms.Room r, Place p, HaLive live) {
         cancel();
+        // Exactly the featured title's height, which stays laid out under it: nothing below moves, and the
+        // curves take what the name and the readings leave (in a frame, "match parent" would grow the band).
+        int h = words.getHeight();
+        if (h > 0 && block.getLayoutParams().height != h) {
+            block.getLayoutParams().height = h;
+            block.requestLayout();
+        }
         words.setVisibility(View.INVISIBLE);
         block.setVisibility(View.VISIBLE);
         name.setText(r.name);
