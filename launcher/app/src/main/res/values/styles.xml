@@ -120,9 +120,10 @@
 
     <!-- Button in an alert over another app: focusable; its rank (background and ink) is set where it is used. -->
     <style name="AlertButton" parent="Role.CorpsFort">
-        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">match_parent</item>
-        <item name="android:layout_weight">1</item>
+        <item name="android:paddingStart">@dimen/syn_espace_4</item>
+        <item name="android:paddingEnd">@dimen/syn_espace_4</item>
         <item name="android:gravity">center</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>

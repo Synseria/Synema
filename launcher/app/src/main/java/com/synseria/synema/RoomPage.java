@@ -294,7 +294,8 @@ final class RoomPage {
     private LinearLayout tile(Rooms.Entity e, String area) {
         LinearLayout t = new LinearLayout(activity);
         t.setOrientation(LinearLayout.VERTICAL);
-        Focus.tile(t);
+        Focus.block(t);
+        t.setBackgroundResource(R.drawable.dash_tile_room_bg);
         int pad = px(R.dimen.syn_espace_3);
         t.setPadding(pad, px(R.dimen.syn_espace_2), pad, px(R.dimen.syn_espace_2));
         t.setMinimumHeight(px(R.dimen.syn_cible_min) + px(R.dimen.syn_espace_2));

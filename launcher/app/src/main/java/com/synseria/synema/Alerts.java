@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.util.SparseArray;
@@ -40,10 +41,10 @@ final class Alerts implements HaSocket.Listener {
     private static final int NOTICE_SECONDS = 8;
     /** The AirPlay code stays this long at most, should the receiver never say it is given. */
     private static final int PIN_SECONDS = 120;
-    /** Enlarged, what the card keeps under the picture (dp): its title, its countdown and its buttons. */
-    private static final int ENLARGED_CHROME_DP = 160;   // jeton manquant: syn_alerte_pied
-    /** The card's picture and its message, as overlay_alert.xml sizes them (dp). */
-    private static final int MEDIA_DP = 180;   // jeton manquant: syn_hauteur_alerte_media
+    /** Enlarged, what the card keeps under the picture (dp): its bar and its row of title and buttons. */
+    private static final int ENLARGED_CHROME_DP = 96;   // jeton manquant: syn_alerte_pied
+    /** The card's picture, as overlay_alert.xml sizes it (dp): 16:9 of the panel's width less its margins. */
+    private static final int MEDIA_DP = 153;   // jeton manquant: syn_hauteur_alerte_media
     private static final int MESSAGE_MAX_DP = 420;   // jeton manquant: syn_largeur_message
     /** The same alert is not shown again within this delay (people walking past a camera). */
     private static final long COOLDOWN_MS = 120_000;
@@ -73,6 +74,7 @@ final class Alerts implements HaSocket.Listener {
     private boolean enlarged;
     private boolean pausedMedia;
     private int secondsLeft;
+    private String shownMessage = "";
 
     Alerts(Context ctx, HomeAssistant ha, HomeConfig config) {
         this.ctx = ctx;
@@ -253,16 +255,18 @@ final class Alerts implements HaSocket.Listener {
         boolean live = !a.camera.isEmpty();
         View v = LayoutInflater.from(ctx).inflate(R.layout.overlay_alert, null);
         TextView title = v.findViewById(R.id.title);
-        if (message.isEmpty()) {
+        shownMessage = message;
+        if (live) {
+            title.setMaxLines(1);
+            title.setText(a.title);
+        } else if (message.isEmpty()) {
             title.setText(a.title);
         } else {
-            SpannableString text = new SpannableString(a.title + "\n" + message);
-            int start = a.title.length() + 1;
-            text.setSpan(new TextAppearanceSpan(ctx, R.style.Role_Corps), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            title.setText(text);
+            title.setText(withMessage(a.title, message));
             title.setMaxWidth((int) (MESSAGE_MAX_DP * ctx.getResources().getDisplayMetrics().density));
         }
         v.findViewById(R.id.media).setVisibility(live ? View.VISIBLE : View.GONE);
+        v.findViewById(R.id.countdownBar).setVisibility(live ? View.VISIBLE : View.GONE);
         v.findViewById(R.id.buttons).setVisibility(live ? View.VISIBLE : View.GONE);
         v.findViewById(R.id.btnClose).setOnClickListener(x -> dismiss());
         v.findViewById(R.id.btnFull).setOnClickListener(x -> setEnlarged(!enlarged));
@@ -281,7 +285,7 @@ final class Alerts implements HaSocket.Listener {
         });
 
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
+                live ? px(R.dimen.house_panel_width) : WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
                 // A notice never takes the remote away from the app; a live alert does, to be answered.
                 live ? 0 : WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -329,6 +333,7 @@ final class Alerts implements HaSocket.Listener {
             });
             rtc.start();
         }
+        if (live) title.post(this::fitMessage);
         secondsLeft = live ? SHOW_SECONDS : NOTICE_SECONDS;
         main.post(countdown);
     }
@@ -342,11 +347,38 @@ final class Alerts implements HaSocket.Listener {
                 return;
             }
             boolean live = !shownAlert.camera.isEmpty();
-            ((TextView) shown.findViewById(R.id.countdown)).setText(live ? ctx.getString(R.string.alert_closes_in, secondsLeft) : "");
+            if (live) {
+                View fill = shown.findViewById(R.id.countdown);
+                fill.setPivotX(0);
+                fill.setScaleX(secondsLeft / (float) SHOW_SECONDS);
+            }
             secondsLeft--;
             main.postDelayed(this, 1000);
         }
     };
+
+    private CharSequence withMessage(String title, String message) {
+        SpannableString text = new SpannableString(title + "\n" + message);
+        text.setSpan(new TextAppearanceSpan(ctx, R.style.Role_Corps), title.length() + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return text;
+    }
+
+    /** The camera's title on one line, with its message after it in secondary ink only if all of it fits. */
+    private void fitMessage() {
+        if (shown == null || shownAlert == null) return;
+        TextView title = shown.findViewById(R.id.title);
+        String head = shownAlert.title;
+        if (!shownMessage.isEmpty()) {
+            String full = head + "  " + shownMessage;
+            if (title.getPaint().measureText(full) <= title.getWidth()) {
+                SpannableString text = new SpannableString(full);
+                text.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), head.length() + 2, full.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                title.setText(text);
+                return;
+            }
+        }
+        title.setText(head);
+    }
 
     private int px(int dimen) {
         return ctx.getResources().getDimensionPixelSize(dimen);
@@ -358,7 +390,7 @@ final class Alerts implements HaSocket.Listener {
         enlarged = on;
         float d = ctx.getResources().getDisplayMetrics().density;
         WindowManager.LayoutParams lp = (WindowManager.LayoutParams) shown.getLayoutParams();
-        lp.width = on ? WindowManager.LayoutParams.MATCH_PARENT : WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.width = on ? WindowManager.LayoutParams.MATCH_PARENT : px(R.dimen.house_panel_width);
         lp.height = on ? WindowManager.LayoutParams.MATCH_PARENT : WindowManager.LayoutParams.WRAP_CONTENT;
         lp.x = on ? 0 : Scale.marginX(ctx);
         lp.y = on ? 0 : Scale.marginY(ctx);
@@ -368,9 +400,10 @@ final class Alerts implements HaSocket.Listener {
         ((TextView) shown.findViewById(R.id.btnFull)).setText(on ? R.string.alert_shrink : R.string.alert_full_screen);
         if (on) {
             main.removeCallbacks(countdown);
-            ((TextView) shown.findViewById(R.id.countdown)).setText("");
+            shown.findViewById(R.id.countdownBar).setVisibility(View.GONE);
         }
         wm.updateViewLayout(shown, lp);
+        shown.findViewById(R.id.title).post(this::fitMessage);
     }
 
     private void dismiss() {
