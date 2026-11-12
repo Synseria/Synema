@@ -126,27 +126,31 @@ final class HouseHeader {
      * A place's readings beside its temperature, one per line of {@code facts}, the first {@code max} of:
      * humidity, pressure, CO₂ (with its dot), noise, those known, each with its unit and its trend.
      */
-
     static void facts(Context ctx, LinearLayout facts, Place p, int max) {
+        facts(ctx, facts, p, max, R.style.Role_Chiffre);
+    }
+
+    /** As above, each line in the text role {@code style}: a room's tile has less height than the top line. */
+    static void facts(Context ctx, LinearLayout facts, Place p, int max, int style) {
         facts.removeAllViews();
         List<TextView> lines = new ArrayList<>();
         if (p.humidity.value != null) {
-            lines.add(fact(ctx, R.drawable.ic_drop, 0, HouseText.whole(p.humidity.value), "%",
+            lines.add(fact(ctx, style, R.drawable.ic_drop, 0, HouseText.whole(p.humidity.value), "%",
                     Place.Kind.HUMIDITY.trend(p.humidity.sensor)));
         }
         if (p.pressure.value != null) {
-            lines.add(fact(ctx, R.drawable.ic_gauge, 0, HouseText.whole(p.pressure.value), ctx.getString(R.string.unit_hpa),
+            lines.add(fact(ctx, style, R.drawable.ic_gauge, 0, HouseText.whole(p.pressure.value), ctx.getString(R.string.unit_hpa),
                     Place.Kind.PRESSURE.trend(p.pressure.sensor)));
         }
         if (p.co2.value != null) {
             double co2 = p.co2.value;
             int dot = ctx.getColor(co2 < HouseText.CO2_FRESH ? R.color.syn_succes : co2 < HouseText.CO2_STALE ? R.color.syn_alerte
                     : R.color.syn_danger);
-            lines.add(fact(ctx, 0, dot, HouseText.whole(co2), ctx.getString(R.string.unit_co2),
+            lines.add(fact(ctx, style, 0, dot, HouseText.whole(co2), ctx.getString(R.string.unit_co2),
                     Place.Kind.CO2.trend(p.co2.sensor)));
         }
         if (p.noise.value != null) {
-            lines.add(fact(ctx, R.drawable.ic_noise, 0, HouseText.whole(p.noise.value), ctx.getString(R.string.unit_db),
+            lines.add(fact(ctx, style, R.drawable.ic_noise, 0, HouseText.whole(p.noise.value), ctx.getString(R.string.unit_db),
                     Place.Kind.NOISE.trend(p.noise.sensor)));
         }
         for (TextView line : lines.subList(0, Math.min(max, lines.size()))) facts.addView(line);
@@ -156,10 +160,10 @@ final class HouseHeader {
      * One reading on its line: an icon (or, with {@code dot}, a dot of that colour), the value, its unit
      * (HouseText.units) and its trend's arrow.
      */
-    private static TextView fact(Context ctx, int icon, int dot, String value, String unit, Place.Trend trend) {
+    private static TextView fact(Context ctx, int style, int icon, int dot, String value, String unit, Place.Trend trend) {
         SpannableStringBuilder sb = HouseText.units(ctx, HouseText.measure(value, unit), true);
         TextView line = new TextView(ctx);
-        line.setTextAppearance(R.style.Role_Chiffre);
+        line.setTextAppearance(style);
         if (trend != null) arrow(ctx, sb, trend, ctx.getColor(trend.color), Math.round(line.getTextSize()));
         line.setText(sb);
         line.setSingleLine(true);

@@ -29,8 +29,8 @@ import java.util.List;
 
 /**
  * The dashboard's edit menus. Holding OK on a favourite: move it, remove it, close the app, add one
- * (an app or a TV input), or open the settings: two tabs, Home (sections, hidden apps and titles,
- * favourites) and Theme (the background, applied as it is chosen). Gestures that lose something ask
+ * (an app or a TV input). The settings, from the top line's button: two tabs, Home (sections, hidden
+ * apps and titles, favourites) and Theme (the background, applied as it is chosen). Gestures that lose something ask
  * first (Confirm). Choices are saved in the config.json overlay (Config.save), so a pushed theme and
  * an edit on the TV read and write the same keys.
  */
@@ -87,10 +87,6 @@ final class EditMenu {
         row(rows, R.string.edit_add, () -> {
             d.dismiss();
             pickApp(favourites);
-        });
-        row(rows, R.string.customize, () -> {
-            d.dismiss();
-            customize(favourites);
         });
         show(d, rows);
     }
@@ -161,7 +157,8 @@ final class EditMenu {
     }
 
     /** The settings: two tabs, Home and Theme; the left and right arrows on the tabs switch them. */
-    private void customize(List<String> favourites) {
+    void customize() {
+        List<String> favourites = Config.load(activity).dockApps;
         Dialog d = dialog();
         LinearLayout panel = new LinearLayout(activity);
         panel.setOrientation(LinearLayout.VERTICAL);
