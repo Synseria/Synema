@@ -76,7 +76,6 @@
     <string name="alert_full_screen">Enlarge</string>
     <string name="alert_close">Close</string>
     <string name="airplay_code">AirPlay code</string>
-    <string name="airplay_code_hint">Enter it on the iPhone, iPad or Mac · Back closes</string>
     <string name="alert_closes_in">Closes in %1$d&#160;s</string>
     <string name="edit_move">Move</string>
     <string name="edit_remove">Remove from favourites</string>
@@ -119,7 +118,6 @@
     <string name="house_dashboard">House</string>
     <string name="camera_talk">Talk</string>
     <string name="camera_talking">Mic open</string>
-    <string name="camera_press_mic">Press the remote\'s mic button</string>
     <string name="time_left">%1$s left</string>
     <string name="play_not_found">“%1$s” unavailable</string>
     <string name="assist_looking">Searching…</string>

@@ -36,7 +36,6 @@
     <string name="alert_full_screen">Agrandir</string>
     <string name="alert_close">Fermer</string>
     <string name="airplay_code">Code AirPlay</string>
-    <string name="airplay_code_hint">À saisir sur l\'iPhone, l\'iPad ou le Mac · Retour pour fermer</string>
     <string name="alert_closes_in">Se ferme dans %1$d&#160;s</string>
     <string name="edit_move">Déplacer</string>
     <string name="edit_remove">Retirer des favoris</string>
@@ -82,7 +81,6 @@
     <string name="house_dashboard">Maison</string>
     <string name="camera_talk">Parler</string>
     <string name="camera_talking">Micro ouvert</string>
-    <string name="camera_press_mic">Appuyer sur le micro de la télécommande</string>
     <string name="time_left">reste %1$s</string>
     <string name="play_not_found">« %1$s » indisponible</string>
     <string name="assist_looking">Recherche en cours…</string>
