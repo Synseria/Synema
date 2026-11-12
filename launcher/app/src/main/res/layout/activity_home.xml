@@ -180,12 +180,19 @@
                     android:orientation="horizontal"
                     android:visibility="gone">
 
-                    <LinearLayout
+                    <!-- The veil holds the title's words, or, in the same place and size, the focused room
+                         (PlaceBlock): the words stay laid out, invisible, so nothing below moves. -->
+                    <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:padding="@dimen/syn_espace_3"
-                        android:background="@drawable/dash_voile_bg"
+                        android:background="@drawable/dash_voile_bg">
+
+                    <LinearLayout
+                        android:id="@+id/heroText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical">
 
                         <!-- The kicker, and at its right the press's and the audience's ratings as small
@@ -245,6 +252,14 @@
                             android:layout_height="@dimen/progress_height"
                             android:layout_marginTop="@dimen/syn_espace_2" />
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/placeBlock"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:visibility="gone" />
+                    </FrameLayout>
 
                     <!-- The veil takes half of the band: a title of two lines fits it whole. -->
                     <View

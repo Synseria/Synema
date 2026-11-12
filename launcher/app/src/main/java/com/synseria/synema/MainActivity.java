@@ -87,6 +87,12 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private CardRow resumeRow, discoverRow;
     private CameraRow cameraRow;
     private View hero;
+    /** The focused room, in the featured title's place while the focus is in the House panel. */
+    private PlaceBlock place;
+    /** The House panel holds the focus, so the title's artwork and words wait for the focus to return to a title. */
+    private boolean inHouse;
+    /** The background now shows the theme because the focus is on something without artwork. */
+    private boolean onTheme;
     private FrameLayout heroProgress;
     private TextView heroKicker, heroTitle, heroSub, heroDesc;
     private LinearLayout heroRatings;
@@ -151,6 +157,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         resumeLabel = findViewById(R.id.resumeLabel);
         discoverLabel = findViewById(R.id.discoverLabel);
         hero = findViewById(R.id.hero);
+        place = new PlaceBlock(this, findViewById(R.id.heroText), findViewById(R.id.placeBlock));
         heroKicker = findViewById(R.id.heroKicker);
         heroTitle = findViewById(R.id.heroTitle);
         heroSub = findViewById(R.id.heroSub);
@@ -328,6 +335,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         if (mode.equals(backdropMode)) return;
         backdropMode = mode;
         backdropUri = null;
+        onTheme = false;
         motion.setDrift(cfg.backdropMotion);
         handler.removeCallbacks(backdropForFocus);
         switch (cfg.backdrop) {
@@ -382,6 +390,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * yet known is asked for, and the band completes itself when it comes, in the room kept for it.
      */
     private void feature(TvListings.Item shown, String kicker) {
+        if (inHouse) return;
+        place.hide();
         Tmdb.Info known = tmdb == null || shown.completed ? null : tmdb.known(shown);
         TvListings.Item item = known != null ? shown.with(known) : shown;
         setBackdrop(item);
@@ -435,14 +445,46 @@ public class MainActivity extends Activity implements EditMenu.Host {
      */
     private void setBackdrop(TvListings.Item item) {
         String uri = item.backdropUri != null ? item.backdropUri : item.posterUri;
-        if (!Config.BACKDROP_ARTWORK.equals(cfg.backdrop) || uri == null || uri.equals(backdropUri)) return;
+        if (uri == null) {
+            themeBackdrop();
+            return;
+        }
+        if (!Config.BACKDROP_ARTWORK.equals(cfg.backdrop) || uri.equals(backdropUri)) return;
         backdropUri = uri;
         handler.removeCallbacks(backdropForFocus);
         handler.postDelayed(backdropForFocus, 400);
     }
 
     private String backdropUri;
-    private final Runnable backdropForFocus = () -> Posters.load(this, backdropUri, Backdrop.SCENE_W, backdrop::show);
+    private final Runnable backdropForFocus = () -> Posters.load(this, backdropUri, Backdrop.SCENE_W, bmp -> {
+        if (bmp != null) onTheme = false;
+        backdrop.show(bmp);
+    });
+
+    /**
+     * What has no artwork of its own (the House panel, an app that publishes none): the first colour theme
+     * as Theme ▸ Background draws it, faded in like any other picture. A chosen theme or picture is already
+     * there.
+     */
+    private void themeBackdrop() {
+        if (!Config.BACKDROP_ARTWORK.equals(cfg.backdrop) || onTheme) return;
+        onTheme = true;
+        backdropUri = null;
+        handler.removeCallbacks(backdropForFocus);
+        backdrop.gradient(Backdrop.themes(this)[0]);
+    }
+
+    /**
+     * The focus is on a room or a thing of the House panel ({@code room} null when its room is not known):
+     * the background goes to the theme and, in the title's place, the room shows; with no room known the
+     * block keeps what it had.
+     */
+    void houseFocused(Rooms.Room room, Place readings, HaLive live) {
+        focusMoved();
+        inHouse = true;
+        themeBackdrop();
+        if (room != null && hero.getVisibility() == View.VISIBLE) place.show(room, readings, live);
+    }
     private Runnable featureForFocus;
 
     /**
@@ -450,6 +492,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * way stops where it is, so nothing redraws the whole screen while a row slides.
      */
     private void focusMoved() {
+        inHouse = false;
+        handler.removeCallbacks(picksForFocus);
         if (featureForFocus != null) handler.removeCallbacks(featureForFocus);
         handler.removeCallbacks(backdropForFocus);
         backdropUri = null;
@@ -473,7 +517,12 @@ public class MainActivity extends Activity implements EditMenu.Host {
             card.setTag(pkg);
             card.setOnFocusChangeListener(chain(card.getOnFocusChangeListener(), () -> {
                 focusMoved();
-                if (moving != null || !fav.isApp()) return;
+                if (moving != null) return;
+                if (!fav.isApp()) {
+                    place.hide();
+                    themeBackdrop();
+                    return;
+                }
                 picksPkg = pkg;
                 handler.removeCallbacks(picksForFocus);
                 handler.postDelayed(picksForFocus, 180);   // not on every card crossed on the way

@@ -73,6 +73,7 @@ final class HousePanel {
         energyPage = new EnergyPage(activity, side, () -> live, this::monthCost);
         View tech = activity.findViewById(R.id.tech);
         Focus.block(tech);
+        onFocus(tech, () -> activity.houseFocused(null, null, live));
         tech.setOnClickListener(v -> energyPage.open(home));
         tiles = activity.findViewById(R.id.tiles);
         rooms = activity.findViewById(R.id.rooms);
@@ -218,6 +219,10 @@ final class HousePanel {
             Focus.tile(t);
             t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
             t.setTag(tile);
+            onFocus(t, () -> {
+                Rooms.Room r = roomOf(tile.action.entity);
+                activity.houseFocused(r, r == null ? null : place(r), live);
+            });
             TextView state = activity.text("", R.style.Role_Note);
             state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
             state.setDuplicateParentStateEnabled(true);
@@ -263,6 +268,21 @@ final class HousePanel {
         Rooms.Room open = room(roomPage.shown());
         if (open != null) roomPage.update(open, place(open));
         if (energyPage.isOpen()) energyPage.update();
+    }
+
+    /** Adds to what the view does on gaining focus (its lift, Focus). */
+    private static void onFocus(View v, Runnable gained) {
+        View.OnFocusChangeListener lift = v.getOnFocusChangeListener();
+        v.setOnFocusChangeListener((view, has) -> {
+            lift.onFocusChange(view, has);
+            if (has) gained.run();
+        });
+    }
+
+    /** The room that holds this thing, or null when no room is known to. */
+    private Rooms.Room roomOf(String entity) {
+        for (Rooms.Room r : lastRooms) for (Rooms.Entity e : r.entities) if (e.id.equals(entity)) return r;
+        return null;
     }
 
     private Rooms.Room room(String name) {
@@ -321,6 +341,10 @@ final class HousePanel {
             flp.setMarginStart(activity.px(R.dimen.syn_espace_2));
             t.addView(facts, flp);
             t.setTag(name);
+            onFocus(t, () -> {
+                Rooms.Room r = room(name);
+                activity.houseFocused(r, r == null ? null : place(r), live);
+            });
             t.setOnClickListener(v -> {
                 Rooms.Room r = room(name);
                 if (r != null) roomPage.open(r, place(r), home, () -> rooms.findViewWithTag(name));
