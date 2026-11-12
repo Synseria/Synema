@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The edit panel along the screen's right edge: rounded on the left only. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#F70E1422" />
-    <corners android:topLeftRadius="20dp" android:bottomLeftRadius="20dp" />
+    <solid android:color="@color/syn_tv_carte" />
+    <corners android:topLeftRadius="@dimen/syn_rayon_panneau" android:bottomLeftRadius="@dimen/syn_rayon_panneau" />
 </shape>

@@ -67,7 +67,7 @@ public class CameraActivity extends Activity {
         talk = findViewById(R.id.talk);
         talkButton = findViewById(R.id.btnTalk);
         caption = findViewById(R.id.talkCaption);
-        ring = new VoiceRing(this, talkButton, 0xFFFF453A);
+        ring = new VoiceRing(this, talkButton, getColor(R.color.syn_danger));
         ((FrameLayout) findViewById(R.id.talkRoom)).addView(ring, 0, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         talkButton.setOnClickListener(v -> {

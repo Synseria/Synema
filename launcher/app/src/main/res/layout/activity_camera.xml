@@ -4,7 +4,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF000000">
+    android:background="@color/syn_tv_fond">
 
     <!-- Sized to the video by its own measure (aspect fit), centred: a 4:3 doorbell is not cropped. -->
     <org.webrtc.SurfaceViewRenderer
@@ -31,7 +31,7 @@
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
         android:background="@drawable/dash_badge_bg"
-        android:textColor="#FFEEF2F8"
+        android:textColor="@color/syn_encre"
         android:textSize="14sp" />
 
     <LinearLayout
@@ -76,7 +76,7 @@
             android:paddingTop="3dp"
             android:paddingBottom="3dp"
             android:background="@drawable/dash_badge_bg"
-            android:textColor="#FFEEF2F8"
+            android:textColor="@color/syn_encre"
             android:textSize="11sp" />
     </LinearLayout>
 </FrameLayout>

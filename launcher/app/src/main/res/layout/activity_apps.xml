@@ -14,7 +14,7 @@
         android:layout_marginStart="12dp"
         android:layout_marginBottom="2dp"
         android:text="@string/all_apps"
-        android:textColor="#FFEEF2F8"
+        android:textColor="@color/syn_encre"
         android:textSize="22sp"
         android:fontFamily="sans-serif-light" />
 

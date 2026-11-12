@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The sheen across a focused card's picture: ink, faint enough to keep the picture readable. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/syn_encre" android:alpha="0.28" />
+</selector>

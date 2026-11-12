@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
  * in it, so the surface only draws a texture.
  */
 final class Backdrop {
+    // off-palette: also the GL surface's clear colour, read without a Context; syn_tv_fond is 2 units away.
     static final int NAVY = 0xFF0B1220;
     /**
      * The artwork is decoded and composed this wide (16:9), and the surface is this size: the screen's
@@ -67,11 +68,11 @@ final class Backdrop {
     }
 
     static final Theme[] THEMES = {
-            new Theme("night", R.string.theme_night, NAVY, 0xFF155A70, 0xFF462A80),
-            new Theme("aurora", R.string.theme_aurora, 0xFF06120F, 0xFF136B52, 0xFF1D4580),
-            new Theme("dusk", R.string.theme_dusk, 0xFF150C14, 0xFF8A3A1C, 0xFF52226E),
-            new Theme("ocean", R.string.theme_ocean, 0xFF06111C, 0xFF14508E, 0xFF0D6A78),
-            new Theme("graphite", R.string.theme_graphite, 0xFF0E0F12, 0xFF33363E, 0xFF24262C),
+            new Theme("night", R.string.theme_night, NAVY, 0xFF155A70, 0xFF462A80),  // off-palette: a backdrop theme's painting
+            new Theme("aurora", R.string.theme_aurora, 0xFF06120F, 0xFF136B52, 0xFF1D4580),  // off-palette: a backdrop theme's painting
+            new Theme("dusk", R.string.theme_dusk, 0xFF150C14, 0xFF8A3A1C, 0xFF52226E),  // off-palette: a backdrop theme's painting
+            new Theme("ocean", R.string.theme_ocean, 0xFF06111C, 0xFF14508E, 0xFF0D6A78),  // off-palette: a backdrop theme's painting
+            new Theme("graphite", R.string.theme_graphite, 0xFF0E0F12, 0xFF33363E, 0xFF24262C),  // off-palette: a backdrop theme's painting
     };
 
     /** The theme with this id, or null. */

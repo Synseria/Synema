@@ -18,7 +18,6 @@ import java.util.Map;
  * it full screen; the row slides past those beyond its width).
  */
 final class CameraRow {
-    private static final int LIVE = 0xFFFF5A5A;
     /** Last frames, shown at once when Home comes back. */
     private static final Map<String, Bitmap> frames = new HashMap<>();
 
@@ -94,10 +93,10 @@ final class CameraRow {
 
     /** Under a camera, nothing over its picture: a red dot for live, and its name. */
     private TextView live(String label) {
-        TextView name = activity.text(label, 8, 0xFFA1A1A6);
+        TextView name = activity.text(label, 8, activity.getColor(R.color.syn_encre_secondaire));
         GradientDrawable dot = new GradientDrawable();
         dot.setShape(GradientDrawable.OVAL);
-        dot.setColor(LIVE);
+        dot.setColor(activity.getColor(R.color.syn_danger));
         int size = activity.dp(5);
         dot.setSize(size, size);
         name.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null);

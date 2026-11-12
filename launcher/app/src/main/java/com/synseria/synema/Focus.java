@@ -15,11 +15,14 @@ final class Focus {
     static final float CARD = 1.04f, TILE = 1.04f, BUTTON = 1.12f;
     /** No card's picture on the dashboard is wider (dp): a row takes one more card rather than widen them. */
     static final int WIDEST_CARD_DP = 160;
-    /** A tile's name: light in every state, as focus no longer turns the tile white. */
-    static final int TILE_TEXT = 0xFFF2F2F5;
     private static final long LIFT_MS = 120;
 
     private Focus() {
+    }
+
+    /** A tile's name: primary ink in every state, as focus no longer turns the tile white. */
+    static int tileText(Context ctx) {
+        return ctx.getColor(R.color.syn_encre);
     }
 
     /** A card: its frame (Card) shows the ring and sheen, and the card grows while focused. */

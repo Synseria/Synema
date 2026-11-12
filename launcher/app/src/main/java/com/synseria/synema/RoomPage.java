@@ -26,7 +26,6 @@ final class RoomPage {
     private static final int CAMERA_DP = 300;
     /** The graphs' height when the tiles fill the page, and at most when they leave room. */
     private static final int CHART_DP = 128, CHART_MAX_DP = 230;
-    static final int TEMPERATURE = 0xFFFF9F0A, HUMIDITY = 0xFF64D2FF, CO2 = 0xFF30D158, NOISE = 0xFFBF5AF2;
     /** The span last chosen, kept for every room. */
     private static Stats.Span span = Stats.Span.DAY;
 
@@ -196,19 +195,21 @@ final class RoomPage {
             List<Chart.Series> s = new ArrayList<>();
             int title = (Integer) c.getTag();
             if (title == R.string.graph_climate) {
-                series(s, read, p.temperature.sensor, TEMPERATURE, Chart.Unit.DEGREES);
-                series(s, read, p.humidity.sensor, HUMIDITY, Chart.Unit.PERCENT);
+                series(s, read, p.temperature.sensor, Chart.Unit.DEGREES);
+                series(s, read, p.humidity.sensor, Chart.Unit.PERCENT);
             } else if (title == R.string.graph_co2) {
-                series(s, read, p.co2.sensor, CO2, Chart.Unit.PPM);
+                series(s, read, p.co2.sensor, Chart.Unit.PPM);
             } else {
-                series(s, read, p.noise.sensor, NOISE, Chart.Unit.DECIBELS);
+                series(s, read, p.noise.sensor, Chart.Unit.DECIBELS);
             }
             c.lines(span, s);
         }
     }
 
-    private static void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, int color, Chart.Unit unit) {
+    /** A chart's first curve is the primary accent, its second the saffron one. */
+    private void series(List<Chart.Series> out, Map<String, List<Stats.Point>> read, String sensor, Chart.Unit unit) {
         List<Stats.Point> points = read.get(sensor);
+        int color = activity.getColor(out.isEmpty() ? R.color.syn_primaire : R.color.syn_safran);
         if (points != null && !points.isEmpty()) out.add(new Chart.Series("", color, unit, points));
     }
 
@@ -239,8 +240,8 @@ final class RoomPage {
     }
 
     private void showReadings(Place p) {
-        temperature.setText(HouseHeader.degrees(p, ""));
-        HouseHeader.facts(activity, facts, 11, false, p);
+        temperature.setText(HouseHeader.degrees(activity, p, ""));
+        HouseHeader.facts(activity, facts, 11, p);
     }
 
     /** A titled grid of tiles, four to a line; nothing when there is nothing. */
@@ -289,7 +290,7 @@ final class RoomPage {
         Focus.tile(t);
         t.setPadding(activity.dp(10), activity.dp(7), activity.dp(10), activity.dp(7));
         t.setTag(e.id);
-        TextView name = activity.text(shortName(e.name, area), 11, Focus.TILE_TEXT);
+        TextView name = activity.text(shortName(e.name, area), 11, Focus.tileText(activity));
         TextView state = activity.text("", 9.5f, 0);
         state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
         state.setDuplicateParentStateEnabled(true);
@@ -328,7 +329,7 @@ final class RoomPage {
         card.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         card.setOnClickListener(v -> activity.open(new Intent(activity, CameraActivity.class).putExtra(CameraActivity.EXTRA_INDEX, index), v));
         col.addView(card);
-        col.addView(activity.text(cam.label, 9, 0xFFA1A1A6));
+        col.addView(activity.text(cam.label, 9, activity.getColor(R.color.syn_encre_secondaire)));
         if (first == null) first = card;
         return col;
     }

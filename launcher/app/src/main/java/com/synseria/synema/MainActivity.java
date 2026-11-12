@@ -410,14 +410,14 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private void showRatings(TvListings.Item item) {
         heroRatings.removeAllViews();
         if (item.audience < 0) return;
-        TextView capsule = text(getString(R.string.rating, item.audience), 9, 0xFFC8D2E3);
+        TextView capsule = text(getString(R.string.rating, item.audience), 9, getColor(R.color.syn_encre_secondaire));
         capsule.setIncludeFontPadding(false);
         capsule.setTypeface(heroKicker.getTypeface());
         capsule.setContentDescription(getString(R.string.rating_audience, item.audience));
         capsule.setBackgroundResource(R.drawable.dash_capsule_bg);
         capsule.setPadding(dp(5), dp(1), dp(6), dp(1));
         capsule.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_audience, 0, 0, 0);
-        capsule.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(0xFF8D9BB3));
+        capsule.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.syn_encre_secondaire)));
         capsule.setCompoundDrawablePadding(dp(3));
         heroRatings.addView(capsule);
     }
@@ -756,7 +756,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
             plp.setMarginStart(dp(5));
             line.addView(progress(item.progress), plp);
         } else {
-            TextView name = text(appLabel(pm, item.pkg), 7, 0xFF8D9BB3);
+            TextView name = text(appLabel(pm, item.pkg), 7, getColor(R.color.syn_encre_secondaire));
             name.setPadding(dp(4), 0, 0, 0);
             line.addView(name);
         }

@@ -97,14 +97,14 @@ public class ClockDream extends DreamService {
         });
     }
 
-    private static void day(Chart chart, List<Stats.Point> points) {
+    private void day(Chart chart, List<Stats.Point> points) {
         if (points == null || points.isEmpty()) {
             chart.setVisibility(View.GONE);
             return;
         }
         chart.setVisibility(View.VISIBLE);
         List<Chart.Series> s = new ArrayList<>();
-        s.add(new Chart.Series("", (RoomPage.TEMPERATURE & 0x00FFFFFF) | 0xB3000000, Chart.Unit.DEGREES, points));
+        s.add(new Chart.Series("", getColor(R.color.syn_primaire), Chart.Unit.DEGREES, points));
         chart.lines(Stats.Span.DAY, s);
     }
 

@@ -184,7 +184,7 @@ public class AppsActivity extends Activity implements EditMenu.Host {
     private TextView label(float sp) {
         TextView t = new TextView(this);
         t.setTextSize(sp);
-        t.setTextColor(0xFFEEF2F8);
+        t.setTextColor(getColor(R.color.syn_encre));
         t.setSingleLine(true);
         t.setEllipsize(android.text.TextUtils.TruncateAt.END);
         return t;

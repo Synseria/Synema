@@ -32,8 +32,8 @@ import java.util.Locale;
 final class Chart extends View {
     /** How a kind of value is written, beside the title and on the axis. */
     enum Unit {
-        DEGREES("°", 1, 2, -100, 100), PERCENT(" %", 0, 10, 0, 100), PPM(" ppm", 0, 200, 0, 1e9),
-        DECIBELS(" dB", 0, 10, 0, 200), KWH(" kWh", 1, 1, 0, 1e9);
+        DEGREES("°", 1, 2, -100, 100), PERCENT("\u00A0%", 0, 10, 0, 100), PPM("\u00A0ppm", 0, 200, 0, 1e9),
+        DECIBELS("\u00A0dB", 0, 10, 0, 200), KWH("\u00A0kWh", 1, 1, 0, 1e9);
 
         private final String suffix;
         private final int decimals;
@@ -58,7 +58,7 @@ final class Chart extends View {
         String tick(double v, double step) {
             int d = step >= 1 ? 0 : 1;
             String n = String.format(Locale.getDefault(), "%." + d + "f", v);
-            return this == DEGREES ? n + "°" : this == PERCENT ? n + " %" : n;
+            return this == DEGREES ? n + "°" : this == PERCENT ? n + "\u00A0%" : n;
         }
     }
 
@@ -78,7 +78,8 @@ final class Chart extends View {
     }
 
     /** A dark card: a busy picture behind does not cross the curves. */
-    private static final int GRID = 0x1AFFFFFF, LABEL = 0x8CF2F2F5, TITLE = 0x9EF2F2F5, CARD = 0xB80B0D12;
+    private final int gridColor, labelColor, ink, card;
+    private final float corner;
 
     private final float d;
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG), stroke = new Paint(Paint.ANTI_ALIAS_FLAG),
@@ -99,10 +100,15 @@ final class Chart extends View {
     Chart(Context ctx) {
         super(ctx);
         d = ctx.getResources().getDisplayMetrics().density;
+        gridColor = ctx.getColor(R.color.syn_filet);
+        labelColor = ctx.getColor(R.color.syn_encre_secondaire);
+        ink = ctx.getColor(R.color.syn_encre);
+        card = ctx.getColor(R.color.syn_tv_voile);
+        corner = ctx.getResources().getDimension(R.dimen.syn_rayon_carte);
         stroke.setStyle(Paint.Style.STROKE);
         stroke.setStrokeJoin(Paint.Join.ROUND);
         stroke.setStrokeCap(Paint.Cap.ROUND);
-        grid.setColor(GRID);
+        grid.setColor(gridColor);
         grid.setStrokeWidth(Math.max(1, d / 2));
         text.setFontFeatureSettings("tnum");
     }
@@ -156,17 +162,15 @@ final class Chart extends View {
             if (!waiting && anyPoint()) drawLines(canvas, d, w - 4 * d, 2 * d, h - 2 * d, false);
             return;
         }
-        fill.setColor(CARD);
+        fill.setColor(card);
         rect.set(0, 0, w, h);
-        canvas.drawRoundRect(rect, 10 * d, 10 * d, fill);
+        canvas.drawRoundRect(rect, corner, corner, fill);
 
         text.setTextSize(sp(8.5f));
-        text.setLetterSpacing(0.15f);
-        text.setColor(TITLE);
+        text.setColor(labelColor);
         text.setTextAlign(Paint.Align.LEFT);
         float titleY = pad + sp(8.5f);
-        canvas.drawText(title.toUpperCase(Locale.getDefault()), pad, titleY, text);
-        text.setLetterSpacing(0);
+        canvas.drawText(title, pad, titleY, text);
         if (waiting || !anyPoint()) return;
         header(canvas, w - pad, titleY + d);
 
@@ -188,7 +192,7 @@ final class Chart extends View {
         text.setTextSize(sp(10));
         text.setTextAlign(Paint.Align.RIGHT);
         if (range != null) {
-            text.setColor(0xE0F2F2F5);
+            text.setColor(ink);
             canvas.drawText(summary, x, y, text);
             return;
         }
@@ -226,7 +230,7 @@ final class Chart extends View {
             // hours ago) spans the width rather than a sliver at the right that looks cut.
             if (bare) t0 = Math.min(t1 - period, Math.max(t0, points.get(0).start + period / 2));
             if (!bare) {
-                if (i == 0) valueGrid(canvas, left, right, top, bottom, scale, s.unit, true, LABEL);
+                if (i == 0) valueGrid(canvas, left, right, top, bottom, scale, s.unit, true, labelColor);
                 else valueGrid(canvas, left, right, top, bottom, scale, s.unit, false, (s.color & 0x00FFFFFF) | 0xB3000000);
                 drawBand(canvas, points, s.color, scale, left, right, top, bottom, t0, t1, period);
             }
@@ -461,7 +465,7 @@ final class Chart extends View {
                 label = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault());
         }
         text.setTextSize(sp(8.5f));
-        text.setColor(LABEL);
+        text.setColor(labelColor);
         text.setTextAlign(Paint.Align.CENTER);
         float labelY = bottom + 4 * d + sp(8.5f);
         for (; t.toInstant().toEpochMilli() < t1; t = t.plusHours(stepHours)) {
@@ -490,7 +494,7 @@ final class Chart extends View {
         double[] scale = nice(0, Math.max(max, 0.1), 0);
         scale[0] = 0;
         Unit unit = series.get(0).unit;
-        valueGrid(canvas, left, right, top, bottom, scale, unit, true, LABEL);
+        valueGrid(canvas, left, right, top, bottom, scale, unit, true, labelColor);
         float slot = (right - left) / slots, bar = slot * 0.64f, radius = Math.min(3 * d, bar / 2);
         double[] base = new double[slots];
         for (int k = 0; k < series.size(); k++) {
@@ -513,7 +517,7 @@ final class Chart extends View {
         }
         // Labels: every third hour, every fifth day, every month.
         text.setTextSize(sp(8.5f));
-        text.setColor(LABEL);
+        text.setColor(labelColor);
         text.setTextAlign(Paint.Align.CENTER);
         float labelY = bottom + 4 * d + sp(8.5f);
         LocalDate first = Instant.ofEpochMilli(range.start()).atZone(ZoneId.systemDefault()).toLocalDate();

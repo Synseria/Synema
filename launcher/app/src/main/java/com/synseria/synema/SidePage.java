@@ -63,21 +63,21 @@ final class SidePage {
         page.setVisibility(View.GONE);
 
         FrameLayout top = new FrameLayout(activity);
-        TextView back = activity.text(activity.getString(R.string.room_back), 10, 0x99F2F2F5);
+        TextView back = activity.text(activity.getString(R.string.room_back), 10, activity.getColor(R.color.syn_encre_secondaire));
         back.setLetterSpacing(0.04f);
         top.addView(back, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.START | Gravity.CENTER_VERTICAL));
         TextClock clock = new TextClock(activity);
         clock.setFormat12Hour("h:mm");
         clock.setFormat24Hour("HH:mm");
         clock.setTextSize(26);
-        clock.setTextColor(0xFFF2F2F5);
+        clock.setTextColor(activity.getColor(R.color.syn_encre));
         clock.setTypeface(activity.getResources().getFont(R.font.outfit));
         clock.setFontVariationSettings("'wght' 200");
         clock.setIncludeFontPadding(false);
         top.addView(clock, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.CENTER_VERTICAL));
         page.addView(top);
 
-        title = activity.text("", 34, 0xFFF2F2F5);
+        title = activity.text("", 34, activity.getColor(R.color.syn_encre));
         title.setTypeface(Typeface.DEFAULT_BOLD);
         page.addView(title);
 

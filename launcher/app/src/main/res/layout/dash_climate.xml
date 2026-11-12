@@ -24,7 +24,7 @@
             style="@style/DashCaps"
             android:layout_marginStart="4dp"
             android:drawablePadding="4dp"
-            android:drawableTint="#94F2F2F5"
+            android:drawableTint="@color/syn_encre_secondaire"
             android:visibility="gone" />
     </LinearLayout>
 

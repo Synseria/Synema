@@ -27,7 +27,8 @@ import java.util.ArrayList;
  */
 public final class ColumnScroll extends ScrollView {
     private static final int FADE_DP = 12;
-    private static final int FADE_COLOR = 0xB30B1220;
+    /** The backdrop's own colour, so the column fades into it. */
+    private static final int FADE_COLOR = 0xB3 << 24 | (Backdrop.NAVY & 0xFFFFFF);
     /** How long after the last scroll step the column counts as still. */
     private static final long SETTLE_MS = 100;
 
