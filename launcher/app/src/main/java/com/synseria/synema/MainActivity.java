@@ -307,6 +307,12 @@ public class MainActivity extends Activity implements EditMenu.Host {
     }
 
     @Override
+    protected void onDestroy() {
+        place.release();
+        super.onDestroy();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         away = true;
