@@ -10,7 +10,6 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -42,6 +41,11 @@ import java.util.Random;
  */
 public class MainActivity extends Activity implements EditMenu.Host {
 
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
+
     private static final long REFRESH_MS = 30_000L;
     private static final long SHIFT_MS = 60_000L;
     private static final long PICKS_STALE_MS = 5 * 60_000L;
@@ -54,6 +58,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * drawn in a frame of their own, not in the slide's.
      */
     private static final long FEATURE_DELAY_MS = 200;
+    /** The line of words under a card, and its icon (dp). */
+    private static final int UNDER_CARD_DP = 16, UNDER_CARD_ICON_DP = 16;
     /** Placeholders while a row is read: more than ever fit, so the row is full whatever its width. */
     private static final int SKELETON_CARDS = 8;
 
@@ -81,7 +87,6 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private CameraRow cameraRow;
     private View hero;
     private FrameLayout heroProgress;
-    private ImageView heroArt;
     private TextView heroKicker, heroTitle, heroSub, heroDesc;
     private LinearLayout heroRatings;
     /** The title the featured band shows. */
@@ -137,6 +142,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         FocusGuard.install(this);
         density = getResources().getDisplayMetrics().density;
         content = findViewById(R.id.content);
+        content.setPadding(Scale.marginX(this), Scale.marginY(this), Scale.marginX(this), Scale.marginY(this));
         dock = findViewById(R.id.dock);
         resumeRow = findViewById(R.id.resumeRow);
         discoverRow = findViewById(R.id.discoverRow);
@@ -144,22 +150,21 @@ public class MainActivity extends Activity implements EditMenu.Host {
         resumeLabel = findViewById(R.id.resumeLabel);
         discoverLabel = findViewById(R.id.discoverLabel);
         hero = findViewById(R.id.hero);
-        heroArt = findViewById(R.id.heroArt);
         heroKicker = findViewById(R.id.heroKicker);
         heroTitle = findViewById(R.id.heroTitle);
         heroSub = findViewById(R.id.heroSub);
         heroDesc = findViewById(R.id.heroDesc);
         heroRatings = findViewById(R.id.heroRatings);
         heroProgress = findViewById(R.id.heroProgress);
-        // The column's padding (room for a focused card, Focus) is taken back, so the band and the
-        // pictures start where the top line does.
+        // The column's padding (room for a focused card, Focus) is taken back, so the band's words and
+        // the pictures start where the top line does; the band's veil reaches its own padding past them.
         int room = Focus.cardRoom(this);
         ((ViewGroup.MarginLayoutParams) findViewById(R.id.main).getLayoutParams()).setMarginStart(-room);
         ViewGroup.MarginLayoutParams band = (ViewGroup.MarginLayoutParams) hero.getLayoutParams();
-        band.setMarginStart(room);
+        band.setMarginStart(room - getResources().getDimensionPixelSize(R.dimen.syn_espace_3));
         band.setMarginEnd(room);
         cameraRow = new CameraRow(this);
-        motion = MovingBackdrop.under(this, Backdrop.NAVY, true);
+        motion = MovingBackdrop.under(this, true);
         backdrop = new Backdrop(motion);
         side = new SidePage(this);
         house = new HousePanel(this, side);
@@ -179,7 +184,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
             b.setOnKeyListener(this::buttonKey);
             // Icons only: the focused one grows (Focus) and says its name under the capsule.
             b.setOnFocusChangeListener((v, has) -> {
-                Focus.lift(v, has, Focus.BUTTON);
+                Focus.lift(v, has);
                 if (has) caption.setText(v.getContentDescription());
                 else if (!(getCurrentFocus() instanceof ImageView)) caption.setText("");
             });
@@ -339,7 +344,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
                 if (resumeCache != null && !resumeCache.isEmpty()) setBackdrop(resumeCache.get(0));
                 break;
             default:
-                backdrop.gradient(Backdrop.theme(cfg.backdrop));
+                backdrop.gradient(Backdrop.theme(this, cfg.backdrop));
         }
     }
 
@@ -388,8 +393,6 @@ public class MainActivity extends Activity implements EditMenu.Host {
             });
         }
         hero.setVisibility(View.VISIBLE);
-        PackageManager pm = getPackageManager();
-        Posters.into(this, item.posterUri, dp(200), heroArt, Favourites.bannerOrIcon(pm, item.pkg));
         heroKicker.setText(kicker);
         heroTitle.setText(item.title);
         String facts = item.facts(this);
@@ -399,7 +402,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
         heroDesc.setText(item.description);
         showRatings(item);
         heroProgress.removeAllViews();
-        heroProgress.setVisibility(item.progress >= 0 ? View.VISIBLE : View.GONE);
+        // Invisible, not gone: the band keeps its height whatever is known.
+        heroProgress.setVisibility(item.progress >= 0 ? View.VISIBLE : View.INVISIBLE);
         if (item.progress >= 0) heroProgress.addView(progress(item.progress), new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
@@ -411,15 +415,14 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private void showRatings(TvListings.Item item) {
         heroRatings.removeAllViews();
         if (item.audience < 0) return;
-        TextView capsule = text(getString(R.string.rating, item.audience), 9, getColor(R.color.syn_encre_secondaire));
+        TextView capsule = text(getString(R.string.rating, item.audience), R.style.Role_Note);
         capsule.setIncludeFontPadding(false);
-        capsule.setTypeface(heroKicker.getTypeface());
         capsule.setContentDescription(getString(R.string.rating_audience, item.audience));
         capsule.setBackgroundResource(R.drawable.dash_capsule_bg);
-        capsule.setPadding(dp(5), dp(1), dp(6), dp(1));
+        capsule.setPadding(dp(8), dp(2), dp(8), dp(2));
         capsule.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_audience, 0, 0, 0);
         capsule.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.syn_encre_secondaire)));
-        capsule.setCompoundDrawablePadding(dp(3));
+        capsule.setCompoundDrawablePadding(dp(4));
         heroRatings.addView(capsule);
     }
 
@@ -627,6 +630,13 @@ public class MainActivity extends Activity implements EditMenu.Host {
             ImageView img = new RoundedImageView(this);
             Posters.into(this, item.posterUri, dp(150), img, Favourites.bannerOrIcon(pm, item.pkg));
             card.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            if (resume && item.progress >= 0) {
+                // Along the picture's foot, off its rounded corners.
+                int corner = getResources().getDimensionPixelSize(R.dimen.card_corner);
+                FrameLayout.LayoutParams foot = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(3), Gravity.BOTTOM);
+                foot.setMargins(corner, 0, corner, corner);
+                card.addView(progress(item.progress), foot);
+            }
             card.setOnFocusChangeListener(chain(card.getOnFocusChangeListener(), () -> {
                 focusMoved();
                 featureForFocus = () -> feature(item, resume);
@@ -740,9 +750,9 @@ public class MainActivity extends Activity implements EditMenu.Host {
         Actions.run(this, ha, action, house::pressed);
     }
 
-    /** The line under a card: 9 dp of icon or words, below the room a focused card's ring needs (Focus). */
+    /** The line under a card: a line of words (UNDER_CARD_DP), below the room a focused card's ring needs (Focus). */
     int underCard() {
-        return underCardTop() + dp(9);
+        return underCardTop() + dp(UNDER_CARD_DP);
     }
 
     /** From the card's frame to the line under it: the frame's inset already keeps part of the room. */
@@ -751,8 +761,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
     }
 
     /**
-     * Under a title to continue, nothing over its artwork: the app's icon, then what is left to watch
-     * when known, else the app's name. Aligned with the picture inside the card's frame.
+     * Under a title to continue: where it plays, the app's icon and name, whatever is known of it.
+     * Aligned with the picture inside the card's frame.
      */
     private LinearLayout meta(PackageManager pm, TvListings.Item item) {
         LinearLayout line = new LinearLayout(this);
@@ -764,9 +774,8 @@ public class MainActivity extends Activity implements EditMenu.Host {
             icon.setImageDrawable(pm.getApplicationIcon(item.pkg));
         } catch (PackageManager.NameNotFoundException ignored) {
         }
-        line.addView(icon, new LinearLayout.LayoutParams(dp(9), dp(9)));
-        String timeLeft = item.timeLeft(this);
-        TextView name = text(timeLeft != null ? timeLeft : appLabel(pm, item.pkg), 7, getColor(R.color.syn_encre_secondaire));
+        line.addView(icon, new LinearLayout.LayoutParams(dp(UNDER_CARD_ICON_DP), dp(UNDER_CARD_ICON_DP)));
+        TextView name = text(appLabel(pm, item.pkg), R.style.Role_Note);
         name.setPadding(dp(4), 0, 0, 0);
         line.addView(name);
         return line;
@@ -791,11 +800,11 @@ public class MainActivity extends Activity implements EditMenu.Host {
         };
     }
 
-    TextView text(CharSequence s, float sp, int color) {
+    /** A line of text in one of the design system's roles (R.style.Role_*), cut short rather than wrapped. */
+    TextView text(CharSequence s, int role) {
         TextView t = new TextView(this);
         t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        if (color != 0) t.setTextColor(color);
+        t.setTextAppearance(role);
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
         return t;

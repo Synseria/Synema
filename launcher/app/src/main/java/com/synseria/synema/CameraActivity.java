@@ -25,6 +25,11 @@ import org.webrtc.SurfaceViewRenderer;
  * says to press the remote's button when nothing is heard.
  */
 public class CameraActivity extends Activity {
+
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
     /** Which camera to open first, from the dashboard's cameras row. */
     static final String EXTRA_INDEX = "index";
     /** The remote's voice buttons: the Assistant button (F12 once renamed, KeyLayouts) and Search. */
@@ -73,7 +78,7 @@ public class CameraActivity extends Activity {
         talkButton.setOnClickListener(v -> {
             if (rtc != null) setTalking(!rtc.talking());
         });
-        talkButton.setOnFocusChangeListener((v, has) -> Focus.lift(v, has, Focus.BUTTON));
+        talkButton.setOnFocusChangeListener(Focus::lift);
         home = HomeConfig.load(this);
         ha = HomeAssistant.load(this);
         if (ha == null || home.cameras.isEmpty()) finish();

@@ -1,12 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A text button with round ends (the assistant's choices): glass at rest, azure when chosen, white when
-     focused, like the top line's buttons. -->
+<!-- A text button with round ends (the assistant's choices, the graphs' spans): glass at rest, azure when
+     chosen, a white ring when focused, like the top line's buttons. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_activated="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_primaire_fond" />
+                    <corners android:radius="@dimen/syn_rayon_capsule" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="@dimen/syn_focus_trait" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_capsule" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
     <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/syn_encre" />
-            <corners android:radius="@dimen/syn_rayon_capsule" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/syn_survol" />
+                    <corners android:radius="@dimen/syn_rayon_capsule" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="@dimen/syn_focus_trait" android:color="@color/syn_encre" />
+                    <corners android:radius="@dimen/syn_rayon_capsule" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item android:state_activated="true">
         <shape android:shape="rectangle">
@@ -17,7 +43,7 @@
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/syn_survol" />
-            <stroke android:width="1dp" android:color="@color/syn_filet" />
+            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
             <corners android:radius="@dimen/syn_rayon_capsule" />
         </shape>
     </item>

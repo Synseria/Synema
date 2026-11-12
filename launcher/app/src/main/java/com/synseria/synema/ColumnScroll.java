@@ -27,14 +27,11 @@ import java.util.ArrayList;
  */
 public final class ColumnScroll extends ScrollView {
     private static final int FADE_DP = 12;
-    /** The backdrop's own colour, so the column fades into it. */
-    private static final int FADE_COLOR = 0xB3 << 24 | (Backdrop.NAVY & 0xFFFFFF);
     /** How long after the last scroll step the column counts as still. */
     private static final long SETTLE_MS = 100;
 
     private final int fadeHeight, lineSlack;
-    private final GradientDrawable fade = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-            new int[]{FADE_COLOR, FADE_COLOR & 0x00FFFFFF});
+    private final GradientDrawable fade;
     private final Rect from = new Rect(), to = new Rect();
     private final ArrayList<View> candidates = new ArrayList<>();
     private boolean moving;
@@ -45,6 +42,9 @@ public final class ColumnScroll extends ScrollView {
 
     public ColumnScroll(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
+        // The backdrop's own colour, so the column fades into it.
+        int fadeColor = 0xB3 << 24 | (Backdrop.base(ctx) & 0xFFFFFF);
+        fade = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{fadeColor, fadeColor & 0x00FFFFFF});
         float d = ctx.getResources().getDisplayMetrics().density;
         fadeHeight = Math.round(FADE_DP * d);
         lineSlack = Math.round(4 * d);

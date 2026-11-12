@@ -2,11 +2,11 @@ package com.synseria.synema;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.PathInterpolator;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextClock;
@@ -28,10 +28,10 @@ import java.util.function.Supplier;
  * blended made frames late).
  */
 final class SidePage {
-    private static final long SLIDE_MS = 450;
-    private static final PathInterpolator EASE = new PathInterpolator(0.22f, 0.8f, 0.24f, 1f);
-
     private final MainActivity activity;
+    /** The slide's duration (syn_duree_feuille), in milliseconds. */
+    private final long slideMs;
+    private final Interpolator ease;
     private final FrameLayout root;
     private final View home;
     private final LinearLayout page;
@@ -53,32 +53,30 @@ final class SidePage {
 
     SidePage(MainActivity activity) {
         this.activity = activity;
+        slideMs = activity.getResources().getInteger(R.integer.syn_duree_feuille);
+        ease = AnimationUtils.loadInterpolator(activity, R.interpolator.syn_courbe);
         root = activity.findViewById(R.id.root);
         home = activity.findViewById(R.id.content);
         page = new LinearLayout(activity);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(activity.dp(32), activity.dp(20), activity.dp(32), activity.dp(14));
+        int marginX = Scale.marginX(activity);
+        int marginY = Scale.marginY(activity);
+        page.setPadding(marginX, marginY, marginX, marginY);
         page.setClipToPadding(false);
         page.setClipChildren(false);
         page.setVisibility(View.GONE);
 
         FrameLayout top = new FrameLayout(activity);
-        TextView back = activity.text(activity.getString(R.string.room_back), 10, activity.getColor(R.color.syn_encre_secondaire));
-        back.setLetterSpacing(0.04f);
+        TextView back = Tokens.text(activity, activity.getString(R.string.room_back), R.style.Role_Note);
         top.addView(back, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.START | Gravity.CENTER_VERTICAL));
-        TextClock clock = new TextClock(activity);
+        TextClock clock = new TextClock(activity, null, 0, R.style.Role_GrandChiffre);
         clock.setFormat12Hour("h:mm");
         clock.setFormat24Hour("HH:mm");
-        clock.setTextSize(26);
-        clock.setTextColor(activity.getColor(R.color.syn_encre));
-        clock.setTypeface(activity.getResources().getFont(R.font.outfit));
-        clock.setFontVariationSettings("'wght' 200");
         clock.setIncludeFontPadding(false);
         top.addView(clock, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.CENTER_VERTICAL));
         page.addView(top);
 
-        title = activity.text("", 34, activity.getColor(R.color.syn_encre));
-        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title = Tokens.text(activity, "", R.style.Role_TitrePage);
         page.addView(title);
 
         body = new FrameLayout(activity);
@@ -139,12 +137,12 @@ final class SidePage {
         page.setTranslationX(root.getWidth());
         moveFocus(first);
         afterLayers(() -> {
-            home.animate().translationX(homeX - root.getWidth()).setDuration(SLIDE_MS).setInterpolator(EASE).setListener(null)
+            home.animate().translationX(homeX - root.getWidth()).setDuration(slideMs).setInterpolator(ease).setListener(null)
                     .withEndAction(() -> {
                         home.setVisibility(View.INVISIBLE);
                         layer(home, false);
                     }).start();
-            page.animate().translationX(0).setDuration(SLIDE_MS).setInterpolator(EASE).setListener(settle(() -> layer(page, false)))
+            page.animate().translationX(0).setDuration(slideMs).setInterpolator(ease).setListener(settle(() -> layer(page, false)))
                     .start();
         });
     }
@@ -178,9 +176,9 @@ final class SidePage {
         }
         moveFocus(to);
         afterLayers(() -> {
-            home.animate().translationX(homeX).setDuration(SLIDE_MS).setInterpolator(EASE)
+            home.animate().translationX(homeX).setDuration(slideMs).setInterpolator(ease)
                     .setListener(null).withEndAction(() -> layer(home, false)).start();
-            page.animate().translationX(root.getWidth()).setDuration(SLIDE_MS).setInterpolator(EASE).setListener(settle(() -> {
+            page.animate().translationX(root.getWidth()).setDuration(slideMs).setInterpolator(ease).setListener(settle(() -> {
                 layer(page, false);
                 if (!isOpen()) page.setVisibility(View.GONE);
             })).start();

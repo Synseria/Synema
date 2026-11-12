@@ -25,9 +25,12 @@ import java.util.Random;
  */
 public class ClockDream extends DreamService {
 
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Scale.wrap(base));
+    }
+
     private static final long DRIFT_MS = 2_000L;
-    /** The share of each side the glide keeps off: the 5 % title-safe margin of TV pictures. */
-    private static final float SAFE = 0.05f;
     private static final long HOUSE_MS = 5 * 60_000L;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -39,8 +42,6 @@ public class ClockDream extends DreamService {
     private Chart outsideDay, roomDay;
     /** The screensaver on screen, for RemoteKeyService: a button it takes ends the screensaver first. */
     private static ClockDream showing;
-    /** The readings beside a place's temperature, larger than the top line's. */
-    private static final float FACTS_SP = 14;
     private HomeConfig home;
     private HomeAssistant ha;
     private HaLive live;
@@ -67,11 +68,11 @@ public class ClockDream extends DreamService {
         findViewById(R.id.dreamPlaces).setVisibility(!reachable || states.isEmpty() ? View.GONE : View.VISIBLE);
         if (home.outside != null) {
             outside.setVisibility(View.VISIBLE);
-            HouseHeader.column(this, outside, home, home.outside, states, true, FACTS_SP);
+            HouseHeader.column(this, outside, home, home.outside, states, true, Integer.MAX_VALUE);
         }
         if (!home.temperatures.isEmpty()) {
             room.setVisibility(View.VISIBLE);
-            HouseHeader.column(this, room, home, home.temperatures.get(0), states, false, FACTS_SP);
+            HouseHeader.column(this, room, home, home.temperatures.get(0), states, false, Integer.MAX_VALUE);
         }
         List<String> lines = new ArrayList<>();
         List<String> rooms = new ArrayList<>();
@@ -131,15 +132,15 @@ public class ClockDream extends DreamService {
     };
 
     /**
-     * The glide stays inside the screen's safe area, SAFE of each side: a TV panel crops or blurs its very
-     * edges, and text touching them reads as cut.
+     * The glide stays inside the screen's safe area (syn_marge_x, syn_marge_y): a TV panel crops or blurs
+     * its very edges, and text touching them reads as cut.
      */
     private float safeX() {
-        return SAFE * ((View) content.getParent()).getWidth();
+        return Scale.marginX(this);
     }
 
     private float safeY() {
-        return SAFE * ((View) content.getParent()).getHeight();
+        return Scale.marginY(this);
     }
 
     private float maxX() {
@@ -167,24 +168,19 @@ public class ClockDream extends DreamService {
             List<TvListings.Item> last = TvListings.watchNext(this, 1);
             String poster = last.isEmpty() ? null : last.get(0).posterUri;
             if (poster == null) {
-                Bitmap night = Backdrop.dream(null);
+                Bitmap night = Backdrop.dream(this, null);
                 handler.post(() -> backdrop.show(night));
                 return;
             }
             // The dim picture is composed off the main thread, as the dashboard's is.
             Posters.load(this, poster, Backdrop.SCENE_W, bmp -> new Thread(() -> {
-                Bitmap dim = Backdrop.dream(bmp);
+                Bitmap dim = Backdrop.dream(this, bmp);
                 handler.post(() -> backdrop.show(dim));
             }, "dream-picture").start());
         }, "dream-backdrop").start();
         house = findViewById(R.id.dreamHouse);
         outside = findViewById(R.id.dreamOutside);
         room = findViewById(R.id.dreamRoom);
-        for (View column : new View[]{outside, room}) {
-            ((TextView) column.findViewById(R.id.climateTemp)).setTextSize(56);
-            ((TextView) column.findViewById(R.id.climateLabel)).setTextSize(13);
-            ((TextView) column.findViewById(R.id.climateSky)).setTextSize(13);
-        }
         outsideDay = dayUnder(outside);
         roomDay = dayUnder(room);
         home = HomeConfig.load(this);
@@ -196,10 +192,9 @@ public class ClockDream extends DreamService {
         Chart c = new Chart(this);
         c.bare();
         c.setVisibility(View.GONE);
-        float d = getResources().getDisplayMetrics().density;
         android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT, Math.round(30 * d));
-        lp.topMargin = Math.round(8 * d);
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelSize(R.dimen.syn_rangee));
+        lp.topMargin = getResources().getDimensionPixelSize(R.dimen.syn_espace_2);
         ((android.view.ViewGroup) column).addView(c, lp);
         return c;
     }
@@ -211,7 +206,8 @@ public class ClockDream extends DreamService {
         content.setAlpha(0f);
         content.post(() -> {
             placeClock();
-            content.animate().alpha(1f).setDuration(1200).start();
+            content.animate().alpha(1f).setDuration(getResources().getInteger(R.integer.syn_duree_feuille))
+                    .setInterpolator(android.view.animation.AnimationUtils.loadInterpolator(this, R.interpolator.syn_courbe)).start();
         });
         handler.postDelayed(drift, DRIFT_MS);
         if (ha == null) return;

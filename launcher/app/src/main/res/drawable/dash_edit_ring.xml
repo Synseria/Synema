@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The favourite being moved in edit mode: a dashed yellow ring. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <stroke android:width="2dp" android:color="@color/syn_safran" android:dashWidth="6dp" android:dashGap="4dp" />
+    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_safran" android:dashWidth="6dp" android:dashGap="4dp" />
     <corners android:radius="@dimen/card_ring_corner" />
 </shape>
