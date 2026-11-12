@@ -46,6 +46,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
@@ -85,10 +86,10 @@
     <style name="DashRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">-5dp</item>
-        <item name="android:layout_marginBottom">-5dp</item>
-        <item name="android:paddingTop">5dp</item>
-        <item name="android:paddingBottom">5dp</item>
+        <item name="android:layout_marginTop">@dimen/card_inset_back</item>
+        <item name="android:layout_marginBottom">@dimen/card_inset_back</item>
+        <item name="android:paddingTop">@dimen/card_inset</item>
+        <item name="android:paddingBottom">@dimen/card_inset</item>
     </style>
 
     <!-- A line of the House panel's electricity corner: a label, then its value at the right. -->

@@ -58,8 +58,9 @@ public class MainActivity extends Activity implements EditMenu.Host {
      * drawn in a frame of their own, not in the slide's.
      */
     private static final long FEATURE_DELAY_MS = 200;
-    /** The line of words under a card, and its icon (dp). */
-    private static final int UNDER_CARD_DP = 16, UNDER_CARD_ICON_DP = 16;
+    /** The icon of the line of words under a card (dp). */
+    // jeton manquant: syn_icone_moyenne (16)
+    private static final int UNDER_CARD_ICON_DP = 16;
     /** Placeholders while a row is read: more than ever fit, so the row is full whatever its width. */
     private static final int SKELETON_CARDS = 8;
 
@@ -415,14 +416,14 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private void showRatings(TvListings.Item item) {
         heroRatings.removeAllViews();
         if (item.audience < 0) return;
-        TextView capsule = text(getString(R.string.rating, item.audience), R.style.Role_Note);
+        TextView capsule = text(HouseText.units(this, getString(R.string.rating, item.audience), false), R.style.Role_Note);
         capsule.setIncludeFontPadding(false);
         capsule.setContentDescription(getString(R.string.rating_audience, item.audience));
         capsule.setBackgroundResource(R.drawable.dash_capsule_bg);
-        capsule.setPadding(dp(8), dp(2), dp(8), dp(2));
+        capsule.setPadding(px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_1), px(R.dimen.syn_espace_2), px(R.dimen.syn_espace_1));
         capsule.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_audience, 0, 0, 0);
         capsule.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.syn_encre_secondaire)));
-        capsule.setCompoundDrawablePadding(dp(4));
+        capsule.setCompoundDrawablePadding(px(R.dimen.syn_espace_1));
         heroRatings.addView(capsule);
     }
 
@@ -628,12 +629,12 @@ public class MainActivity extends Activity implements EditMenu.Host {
             Focus.card(card);
             card.setContentDescription(item.title);
             ImageView img = new RoundedImageView(this);
-            Posters.into(this, item.posterUri, dp(150), img, Favourites.bannerOrIcon(pm, item.pkg));
+            Posters.into(this, item.posterUri, dp(Focus.WIDEST_CARD_DP), img, Favourites.bannerOrIcon(pm, item.pkg));
             card.addView(img, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             if (resume && item.progress >= 0) {
                 // Along the picture's foot, off its rounded corners.
                 int corner = getResources().getDimensionPixelSize(R.dimen.card_corner);
-                FrameLayout.LayoutParams foot = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(3), Gravity.BOTTOM);
+                FrameLayout.LayoutParams foot = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(R.dimen.progress_height), Gravity.BOTTOM);
                 foot.setMargins(corner, 0, corner, corner);
                 card.addView(progress(item.progress), foot);
             }
@@ -750,9 +751,9 @@ public class MainActivity extends Activity implements EditMenu.Host {
         Actions.run(this, ha, action, house::pressed);
     }
 
-    /** The line under a card: a line of words (UNDER_CARD_DP), below the room a focused card's ring needs (Focus). */
+    /** The line under a card: a line of words (syn_espace_4), below the room a focused card's ring needs (Focus). */
     int underCard() {
-        return underCardTop() + dp(UNDER_CARD_DP);
+        return underCardTop() + px(R.dimen.syn_espace_4);
     }
 
     /** From the card's frame to the line under it: the frame's inset already keeps part of the room. */
@@ -776,7 +777,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         }
         line.addView(icon, new LinearLayout.LayoutParams(dp(UNDER_CARD_ICON_DP), dp(UNDER_CARD_ICON_DP)));
         TextView name = text(appLabel(pm, item.pkg), R.style.Role_Note);
-        name.setPadding(dp(4), 0, 0, 0);
+        name.setPadding(px(R.dimen.syn_espace_1), 0, 0, 0);
         line.addView(name);
         return line;
     }
@@ -812,6 +813,11 @@ public class MainActivity extends Activity implements EditMenu.Host {
 
     int dp(int v) {
         return Math.round(v * density);
+    }
+
+    /** A design-system dimension (jetons.xml), in pixels. */
+    int px(int dimen) {
+        return getResources().getDimensionPixelSize(dimen);
     }
 
     void open(Intent i) {

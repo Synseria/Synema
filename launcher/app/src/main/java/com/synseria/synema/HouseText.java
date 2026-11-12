@@ -5,11 +5,14 @@ import android.content.res.TypedArray;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** How the house reads in words, shared by the dashboard and the screensaver. */
 final class HouseText {
@@ -18,7 +21,35 @@ final class HouseText {
     /** EDF's Tempo integrations name the colours in French; red is the dear day. */
     private static final String TEMPO_BLUE = "bleu", TEMPO_WHITE = "blanc", TEMPO_RED = "rouge";
 
+    /**
+     * A figure's unit: the no-break space and the word after a digit, or the degree sign glued to it. Text that
+     * carries a figure is written in this shape, and {@link #units} gives every such unit the same look.
+     */
+    private static final Pattern UNIT = Pattern.compile("(?<=\\d)(?:\u00A0(?:%|€|\\p{L}+)|°)");
+    /** A unit is one step smaller than its figure. */
+    // jeton manquant: syn_unite_echelle (0.8)
+    private static final float UNIT_SCALE = 0.8f;
+
     private HouseText() {
+    }
+
+    /**
+     * {@code text} with each unit after a figure in secondary ink and, when {@code smaller}, a step down; the
+     * small roles (12 sp) are the design system's floor, so their units only change ink.
+     */
+    static SpannableStringBuilder units(Context ctx, CharSequence text, boolean smaller) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(text);
+        Matcher m = UNIT.matcher(text);
+        while (m.find()) {
+            sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (smaller) sb.setSpan(new RelativeSizeSpan(UNIT_SCALE), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return sb;
+    }
+
+    /** A figure and its unit, in the shape {@link #units} reads. */
+    static String measure(String figure, String unit) {
+        return figure + (unit.equals("°") ? "" : "\u00A0") + unit;
     }
 
     /** Something out of the ordinary: a capsule on the dashboard's top line, a line in the screensaver. */
@@ -71,7 +102,7 @@ final class HouseText {
         Double va = number(power);
         if (va != null && va > home.energyLimit) {
             String unit = power.attrs.optString("unit_of_measurement");
-            out.add(problem(ctx.getString(R.string.power_high, whole(va) + (unit.isEmpty() ? "" : "\u00A0" + unit))));
+            out.add(problem(ctx.getString(R.string.power_high, unit.isEmpty() ? whole(va) : measure(whole(va), unit))));
         }
         if (tempoRed(home.energyTempo, states)) out.add(problem(ctx.getString(R.string.tempo_red_today)));
         if (tempoRed(home.energyTempoTomorrow, states)) out.add(problem(ctx.getString(R.string.tempo_red_tomorrow)));
@@ -161,10 +192,10 @@ final class HouseText {
     /** "702 VA / 6 kVA": the power, then the subscription in the secondary ink when known. */
     static SpannableStringBuilder power(Context ctx, double va, HomeAssistant.State power, Double max,
                                         HomeAssistant.State subscribed) {
-        SpannableStringBuilder sb = new SpannableStringBuilder(whole(va) + "\u00A0" + power.attrs.optString("unit_of_measurement"));
+        SpannableStringBuilder sb = units(ctx, measure(whole(va), power.attrs.optString("unit_of_measurement")), true);
         if (max == null) return sb;
         int at = sb.length();
-        sb.append(" / ").append(whole(max)).append('\u00A0').append(subscribed.attrs.optString("unit_of_measurement"));
+        sb.append(units(ctx, " / " + measure(whole(max), subscribed.attrs.optString("unit_of_measurement")), true));
         sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return sb;
     }

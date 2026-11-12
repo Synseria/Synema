@@ -30,16 +30,16 @@ import java.util.Map;
 final class HousePanel {
     private static final int PER_LINE = 2;
     /**
-     * Line heights and the space between lines (dp): a tile is a touch target (syn_cible_min), and a room
-     * a name over its temperature. The rooms beyond the height scroll.
+     * A room's height (dp): a name over its temperature; the rooms beyond the height scroll. A tile is a touch
+     * target (syn_cible_min), the space between lines syn_espace_1.
      */
-    private static final int TILE_DP = 48, ROOM_DP = 56, LINE_GAP_DP = 4;
+    // jeton manquant: syn_tuile_piece_hauteur (56)
+    private static final int ROOM_DP = 56;
     /** The readings beside a room's temperature: its tile is not wide enough for more. */
     private static final int ROOM_FACTS = 1;
-    /** A remote key as drawn on its tile (dp): its size, its corner and its distance from the tile's edges. */
-    private static final int KEY_W_DP = 14, KEY_H_DP = 8, KEY_RADIUS_DP = 3, KEY_EDGE_DP = 8;
-    /** The contour is the primary ink at 35 %: enough to outline the key on any tile, too little to be a second colour. */
-    private static final int KEY_CONTOUR_ALPHA = 0x59;
+    /** A remote key as drawn on its tile (dp): its size; its corner is syn_rayon_pastille, its distance from the edges syn_espace_2. */
+    // jeton manquant: syn_touche_tuile_largeur (14), syn_touche_tuile_hauteur (8)
+    private static final int KEY_W_DP = 14, KEY_H_DP = 8;
     /** The rooms are read again this often while the dashboard stays in front. */
     private static final long ROOMS_MS = 10 * 60_000L;
     /** The month's cost is read again this often: Home Assistant values the hours as they end. */
@@ -197,7 +197,7 @@ final class HousePanel {
                 LinearLayout t = (LinearLayout) row.getChildAt(c);
                 HomeConfig.Item tile = (HomeConfig.Item) t.getTag();
                 HomeAssistant.State s = STATES.get(tile.action.entity);
-                ((TextView) t.getChildAt(2)).setText(s == null ? "" : describe(s));
+                ((TextView) t.getChildAt(2)).setText(s == null ? "" : HouseText.units(activity, describe(s), false));
                 t.setActivated(s != null && s.on());
             }
         }
@@ -211,14 +211,14 @@ final class HousePanel {
             if (i % PER_LINE == 0) {
                 row = new LinearLayout(activity);
                 row.setClipChildren(false);
-                LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(TILE_DP));
-                rlp.topMargin = i == 0 ? 0 : activity.dp(LINE_GAP_DP);
+                LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.px(R.dimen.syn_cible_min));
+                rlp.topMargin = i == 0 ? 0 : activity.px(R.dimen.syn_espace_1);
                 tiles.addView(row, rlp);
             }
             LinearLayout t = new LinearLayout(activity);
             t.setOrientation(LinearLayout.VERTICAL);
             Focus.tile(t);
-            t.setPadding(activity.dp(8), activity.dp(4), activity.dp(8), activity.dp(4));
+            t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
             t.setTag(tile);
             TextView state = activity.text("", R.style.Role_Note);
             state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
@@ -228,7 +228,7 @@ final class HousePanel {
             int key = colourKey(tile);
             if (key != 0) {
                 t.setForeground(keyDrawable(key));
-                name.setPadding(0, 0, activity.dp(KEY_W_DP + KEY_EDGE_DP), 0);
+                name.setPadding(0, 0, activity.dp(KEY_W_DP) + activity.px(R.dimen.syn_espace_2), 0);
             }
             t.addView(name);
             t.addView(new View(activity), new LinearLayout.LayoutParams(1, 0, 1f));
@@ -242,7 +242,7 @@ final class HousePanel {
                 activity.runAction(tile.action);
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            if (i % PER_LINE == 0 && i + 1 < home.tiles.size()) lp.setMarginEnd(activity.dp(LINE_GAP_DP));   // a lone last tile spans the row
+            if (i % PER_LINE == 0 && i + 1 < home.tiles.size()) lp.setMarginEnd(activity.px(R.dimen.syn_espace_1));   // a lone last tile spans the row
             row.addView(t, lp);
         }
     }
@@ -291,14 +291,14 @@ final class HousePanel {
                 line = new LinearLayout(activity);
                 line.setClipChildren(false);
                 LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(ROOM_DP));
-                llp.topMargin = i == 0 ? 0 : activity.dp(LINE_GAP_DP);
+                llp.topMargin = i == 0 ? 0 : activity.px(R.dimen.syn_espace_1);
                 rooms.addView(line, llp);
             }
             String name = found.get(i).name;
             LinearLayout t = new LinearLayout(activity);
             t.setOrientation(LinearLayout.VERTICAL);
             Focus.tile(t);
-            t.setPadding(activity.dp(8), activity.dp(4), activity.dp(8), activity.dp(4));
+            t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
             TextView title = activity.text(name, R.style.Role_CorpsFort);
             title.setIncludeFontPadding(false);
             TextView lit = activity.text(activity.getString(R.string.room_lit), R.style.Role_Petit);
@@ -316,10 +316,10 @@ final class HousePanel {
             LinearLayout facts = new LinearLayout(activity);
             facts.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            flp.setMarginStart(activity.dp(8));
+            flp.setMarginStart(activity.px(R.dimen.syn_espace_2));
             body.addView(facts, flp);
             LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-            blp.topMargin = activity.dp(LINE_GAP_DP);
+            blp.topMargin = activity.px(R.dimen.syn_espace_1);
             t.addView(body, blp);
             t.setTag(name);
             t.setOnClickListener(v -> {
@@ -327,7 +327,7 @@ final class HousePanel {
                 if (r != null) roomPage.open(r, place(r), home, () -> rooms.findViewWithTag(name));
             });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            if (i % PER_LINE == 0) lp.setMarginEnd(activity.dp(LINE_GAP_DP));
+            if (i % PER_LINE == 0) lp.setMarginEnd(activity.px(R.dimen.syn_espace_1));
             line.addView(t, lp);
         }
         // A lone last room keeps the width of the others.
@@ -347,7 +347,7 @@ final class HousePanel {
         t.setActivated(lit);
         ((NameLine) t.getChildAt(0)).setLit(lit);
         LinearLayout body = (LinearLayout) t.getChildAt(1);
-        ((TextView) body.getChildAt(0)).setText(place.temperature.value == null ? "" : HouseText.degrees(place.temperature.value));
+        ((TextView) body.getChildAt(0)).setText(place.temperature.value == null ? "" : HouseText.units(activity, HouseText.degrees(place.temperature.value), true));
         HouseHeader.facts(activity, (LinearLayout) body.getChildAt(1), place, ROOM_FACTS);
     }
 
@@ -380,7 +380,7 @@ final class HousePanel {
             addView(name);
             addView(new View(activity), new LayoutParams(0, 1, 1f));
             addView(word);
-            word.setPadding(activity.dp(LINE_GAP_DP), 0, 0, 0);
+            word.setPadding(activity.px(R.dimen.syn_espace_1), 0, 0, 0);
         }
 
         void setLit(boolean lit) {
@@ -425,7 +425,7 @@ final class HousePanel {
         String month = monthCost();
         TextView cost = activity.findViewById(R.id.costValue);
         cost.setVisibility(month.isEmpty() ? View.GONE : View.VISIBLE);
-        cost.setText(month);
+        cost.setText(HouseText.units(activity, month, true));
         HomeAssistant.State today = states.get(home.energyTempo), tomorrow = states.get(home.energyTempoTomorrow);
         activity.findViewById(R.id.tempoLine).setVisibility(today == null && tomorrow == null ? View.GONE : View.VISIBLE);
         tempoDay(R.id.tempoToday, R.id.tempoTodayLabel, R.string.tech_today, today);
@@ -442,7 +442,7 @@ final class HousePanel {
         if (Double.isNaN(usedCost)) return "";
         Double subscription = HouseText.number(STATES.get(home.energySubscription));
         double eur = usedCost + (subscription == null ? 0 : subscription);
-        return activity.getString(R.string.tech_month, String.format(Locale.getDefault(), "%.2f €", eur));
+        return activity.getString(R.string.tech_month, HouseText.measure(String.format(Locale.getDefault(), "%.2f", eur), "€"));
     }
 
     private static String unit(HomeAssistant.State s) {
@@ -463,7 +463,7 @@ final class HousePanel {
         GradientDrawable dot = new GradientDrawable();
         dot.setShape(GradientDrawable.OVAL);
         dot.setColor(HouseText.tempoColour(activity, s));
-        int size = activity.dp(8);
+        int size = activity.px(R.dimen.syn_espace_2);
         dot.setSize(size, size);
         label.setText(activity.getString(R.string.tech_tempo) + " · " + activity.getString(day));
         value.setText(HouseText.tempoName(s));
@@ -508,13 +508,13 @@ final class HousePanel {
     private Drawable keyDrawable(int colour) {
         GradientDrawable key = new GradientDrawable();
         key.setColor(colour);
-        key.setCornerRadius(activity.dp(KEY_RADIUS_DP));
-        key.setStroke(activity.dp(1), (KEY_CONTOUR_ALPHA << 24) | (activity.getColor(R.color.syn_encre) & 0xFFFFFF));
+        key.setCornerRadius(activity.px(R.dimen.syn_rayon_pastille));
+        key.setStroke(activity.px(R.dimen.syn_trait_filet), activity.getColor(R.color.syn_filet));
         LayerDrawable layer = new LayerDrawable(new Drawable[]{key});
         layer.setLayerSize(0, activity.dp(KEY_W_DP), activity.dp(KEY_H_DP));
         layer.setLayerGravity(0, Gravity.TOP | Gravity.END);
-        layer.setLayerInsetTop(0, activity.dp(KEY_EDGE_DP));
-        layer.setLayerInsetEnd(0, activity.dp(KEY_EDGE_DP));
+        layer.setLayerInsetTop(0, activity.px(R.dimen.syn_espace_2));
+        layer.setLayerInsetEnd(0, activity.px(R.dimen.syn_espace_2));
         return layer;
     }
 

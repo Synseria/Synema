@@ -28,11 +28,13 @@ import java.util.ArrayList;
  */
 public final class CardRow extends ViewGroup {
     /** Narrowest picture (dp). */
+    // jeton manquant: syn_carte_image_min (118)
     private static final int MIN_DP = 118;
     /**
      * How much of the edge picture fades (dp), towards the dashboard's navy: a mask would let the
      * background through, but costs this GPU a layer per frame of a slide.
      */
+    // jeton manquant: syn_fondu_largeur (40)
     private static final int FADE_DP = 40;
 
     private final int inset, gap, min, widest, fadeWidth;
@@ -58,6 +60,7 @@ public final class CardRow extends ViewGroup {
         widest = Math.round(Focus.WIDEST_CARD_DP * d);
         fadeWidth = Math.round(FADE_DP * d);
         // The backdrop's own colour, so the row fades into it.
+        // jeton manquant: syn_fondu_opacite_rangee (0xE6)
         int fade = 0xE6 << 24 | (Backdrop.base(ctx) & 0xFFFFFF);
         int clear = fade & 0x00FFFFFF;
         fadeLeft.setShader(new LinearGradient(0, 0, fadeWidth, 0, fade, clear, Shader.TileMode.CLAMP));

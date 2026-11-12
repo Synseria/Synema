@@ -33,6 +33,9 @@ public class AppsActivity extends Activity implements EditMenu.Host {
     }
 
     private static final int COLUMNS = 6;
+    /** A banner's height (dp). */
+    // jeton manquant: syn_banniere_hauteur (70)
+    private static final int BANNER_DP = 70;
 
     private final List<App> apps = new ArrayList<>();
     private RecyclerView grid;
@@ -149,8 +152,8 @@ public class AppsActivity extends Activity implements EditMenu.Host {
             col.setClipChildren(false);
             col.setClipToPadding(false);
             int inset = getResources().getDimensionPixelSize(R.dimen.card_inset);
-            int pad = Math.max(dp(3), (Focus.cardRoom(parent.getContext()) + 1) / 2 - inset);
-            col.setPadding(pad, pad, pad, dp(1));
+            int pad = Math.max(getResources().getDimensionPixelSize(R.dimen.syn_trait_focus_ecart), (Focus.cardRoom(parent.getContext()) + 1) / 2 - inset);
+            col.setPadding(pad, pad, pad, getResources().getDimensionPixelSize(R.dimen.syn_trait_filet));
             col.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             // The dashboard's card: the picture inset in the frame, the ring on the frame's edge.
             card = new FrameLayout(parent.getContext());
@@ -161,7 +164,7 @@ public class AppsActivity extends Activity implements EditMenu.Host {
             fallback = label(R.style.Role_Corps);
             fallback.setGravity(Gravity.CENTER);
             card.addView(fallback, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            col.addView(card, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(70) + 2 * inset));
+            col.addView(card, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(BANNER_DP) + 2 * inset));
             name = label(R.style.Role_Corps);
             name.setGravity(Gravity.CENTER_HORIZONTAL);
             name.setPadding(0, getResources().getDimensionPixelSize(R.dimen.syn_espace_1), 0, 0);

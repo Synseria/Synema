@@ -26,7 +26,6 @@ import java.util.ArrayList;
  * the last line goes nowhere.
  */
 public final class ColumnScroll extends ScrollView {
-    private static final int FADE_DP = 12;
     /** How long after the last scroll step the column counts as still. */
     private static final long SETTLE_MS = 100;
 
@@ -43,11 +42,11 @@ public final class ColumnScroll extends ScrollView {
     public ColumnScroll(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
         // The backdrop's own colour, so the column fades into it.
+        // jeton manquant: syn_fondu_opacite (0xB3)
         int fadeColor = 0xB3 << 24 | (Backdrop.base(ctx) & 0xFFFFFF);
         fade = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{fadeColor, fadeColor & 0x00FFFFFF});
-        float d = ctx.getResources().getDisplayMetrics().density;
-        fadeHeight = Math.round(FADE_DP * d);
-        lineSlack = Math.round(4 * d);
+        fadeHeight = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_3);
+        lineSlack = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_1);
         // The rows' windows reach into the sides (CardRow): as wide as a card's focus needs.
         int room = Focus.cardRoom(ctx);
         setPaddingRelative(room, getPaddingTop(), room, getPaddingBottom());

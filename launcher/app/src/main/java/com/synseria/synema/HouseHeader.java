@@ -6,7 +6,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.view.Gravity;
 import android.view.View;
@@ -30,9 +29,8 @@ final class HouseHeader {
     /** The readings beside a temperature on the top line: two lines of text fit the height of the temperature. */
     private static final int HEADER_FACTS = 2;
     /** A reading's icon (dp), a touch under its text. */
+    // jeton manquant: syn_icone_petite (14)
     private static final int FACT_ICON_DP = 14;
-    /** A status capsule's height (dp): a line of words and its padding. */
-    private static final int CHIP_DP = 24;
     private final MainActivity activity;
     private final View outside, room;
     private final FlowRow chips;
@@ -106,7 +104,7 @@ final class HouseHeader {
     /** The place's temperature, its trend's arrow after it as tall as the readings beside; {@code none} when unknown. */
     static CharSequence degrees(Context ctx, Place p, String none) {
         if (p.temperature.value == null) return none;
-        SpannableStringBuilder sb = new SpannableStringBuilder(HouseText.degrees(p.temperature.value));
+        SpannableStringBuilder sb = HouseText.units(ctx, HouseText.degrees(p.temperature.value), true);
         Place.Trend trend = Place.Kind.TEMPERATURE.trend(p.temperature.sensor);
         if (trend != null) arrow(ctx, sb, trend, ctx.getColor(R.color.syn_encre_secondaire),
                 ctx.getResources().getDimensionPixelSize(R.dimen.syn_typo_chiffre_taille));
@@ -156,15 +154,10 @@ final class HouseHeader {
 
     /**
      * One reading on its line: an icon (or, with {@code dot}, a dot of that colour), the value, its unit
-     * (after a no-break space) in secondary ink, and its trend's arrow.
+     * (HouseText.units) and its trend's arrow.
      */
     private static TextView fact(Context ctx, int icon, int dot, String value, String unit, Place.Trend trend) {
-        SpannableStringBuilder sb = new SpannableStringBuilder(value);
-        if (unit != null) {
-            int at = sb.length();
-            sb.append('\u00A0').append(unit);
-            sb.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
+        SpannableStringBuilder sb = HouseText.units(ctx, HouseText.measure(value, unit), true);
         TextView line = new TextView(ctx);
         line.setTextAppearance(R.style.Role_Chiffre);
         if (trend != null) arrow(ctx, sb, trend, ctx.getColor(trend.color), Math.round(line.getTextSize()));
@@ -183,7 +176,7 @@ final class HouseHeader {
         }
         d.setBounds(0, 0, slot, slot);
         line.setCompoundDrawablesRelative(d, null, null, null);
-        line.setCompoundDrawablePadding(dp(ctx, 4));
+        line.setCompoundDrawablePadding(ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_1));
         return line;
     }
 
@@ -208,7 +201,7 @@ final class HouseHeader {
         chipsShown = sig.toString();
         chips.removeAllViews();
         for (HouseText.Notice n : notices) {
-            chips.addView(chip(n), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, activity.dp(CHIP_DP)));
+            chips.addView(chip(n), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, activity.px(R.dimen.syn_espace_6)));
         }
     }
 
@@ -222,18 +215,20 @@ final class HouseHeader {
         chip.setGravity(Gravity.CENTER_VERTICAL);
         chip.setBackgroundResource(R.drawable.dash_capsule_bg);
         boolean person = !n.problem && "person".equals(n.domain);
-        chip.setPadding(activity.dp(person ? 2 : 8), 0, activity.dp(8), 0);
+        chip.setPadding(activity.px(person ? R.dimen.syn_espace_1 : R.dimen.syn_espace_2), 0, activity.px(R.dimen.syn_espace_2), 0);
         View sign;
-        int size = activity.dp(14);
+        int size = activity.dp(FACT_ICON_DP);
         if (person) {
+            // jeton manquant: syn_icone_grande (20), the person's initial disc
+            int disc = activity.dp(20);
             String letter = n.name.isEmpty() ? "" : n.name.substring(0, 1).toUpperCase(Locale.getDefault());
             TextView initial = activity.text(letter, R.style.Role_CorpsFort);
             initial.setTextColor(activity.getColor(R.color.syn_nuit_profond));
             initial.setIncludeFontPadding(false);
             initial.setGravity(Gravity.CENTER);
-            initial.setBackground(dot(activity.getColor(R.color.syn_succes), activity.dp(20)));
+            initial.setBackground(dot(activity.getColor(R.color.syn_succes), disc));
             sign = initial;
-            size = activity.dp(20);
+            size = disc;
         } else if (n.problem || "vacuum".equals(n.domain)) {
             ImageView icon = new ImageView(activity);
             icon.setImageResource(n.problem ? R.drawable.ic_warn : R.drawable.ic_vacuum);
@@ -241,8 +236,8 @@ final class HouseHeader {
             sign = icon;
         } else {
             sign = new View(activity);
-            sign.setBackground(dot(color, activity.dp(8)));
-            size = activity.dp(8);
+            sign.setBackground(dot(color, activity.px(R.dimen.syn_espace_2)));
+            size = activity.px(R.dimen.syn_espace_2);
         }
         chip.addView(sign, new LinearLayout.LayoutParams(size, size));
         TextView words = activity.text(n.text, R.style.Role_Note);
@@ -250,7 +245,7 @@ final class HouseHeader {
         words.setIncludeFontPadding(false);
         int wrap = ViewGroup.LayoutParams.WRAP_CONTENT;
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(wrap, wrap);
-        lp.setMarginStart(activity.dp(4));
+        lp.setMarginStart(activity.px(R.dimen.syn_espace_1));
         chip.addView(words, lp);
         return chip;
     }
