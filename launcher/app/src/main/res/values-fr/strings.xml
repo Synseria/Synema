@@ -155,4 +155,7 @@
     <string name="hidden_apps">Apps masquées</string>
     <string name="action_show">Afficher</string>
     <string name="hidden_apps_none">Aucune app masquée</string>
+    <string name="confirm_action">%1$s ?</string>
+    <string name="action_confirm">Confirmer</string>
+    <string name="assist_done">%1$s · fait</string>
 </resources>

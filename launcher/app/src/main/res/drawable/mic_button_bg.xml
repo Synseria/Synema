@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The assistant's mic: a glass disc, white when focused; never a square. -->
+<!-- The assistant's mic: a round secondary button, a white ring when focused. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
-        <shape android:shape="oval">
-            <solid android:color="@color/syn_encre" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="@color/syn_surface" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="oval">
+                    <stroke android:width="@dimen/syn_trait_focus" android:color="@color/syn_encre" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/syn_survol" />
-            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
+            <solid android:color="@color/syn_surface" />
+            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_contour_controle" />
         </shape>
     </item>
 </selector>
