@@ -19,14 +19,6 @@
         android:textColor="@color/syn_nuit_profond"
         style="@style/Role.CorpsFort" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/syn_espace_1"
-        android:text="@string/airplay_code_hint"
-        android:textColor="@color/syn_nuit"
-        style="@style/Role.Note" />
-
     <LinearLayout
         android:id="@+id/digits"
         android:layout_width="wrap_content"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A camera full screen (CameraActivity): the WebRTC video or the pictures (MJPEG), its name bottom
-     left, and the talk button bottom centre with what it does under it. -->
+     left, and the talk button bottom centre with its state under it. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -46,7 +46,7 @@
         android:clipToPadding="false"
         android:visibility="gone">
 
-        <!-- The button (a touch target) in a room for its halo (VoiceRing). -->
+        <!-- The button (a touch target) in a room for its halo (VoiceRing); jeton manquant: syn_halo_micro (76dp). -->
         <FrameLayout
             android:id="@+id/talkRoom"
             android:layout_width="76dp"
@@ -61,7 +61,7 @@
                 android:padding="@dimen/syn_espace_3"
                 android:background="@drawable/talk_button_bg"
                 android:src="@drawable/ic_mic"
-                android:tint="@color/talk_icon"
+                android:tint="@color/syn_encre"
                 android:focusable="true"
                 android:clickable="true"
                 android:contentDescription="@string/camera_talk" />
