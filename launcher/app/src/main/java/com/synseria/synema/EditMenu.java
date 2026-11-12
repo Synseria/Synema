@@ -61,15 +61,15 @@ final class EditMenu {
     private final Host host;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable pendingSave;
-    /** Set just before the screen is recreated in a new accent: its menu opens again on the Theme tab. */
-    private static boolean reopenOnTheme;
+    /** Set just before the screen is recreated in a new accent: its menu opens again where the colour was chosen. */
+    private static boolean reopenOnColours;
 
     EditMenu(Activity activity, Host host) {
         this.activity = activity;
         this.host = host;
-        if (reopenOnTheme) {
-            reopenOnTheme = false;
-            handler.post(() -> customize(1));
+        if (reopenOnColours) {
+            reopenOnColours = false;
+            handler.post(() -> customize(true));
         }
     }
 
@@ -164,11 +164,14 @@ final class EditMenu {
 
     /** The settings: two tabs, Home and Theme; the left and right arrows on the tabs switch them. */
     void customize() {
-        customize(0);
+        customize(false);
     }
 
-    /** The settings menu on its tab {@code tab}: 0 Home, 1 Theme. */
-    private void customize(int tab) {
+    /**
+     * The settings menu: on the Home tab with the focus on the tabs, or on the Theme tab with the focus on the
+     * colours (its first control), to try one accent after another.
+     */
+    private void customize(boolean onColours) {
         List<String> favourites = Config.load(activity).dockApps;
         Dialog d = dialog();
         LinearLayout panel = new LinearLayout(activity);
@@ -203,10 +206,10 @@ final class EditMenu {
             scroll.scrollTo(0, 0);
         };
         tabs.onChoice(i -> fill.run());
-        tabs.choose(tab);
+        tabs.choose(onColours ? 1 : 0);
         fill.run();
         d.setOnDismissListener(x -> flushPending());
-        showPanel(d, panel, tabs);
+        showPanel(d, panel, onColours ? content : tabs);
     }
 
     private void homeTab(LinearLayout rows, Dialog d, List<String> favourites) {
@@ -356,8 +359,8 @@ final class EditMenu {
                 this::colourSwatch, id -> {
                     if (Config.load(activity).colour.equals(id)) return;
                     if (!Config.save(activity, "colour", id)) failed();
-                    // The menu closes before the screen is rebuilt, and the new screen reopens it on this tab.
-                    reopenOnTheme = true;
+                    // The menu closes before the screen is rebuilt, and the new screen reopens it on the colours.
+                    reopenOnColours = true;
                     menu.dismiss();
                     activity.recreate();
                 });
