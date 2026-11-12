@@ -401,15 +401,15 @@ public class AssistActivity extends Activity {
         return t;
     }
 
-    /** The services that switch something off, close or send home: asked again before they run. */
-    private static boolean undoes(String service) {
-        return service.endsWith("/turn_off") || service.endsWith("/close_cover") || service.endsWith("/return_to_base");
+    /** Only switching something on runs at the first OK; any other service (toggle, open, start, close...) is asked again. */
+    private static boolean needsConfirmation(String service) {
+        return !service.endsWith("/turn_on");
     }
 
     /**
      * The agent's actions under its answer, buttons: OK calls the service, the button then saying whether
      * it was done. Never focused by themselves: an OK meant for the mic must not switch the house. An
-     * action that switches off, closes or sends home is confirmed first.
+     * action other than switching something on is confirmed first.
      */
     private void cards(List<HouseActions.Action> offered) {
         if (offered.isEmpty() || ha == null) return;
@@ -437,7 +437,7 @@ public class AssistActivity extends Activity {
                 });
             };
             card.setOnClickListener(v -> {
-                if (undoes(a.service)) {
+                if (needsConfirmation(a.service)) {
                     Confirm.show(this, getString(R.string.confirm_action, a.label), null, R.string.action_confirm, run);
                 } else {
                     run.run();
