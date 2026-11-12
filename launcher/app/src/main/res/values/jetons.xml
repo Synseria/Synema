@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Engendré par Synseria-Design — ne pas retoucher : changer jetons.json ou apps/Synema.json, puis sh propager.sh. -->
+<!-- jetons.json 8e252f614957292a · contenu f5425149dbeff641 -->
+<resources>
+    <color name="syn_fenetre">#FF12151D</color>
+    <color name="syn_surface">#FF1A1E2A</color>
+    <color name="syn_creux">#FF242A3A</color>
+    <color name="syn_filet">#FF333A4D</color>
+    <color name="syn_contour_controle">#FF868EA3</color>
+    <color name="syn_encre">#FFEEF0F6</color>
+    <color name="syn_encre_secondaire">#FFA3ABBF</color>
+    <color name="syn_encre_tertiaire">#FF7F879B</color>
+    <color name="syn_survol">#14EEF0F6</color>
+    <color name="syn_pression">#24EEF0F6</color>
+    <color name="syn_primaire">#FF7CADFF</color>
+    <color name="syn_primaire_encre">#FFB1CEFF</color>
+    <color name="syn_primaire_fond">#387CADFF</color>
+    <color name="syn_encre_sur_primaire">#FF0E1322</color>
+    <color name="syn_nuit">#FF16284F</color>
+    <color name="syn_nuit_profond">#FF0E1322</color>
+    <color name="syn_safran">#FFFFC53D</color>
+    <color name="syn_safran_texte">#FFFFC53D</color>
+    <color name="syn_safran_fond">#33FFC53D</color>
+    <color name="syn_danger">#FFFF7A7A</color>
+    <color name="syn_alerte">#FFF38C47</color>
+    <color name="syn_succes">#FF5ED689</color>
+    <color name="syn_danger_plein">#FFCA3732</color>
+    <color name="syn_encre_sur_danger">#FFFFFFFF</color>
+    <color name="syn_tv_fond">#FF0B1020</color>
+    <color name="syn_tv_carte">#FF1A2036</color>
+    <color name="syn_tv_carte_allumee">#FF2F3854</color>
+    <color name="syn_tv_voile">#B80B1020</color>
+    <color name="syn_touche_rouge">#FFE5484D</color>
+    <color name="syn_touche_verte">#FF46A758</color>
+    <color name="syn_touche_jaune">#FFF5D90A</color>
+    <color name="syn_touche_bleue">#FF3E8EF7</color>
+    <dimen name="syn_rayon_pastille">4dp</dimen>
+    <dimen name="syn_rayon_controle">8dp</dimen>
+    <dimen name="syn_rayon_carte">12dp</dimen>
+    <dimen name="syn_rayon_panneau">16dp</dimen>
+    <dimen name="syn_rayon_capsule">9999dp</dimen>
+    <dimen name="syn_espace_1">4dp</dimen>
+    <dimen name="syn_espace_2">8dp</dimen>
+    <dimen name="syn_espace_3">12dp</dimen>
+    <dimen name="syn_espace_4">16dp</dimen>
+    <dimen name="syn_espace_6">24dp</dimen>
+    <dimen name="syn_espace_8">32dp</dimen>
+    <dimen name="syn_espace_10">40dp</dimen>
+    <dimen name="syn_controle">28dp</dimen>
+    <dimen name="syn_bouton_icone">28dp</dimen>
+    <dimen name="syn_cible_min">48dp</dimen>
+    <dimen name="syn_case">14dp</dimen>
+    <dimen name="syn_interrupteur_largeur">32dp</dimen>
+    <dimen name="syn_interrupteur_hauteur">18dp</dimen>
+    <dimen name="syn_rangee">28dp</dimen>
+    <dimen name="syn_rangee_palette">36dp</dimen>
+    <dimen name="syn_touche">18dp</dimen>
+    <dimen name="syn_icone_barre">17dp</dimen>
+    <item name="syn_focus_echelle" type="dimen" format="float">1.04</item>
+    <dimen name="syn_marge_x">48dp</dimen>
+    <dimen name="syn_marge_y">27dp</dimen>
+    <dimen name="syn_trait_filet">1dp</dimen>
+    <dimen name="syn_trait_etat">1.5dp</dimen>
+    <dimen name="syn_trait_focus">2dp</dimen>
+    <dimen name="syn_trait_focus_ecart">3dp</dimen>
+    <dimen name="syn_trait_icone_fine">1.25dp</dimen>
+    <dimen name="syn_trait_icone_normale">1.5dp</dimen>
+    <integer name="syn_duree_pression">100</integer>
+    <integer name="syn_duree_survol">120</integer>
+    <integer name="syn_duree_etat">160</integer>
+    <integer name="syn_duree_menu">200</integer>
+    <integer name="syn_duree_feuille">280</integer>
+    <string name="syn_police_texte" translatable="false">sans-serif</string>
+    <string name="syn_police_titre" translatable="false">outfit</string>
+    <string name="syn_police_code" translatable="false">monospace</string>
+    <string name="syn_police_marque" translatable="false">outfit</string>
+    <dimen name="syn_typo_titre_page_taille">28sp</dimen>
+    <dimen name="syn_typo_titre_page_interligne">34sp</dimen>
+    <integer name="syn_typo_titre_page_graisse">600</integer>
+    <string name="syn_typo_titre_page_police" translatable="false">outfit</string>
+    <dimen name="syn_typo_titre_taille">18sp</dimen>
+    <dimen name="syn_typo_titre_interligne">24sp</dimen>
+    <integer name="syn_typo_titre_graisse">600</integer>
+    <string name="syn_typo_titre_police" translatable="false">outfit</string>
+    <dimen name="syn_typo_corps_taille">14sp</dimen>
+    <dimen name="syn_typo_corps_interligne">20sp</dimen>
+    <integer name="syn_typo_corps_graisse">400</integer>
+    <string name="syn_typo_corps_police" translatable="false">sans-serif</string>
+    <dimen name="syn_typo_corps_fort_taille">14sp</dimen>
+    <dimen name="syn_typo_corps_fort_interligne">20sp</dimen>
+    <integer name="syn_typo_corps_fort_graisse">600</integer>
+    <string name="syn_typo_corps_fort_police" translatable="false">sans-serif</string>
+    <dimen name="syn_typo_note_taille">12sp</dimen>
+    <dimen name="syn_typo_note_interligne">16sp</dimen>
+    <integer name="syn_typo_note_graisse">400</integer>
+    <string name="syn_typo_note_police" translatable="false">sans-serif</string>
+    <dimen name="syn_typo_petit_taille">12sp</dimen>
+    <dimen name="syn_typo_petit_interligne">16sp</dimen>
+    <integer name="syn_typo_petit_graisse">400</integer>
+    <string name="syn_typo_petit_police" translatable="false">sans-serif</string>
+    <dimen name="syn_typo_chiffre_taille">14sp</dimen>
+    <dimen name="syn_typo_chiffre_interligne">20sp</dimen>
+    <integer name="syn_typo_chiffre_graisse">400</integer>
+    <string name="syn_typo_chiffre_police" translatable="false">sans-serif</string>
+    <dimen name="syn_typo_grand_chiffre_taille">44sp</dimen>
+    <dimen name="syn_typo_grand_chiffre_interligne">48sp</dimen>
+    <integer name="syn_typo_grand_chiffre_graisse">300</integer>
+    <string name="syn_typo_grand_chiffre_police" translatable="false">outfit</string>
+    <dimen name="syn_typo_code_taille">12sp</dimen>
+    <dimen name="syn_typo_code_interligne">16sp</dimen>
+    <integer name="syn_typo_code_graisse">400</integer>
+    <string name="syn_typo_code_police" translatable="false">monospace</string>
+</resources>
