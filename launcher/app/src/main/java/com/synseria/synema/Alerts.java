@@ -257,7 +257,8 @@ final class Alerts implements HaSocket.Listener {
         TextView title = v.findViewById(R.id.title);
         shownMessage = message;
         if (live) {
-            title.setMaxLines(1);
+            // Beside the buttons the title has little room: two lines rather than a cut word.
+            title.setMaxLines(2);
             title.setText(a.title);
         } else if (message.isEmpty()) {
             title.setText(a.title);
