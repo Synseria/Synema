@@ -33,7 +33,7 @@ final class TvListings {
      * A title as the dashboard shows it: what its app published, completed by TMDB where the app said
      * nothing (with: the one place the two meet, the app's words always winning).
      */
-    private static final java.util.regex.Pattern SEASON = java.util.regex.Pattern.compile("(saison|season|s\\d|episode|ep\\d)");
+    private static final java.util.regex.Pattern SEASON_WORDS = java.util.regex.Pattern.compile("(saison|season|s\\d|episode|ep\\d)");
 
     static final class Item {
         final String pkg;
@@ -137,7 +137,7 @@ final class TvListings {
 
         /** {@code longer} is {@code base} followed by a season or an episode, not by other words ("… Andor"). */
         private static boolean withSeason(String base, String longer) {
-            return longer.startsWith(base + " ") && SEASON.matcher(longer.substring(base.length() + 1)).lookingAt();
+            return longer.startsWith(base + " ") && SEASON_WORDS.matcher(longer.substring(base.length() + 1)).lookingAt();
         }
 
         /** The title in its app, whatever the progress: what hiding a title remembers. */
