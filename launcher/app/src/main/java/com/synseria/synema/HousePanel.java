@@ -35,8 +35,6 @@ final class HousePanel {
      */
     // jeton manquant: syn_tuile_piece_hauteur (56)
     private static final int ROOM_DP = 56;
-    /** The readings beside a room's temperature: its tile is not wide enough for more. */
-    private static final int ROOM_FACTS = 1;
     /** A remote key as drawn on its tile (dp): its size; its corner is syn_rayon_pastille, its distance from the edges syn_espace_2. */
     // jeton manquant: syn_touche_tuile_largeur (14), syn_touche_tuile_hauteur (8)
     private static final int KEY_W_DP = 14, KEY_H_DP = 8;
@@ -296,31 +294,32 @@ final class HousePanel {
             }
             String name = found.get(i).name;
             LinearLayout t = new LinearLayout(activity);
-            t.setOrientation(LinearLayout.VERTICAL);
             Focus.tile(t);
+            t.setGravity(Gravity.CENTER_VERTICAL);
             t.setPadding(activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1), activity.px(R.dimen.syn_espace_2), activity.px(R.dimen.syn_espace_1));
+            // At the left the name over the temperature; at the right, the whole tile tall, the other readings stacked.
+            LinearLayout left = new LinearLayout(activity);
+            left.setOrientation(LinearLayout.VERTICAL);
             TextView title = activity.text(name, R.style.Role_CorpsFort);
             title.setIncludeFontPadding(false);
             TextView lit = activity.text(activity.getString(R.string.room_lit), R.style.Role_Petit);
             lit.setIncludeFontPadding(false);
-            t.addView(new NameLine(activity, title, lit));
-            // Then the temperature large and thin, its other readings stacked beside it as on the top line.
-            LinearLayout body = new LinearLayout(activity);
-            body.setGravity(Gravity.CENTER_VERTICAL);
+            left.addView(new NameLine(activity, title, lit));
             // A reading, not a title: the thin figures of the top line's temperatures, at a tile's size.
             TextView temp = activity.text("", R.style.Role_Titre);
             temp.setFontVariationSettings("'wght' 200");
             temp.setFontFeatureSettings("tnum");
             temp.setIncludeFontPadding(false);
-            body.addView(temp);
+            LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1f);
+            tlp.topMargin = activity.px(R.dimen.syn_espace_1);
+            left.addView(temp, tlp);
+            t.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
             LinearLayout facts = new LinearLayout(activity);
             facts.setOrientation(LinearLayout.VERTICAL);
-            LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            facts.setGravity(Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
             flp.setMarginStart(activity.px(R.dimen.syn_espace_2));
-            body.addView(facts, flp);
-            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-            blp.topMargin = activity.px(R.dimen.syn_espace_1);
-            t.addView(body, blp);
+            t.addView(facts, flp);
             t.setTag(name);
             t.setOnClickListener(v -> {
                 Rooms.Room r = room(name);
@@ -335,8 +334,7 @@ final class HousePanel {
     }
 
     /**
-     * "Salon" over its temperature and, stacked beside, its other readings as the top line shows them,
-     * compact; the tile lighter while a light is on. Rebuilt only when something changed.
+     * "Salon" over its temperature and, stacked beside, its other readings as the top line shows them; the tile lighter while a light is on. Rebuilt only when something changed.
      */
     private void fillRoom(LinearLayout t, Rooms.Room r) {
         Place place = place(r);
@@ -345,10 +343,10 @@ final class HousePanel {
         if (signature.equals(t.getTag(R.id.room_shown))) return;
         t.setTag(R.id.room_shown, signature);
         t.setActivated(lit);
-        ((NameLine) t.getChildAt(0)).setLit(lit);
-        LinearLayout body = (LinearLayout) t.getChildAt(1);
-        ((TextView) body.getChildAt(0)).setText(place.temperature.value == null ? "" : HouseText.units(activity, HouseText.degrees(place.temperature.value), true));
-        HouseHeader.facts(activity, (LinearLayout) body.getChildAt(1), place, ROOM_FACTS);
+        LinearLayout left = (LinearLayout) t.getChildAt(0);
+        ((NameLine) left.getChildAt(0)).setLit(lit);
+        ((TextView) left.getChildAt(1)).setText(place.temperature.value == null ? "" : HouseText.units(activity, HouseText.degrees(place.temperature.value), true));
+        HouseHeader.facts(activity, (LinearLayout) t.getChildAt(1), place, Integer.MAX_VALUE, R.style.Role_Petit);
     }
 
     /**
