@@ -37,6 +37,18 @@ final class PlaceBlock {
         this.activity = activity;
         this.words = words;
         this.block = block;
+        // Tied to the view, not to the activity's onDestroy: a dashboard finished before it was built (started
+        // without the Home category) has no block to release, and no curves are asked for once the window goes.
+        block.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                cancel();
+            }
+        });
         LinearLayout head = new LinearLayout(activity);
         head.setGravity(Gravity.CENTER_VERTICAL);
         name = Tokens.line(activity, "", R.style.Role_Titre);
@@ -102,11 +114,6 @@ final class PlaceBlock {
         drawn = "";
         block.setVisibility(View.GONE);
         words.setVisibility(View.VISIBLE);
-    }
-
-    /** The activity goes: no curves are asked for after it. */
-    void release() {
-        cancel();
     }
 
     private void cancel() {
