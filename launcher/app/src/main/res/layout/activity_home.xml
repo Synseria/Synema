@@ -359,7 +359,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/dash_panel_bg"
                 android:orientation="vertical"
-                android:padding="8dp"
+                android:padding="@dimen/syn_espace_3"
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
@@ -438,6 +438,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp"
                     android:paddingStart="9dp"
                     android:paddingEnd="9dp"
                     android:paddingTop="5dp"
