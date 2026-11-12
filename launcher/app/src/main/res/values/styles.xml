@@ -40,15 +40,13 @@
         <item name="android:clickable">true</item>
     </style>
 
-    <!-- A small spaced capital label on the top line: the day, a column's place, the sky. -->
+    <!-- A small label on the top line: the day, a column's place, the sky. -->
     <style name="DashCaps">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.15</item>
-        <item name="android:textColor">#94F2F2F5</item>
+        <item name="android:textColor">@color/syn_encre_secondaire</item>
         <item name="android:textSize">8.5sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
@@ -59,7 +57,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">#FFEEF2F8</item>
+        <item name="android:textColor">@color/syn_encre</item>
         <item name="android:textSize">32sp</item>
         <item name="android:fontFamily">@font/outfit</item>
         <item name="android:fontVariationSettings">\'wght\' 200</item>
@@ -88,7 +86,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">2dp</item>
         <item name="android:layout_marginBottom">3dp</item>
-        <item name="android:textColor">#CCF2F2F5</item>
+        <item name="android:textColor">@color/syn_encre_secondaire</item>
         <item name="android:textSize">11sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
@@ -119,7 +117,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">#A6F2F2F5</item>
+        <item name="android:textColor">@color/syn_encre_secondaire</item>
         <item name="android:textSize">9.5sp</item>
     </style>
 
@@ -129,7 +127,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">#FFF2F2F5</item>
+        <item name="android:textColor">@color/syn_encre</item>
         <item name="android:textSize">9.5sp</item>
         <item name="android:fontFeatureSettings">tnum</item>
     </style>

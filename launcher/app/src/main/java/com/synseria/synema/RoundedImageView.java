@@ -29,7 +29,6 @@ import java.util.WeakHashMap;
  */
 public final class RoundedImageView extends ImageView {
     private final float radius;
-    private static final int PLACEHOLDER = 0x14FFFFFF;
     /** Pictures already scaled for a view, by original: rows rebuilt and grids scrolled reuse them. */
     private static final Map<Bitmap, Bitmap> FITTED = new WeakHashMap<>();
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
@@ -45,7 +44,7 @@ public final class RoundedImageView extends ImageView {
     public RoundedImageView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
         radius = ctx.getResources().getDimension(R.dimen.card_corner);
-        empty.setColor(PLACEHOLDER);
+        empty.setColor(ctx.getColor(R.color.syn_survol));
     }
 
     @Override

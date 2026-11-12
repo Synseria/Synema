@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The veil over a focused tile, under its ring. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/syn_encre" android:alpha="0.18" />
+</selector>

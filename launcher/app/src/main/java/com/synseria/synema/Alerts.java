@@ -189,7 +189,7 @@ final class Alerts implements HaSocket.Listener {
             TextView digit = new TextView(ctx);
             digit.setText(code.substring(i, i + 1));
             digit.setTextSize(26);
-            digit.setTextColor(0xFF1C1C1E);
+            digit.setTextColor(ctx.getColor(R.color.syn_nuit_profond));
             digit.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
             digit.setGravity(Gravity.CENTER);
             digit.setBackgroundResource(R.drawable.pin_digit_bg);

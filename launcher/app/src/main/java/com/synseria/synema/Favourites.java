@@ -156,16 +156,16 @@ final class Favourites {
         Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
         Paint bg = new Paint();
-        bg.setShader(new LinearGradient(0, 0, w, h, 0xFF26344D, 0xFF141B2A, Shader.TileMode.CLAMP));
+        bg.setShader(new LinearGradient(0, 0, w, h, ctx.getColor(R.color.syn_tv_carte), ctx.getColor(R.color.syn_tv_fond), Shader.TileMode.CLAMP));
         c.drawRect(0, 0, w, h, bg);
         Drawable icon = ctx.getDrawable(R.drawable.ic_input);
         if (icon != null) {
-            icon.setTint(0xCCFFFFFF);
+            icon.setTint(ctx.getColor(R.color.syn_encre_secondaire));
             icon.setBounds(w / 2 - 22, 34, w / 2 + 22, 78);
             icon.draw(c);
         }
         Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
-        text.setColor(0xFFF4F6FA);
+        text.setColor(ctx.getColor(R.color.syn_encre));
         text.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         text.setTextAlign(Paint.Align.CENTER);
         text.setTextSize(36);

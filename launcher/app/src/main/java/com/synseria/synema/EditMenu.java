@@ -166,7 +166,7 @@ final class EditMenu {
         // TMDB's terms ask for this credit wherever its data shows.
         if (Tmdb.get(activity) != null) {
             TextView credit = text(activity.getString(R.string.tmdb_credit), 10);
-            credit.setTextColor(0x99F2F2F5);
+            credit.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
             credit.setSingleLine(false);
             credit.setPadding(dp(14), dp(14), dp(14), dp(4));
             rows.addView(credit);
@@ -249,7 +249,7 @@ final class EditMenu {
         if (Config.load(activity).wallpaper != null) choices.add(new String[]{Config.BACKDROP_PICTURE, activity.getString(R.string.backdrop_picture)});
         LinearLayout strip = new LinearLayout(activity);
         TextView name = text("", 12);
-        name.setTextColor(0xFF8D9BB3);
+        name.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
         name.setPadding(dp(4), dp(8), 0, 0);
         List<View> swatches = new ArrayList<>();
         for (String[] c : choices) {
@@ -291,12 +291,12 @@ final class EditMenu {
         Backdrop.Theme t = Backdrop.theme(id);
         GradientDrawable fill = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                 t != null ? new int[]{Backdrop.lit(t, 1, 0), t.base, Backdrop.lit(t, 0, 1)}
-                        : id.equals(Config.BACKDROP_PICTURE) ? new int[]{0xFF0F3D4A, 0xFF2A1F55}
-                        : new int[]{0xFF6B4A3A, 0xFF22303F, 0xFF3A2E5A});
+                        : id.equals(Config.BACKDROP_PICTURE) ? new int[]{0xFF0F3D4A, 0xFF2A1F55} // off-palette: hints of a photo
+                        : new int[]{0xFF6B4A3A, 0xFF22303F, 0xFF3A2E5A}); // off-palette: hints of a photo
         fill.setCornerRadius(dp(10));
         GradientDrawable chosen = new GradientDrawable();
         chosen.setCornerRadius(dp(10));
-        chosen.setStroke(dp(2), 0xFFFFFFFF);
+        chosen.setStroke(dp(2), activity.getColor(R.color.syn_encre));
         StateListDrawable ring = new StateListDrawable();
         ring.addState(new int[]{android.R.attr.state_activated}, chosen);
         ring.addState(new int[0], new ColorDrawable(Color.TRANSPARENT));
@@ -307,11 +307,11 @@ final class EditMenu {
     private Drawable toggle(boolean on) {
         GradientDrawable track = new GradientDrawable();
         track.setCornerRadius(dp(9));
-        track.setColor(on ? 0xFF4C8DF6 : 0x40FFFFFF);
+        track.setColor(activity.getColor(on ? R.color.syn_primaire : R.color.syn_filet));
         track.setSize(dp(30), dp(18));
         GradientDrawable knob = new GradientDrawable();
         knob.setShape(GradientDrawable.OVAL);
-        knob.setColor(0xFFFFFFFF);
+        knob.setColor(activity.getColor(R.color.syn_encre));
         knob.setSize(dp(14), dp(14));
         LayerDrawable l = new LayerDrawable(new Drawable[]{track, knob});
         int m = dp(2);
@@ -361,10 +361,10 @@ final class EditMenu {
 
     /** A small grey title above a group of rows. */
     private void header(LinearLayout rows, int label) {
-        TextView h = text(activity.getString(label).toUpperCase(java.util.Locale.getDefault()), 10);
+        TextView h = text(activity.getString(label), 10);
         h.setTypeface(MEDIUM);
-        h.setLetterSpacing(0.12f);
-        h.setTextColor(0xFF8D9BB3);
+        h.setLetterSpacing(0.02f);
+        h.setTextColor(activity.getColor(R.color.syn_encre_secondaire));
         h.setPadding(dp(4), dp(18), 0, dp(4));
         rows.addView(h);
     }
@@ -419,7 +419,7 @@ final class EditMenu {
         TextView t = new TextView(activity);
         t.setText(s);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
-        t.setTextColor(0xFFEEF2F8);
+        t.setTextColor(activity.getColor(R.color.syn_encre));
         t.setTypeface(REGULAR);
         return t;
     }

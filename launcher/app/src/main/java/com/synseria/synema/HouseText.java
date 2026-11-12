@@ -14,7 +14,6 @@ final class HouseText {
     static final double CO2_FRESH = 800, CO2_STALE = 1200;
     /** EDF's Tempo integrations name the colours in French; red is the dear day. */
     private static final String TEMPO_BLUE = "bleu", TEMPO_WHITE = "blanc", TEMPO_RED = "rouge";
-    private static final int BLUE = 0xFF3E8EF7, WHITE = 0xFFF4F6FA, RED = 0xFFE5484D, UNKNOWN = 0xFF6E6E73;
 
     private HouseText() {
     }
@@ -42,7 +41,7 @@ final class HouseText {
         Double temp = number(states.get(t.entity));
         if (temp == null) return null;
         Double hum = t.humidity.isEmpty() ? null : number(states.get(t.humidity));
-        return t.label + " " + degrees(temp) + (hum != null ? String.format(Locale.getDefault(), " / %.0f %%", hum) : "");
+        return t.label + " " + degrees(temp) + (hum != null ? String.format(Locale.getDefault(), " / %.0f\u00A0%%", hum) : "");
     }
 
     /**
@@ -69,7 +68,7 @@ final class HouseText {
         Double va = number(power);
         if (va != null && va > home.energyLimit) {
             String unit = power.attrs.optString("unit_of_measurement");
-            out.add(problem(ctx.getString(R.string.power_high, whole(va) + (unit.isEmpty() ? "" : " " + unit))));
+            out.add(problem(ctx.getString(R.string.power_high, whole(va) + (unit.isEmpty() ? "" : "\u00A0" + unit))));
         }
         if (tempoRed(home.energyTempo, states)) out.add(problem(ctx.getString(R.string.tempo_red_today)));
         if (tempoRed(home.energyTempoTomorrow, states)) out.add(problem(ctx.getString(R.string.tempo_red_tomorrow)));
@@ -86,10 +85,20 @@ final class HouseText {
         return s != null && s.state.toLowerCase(Locale.ROOT).contains(TEMPO_RED);
     }
 
+    /**
+     * Tempo's blue, white and red days in EDF's own colours, data rather than states, so no token stands for
+     * them; peak then off-peak (darker). The day's dot and the energy page's meters both read them here.
+     */
+    static final int[][] TEMPO = {
+            {0xFF0A84FF, 0xFF1C5BB3}, // off-palette: EDF's Tempo blue
+            {0xFFE5E5EA, 0xFF8E8E93}, // off-palette: EDF's Tempo white
+            {0xFFFF453A, 0xFFA8322B}}; // off-palette: EDF's Tempo red
+
     /** A Tempo day's colour for its dot; grey until EDF says (tomorrow's comes late in the morning). */
-    static int tempoColour(HomeAssistant.State s) {
+    static int tempoColour(Context ctx, HomeAssistant.State s) {
         String c = s.state.toLowerCase(Locale.ROOT);
-        return c.contains(TEMPO_RED) ? RED : c.contains(TEMPO_WHITE) ? WHITE : c.contains(TEMPO_BLUE) ? BLUE : UNKNOWN;
+        return c.contains(TEMPO_RED) ? TEMPO[2][0] : c.contains(TEMPO_WHITE) ? TEMPO[1][0]
+                : c.contains(TEMPO_BLUE) ? TEMPO[0][0] : ctx.getColor(R.color.syn_encre_tertiaire);
     }
 
     /** Whom or what a status entry is about: its label, else the entity's name in Home Assistant. */

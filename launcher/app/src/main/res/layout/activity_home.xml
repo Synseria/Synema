@@ -48,7 +48,7 @@
                     android:gravity="center_vertical"
                     android:format12Hour="h:mm"
                     android:format24Hour="HH:mm"
-                    android:textColor="#FFEEF2F8"
+                    android:textColor="@color/syn_encre"
                     android:textSize="44sp"
                     android:fontFamily="@font/outfit"
                     android:fontVariationSettings="'wght' 200"
@@ -75,7 +75,7 @@
                         android:includeFontPadding="false"
                         android:format12Hour="d MMMM"
                         android:format24Hour="d MMMM"
-                        android:textColor="#FFEEF2F8"
+                        android:textColor="@color/syn_encre"
                         android:textSize="15sp" />
                 </LinearLayout>
 
@@ -149,7 +149,7 @@
             android:paddingEnd="2dp"
             android:gravity="end"
             android:singleLine="true"
-            android:textColor="#D9F2F2F5"
+            android:textColor="@color/syn_encre_secondaire"
             android:textSize="10sp"
             android:fontFamily="sans-serif-medium" />
 
@@ -207,9 +207,7 @@
                                 android:layout_weight="1"
                                 android:singleLine="true"
                                 android:ellipsize="end"
-                                android:textAllCaps="true"
-                                android:letterSpacing="0.12"
-                                android:textColor="#FF8D9BB3"
+                                android:textColor="@color/syn_encre_secondaire"
                                 android:textSize="9sp"
                                 android:fontFamily="sans-serif-medium" />
 
@@ -227,7 +225,7 @@
                             android:layout_marginTop="2dp"
                             android:singleLine="true"
                             android:ellipsize="end"
-                            android:textColor="#FFF4F6FA"
+                            android:textColor="@color/syn_encre"
                             android:textSize="18sp"
                             android:fontFamily="sans-serif-medium" />
 
@@ -238,7 +236,7 @@
                             android:layout_marginTop="2dp"
                             android:singleLine="true"
                             android:ellipsize="end"
-                            android:textColor="#FFC8D2E3"
+                            android:textColor="@color/syn_encre_secondaire"
                             android:textSize="11sp" />
 
                         <TextView
@@ -250,7 +248,7 @@
                             android:maxLines="2"
                             android:ellipsize="end"
                             android:lineSpacingMultiplier="1.1"
-                            android:textColor="#FFA9B6CC"
+                            android:textColor="@color/syn_encre_secondaire"
                             android:textSize="10sp" />
 
                         <FrameLayout
@@ -296,7 +294,7 @@
                                 android:id="@+id/favLabel"
                                 style="@style/DashLabel"
                                 android:text="@string/edit_moving"
-                                android:textColor="#FFF5D90A"
+                                android:textColor="@color/syn_safran"
                                 android:visibility="gone" />
 
                             <com.synseria.synema.Dock
@@ -380,7 +378,7 @@
                         android:singleLine="true"
                         android:includeFontPadding="false"
                         android:text="@string/house_dashboard"
-                        android:textColor="#FFF2F2F5"
+                        android:textColor="@color/syn_encre"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium" />
 
@@ -390,7 +388,7 @@
                         android:layout_height="wrap_content"
                         android:singleLine="true"
                         android:includeFontPadding="false"
-                        android:textColor="#FFA1A1A6"
+                        android:textColor="@color/syn_encre_secondaire"
                         android:textSize="9sp" />
                 </LinearLayout>
 
@@ -413,7 +411,7 @@
                     android:layout_marginEnd="6dp"
                     android:layout_marginTop="4dp"
                     android:layout_marginBottom="1dp"
-                    android:background="#1AFFFFFF" />
+                    android:background="@color/syn_filet" />
 
                 <!-- The rooms, scrolling alone; their padding is room for a focused room's lift. -->
                 <com.synseria.synema.TileScroll
@@ -454,8 +452,8 @@
                             style="@style/TechLabel"
                             android:drawableStart="@drawable/ic_bolt"
                             android:drawablePadding="4dp"
-                            android:drawableTint="#A6F2F2F5"
-                            android:textColor="#FFF2F2F5" />
+                            android:drawableTint="@color/syn_encre_secondaire"
+                            android:textColor="@color/syn_encre" />
 
                         <TextView
                             android:id="@+id/costValue"

@@ -15,7 +15,7 @@
     <string name="state_off">Éteint</string>
     <string name="state_open">Ouvert</string>
     <string name="state_closed">Fermé</string>
-    <string name="state_brightness">Allumé · %1$d %%</string>
+    <string name="state_brightness">Allumé · %1$d&#160;%%</string>
     <string-array name="weather_condition_names">
         <item>Nuit claire</item>
         <item>Nuageux</item>
@@ -135,8 +135,8 @@
     <string name="energy_offpeak">heures creuses</string>
     <string name="energy_none">Aucun compteur d\'électricité dans le tableau Énergie de Home Assistant</string>
     <string name="energy_consumption">Consommation</string>
-    <string name="energy_per_hour">kWh par heure</string>
-    <string name="energy_per_day">kWh par jour</string>
-    <string name="energy_per_month">kWh par mois</string>
+    <string name="energy_per_hour">kWh / heure</string>
+    <string name="energy_per_day">kWh / jour</string>
+    <string name="energy_per_month">kWh / mois</string>
     <string name="assist_actions">Ce que tu peux proposer d\'actionner dans la maison (entité | nom (pièce) | état) :\n%1$s\nQuand c\'est utile, termine ta réponse par une à trois actions proposées, chacune sur sa propre ligne, exactement ainsi : ⚡ libellé court | domaine.service | entité. Services : turn_on, turn_off ou toggle ; volet : cover.open_cover ou cover.close_cover ; aspirateur : vacuum.start ou vacuum.return_to_base ; scène : scene.turn_on. Uniquement ces entités ; sinon, aucune ligne.</string>
 </resources>

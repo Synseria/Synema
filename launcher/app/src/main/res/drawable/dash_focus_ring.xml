@@ -13,16 +13,16 @@
                     <gradient
                         android:type="linear"
                         android:angle="315"
-                        android:startColor="#47FFFFFF"
-                        android:centerColor="#00FFFFFF"
-                        android:endColor="#00FFFFFF"
+                        android:startColor="@color/focus_sheen"
+                        android:centerColor="@android:color/transparent"
+                        android:endColor="@android:color/transparent"
                         android:centerX="0.42" />
                     <corners android:radius="@dimen/card_ring_corner" />
                 </shape>
             </item>
             <item>
                 <shape android:shape="rectangle">
-                    <stroke android:width="@dimen/card_ring" android:color="#FFFFFFFF" />
+                    <stroke android:width="@dimen/card_ring" android:color="@color/syn_encre" />
                     <corners android:radius="@dimen/card_ring_corner" />
                 </shape>
             </item>

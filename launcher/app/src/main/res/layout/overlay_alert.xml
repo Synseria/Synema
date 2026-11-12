@@ -16,7 +16,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:background="#FF1A1F28">
+        android:background="@color/syn_tv_carte">
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/video"
@@ -42,7 +42,7 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFF4F1EC"
+            android:textColor="@color/syn_encre"
             android:textSize="16sp"
             android:fontFamily="sans-serif-medium" />
 
@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="#FFB8B1A6"
+            android:textColor="@color/syn_encre_secondaire"
             android:textSize="10sp" />
 
         <LinearLayout

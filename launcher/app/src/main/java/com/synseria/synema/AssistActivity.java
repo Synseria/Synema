@@ -50,7 +50,6 @@ public class AssistActivity extends Activity {
 
     /** Messages kept in the panel, the oldest leaving first. */
     private static final int MAX_MESSAGES = 6;
-    private static final int MINE = 0xFF0A84FF, THEIRS = 0xFF2C2C2E;
 
     private HomeConfig home;
     private HomeAssistant ha;
@@ -132,7 +131,7 @@ public class AssistActivity extends Activity {
         }
         mic().setOnClickListener(v -> listen());
         mic().setOnFocusChangeListener((v, has) -> Focus.lift(v, has, Focus.BUTTON));
-        ring = new VoiceRing(this, mic(), 0xFFFFFFFF);
+        ring = new VoiceRing(this, mic(), getColor(R.color.syn_encre));
         ((FrameLayout) findViewById(R.id.micRoom)).addView(ring, 0, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         tts = new TextToSpeech(this, status -> {
@@ -380,15 +379,15 @@ public class AssistActivity extends Activity {
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, thenListen ? ANSWER_AND_LISTEN : ANSWER);
     }
 
-    /** A message: {@code mine} on the right in blue, else on the left in grey, its corner by its side squarer. */
+    /** A message: {@code mine} on the right in the accent, else on the left on a recessed grey, its corner by its side squarer. */
     private TextView bubble(String text, boolean mine) {
-        TextView t = line(text, 13, 0xFFFFFFFF);
+        TextView t = line(text, 13, getColor(mine ? R.color.syn_encre_sur_primaire : R.color.syn_encre));
         t.setSingleLine(false);
         t.setLineSpacing(dp(2), 1f);
         t.setMaxWidth(dp(460));
         t.setPadding(dp(12), dp(7), dp(12), dp(8));
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setColor(mine ? MINE : THEIRS);
+        bg.setColor(getColor(mine ? R.color.syn_primaire : R.color.syn_creux));
         float r = dp(16), tail = dp(4);
         bg.setCornerRadii(mine ? new float[]{r, r, r, r, tail, tail, r, r} : new float[]{r, r, r, r, r, r, tail, tail});
         t.setBackground(bg);

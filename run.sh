@@ -19,6 +19,7 @@ for a in "$@"; do
     *) echo "unknown option $a (see --help)" >&2; exit 1 ;;
   esac
 done
+tools/palette-check.sh
 if [ "$install" = 0 ]; then
   # grep finds nothing to print in a clean build: under pipefail its 1 must not count, gradle's does.
   if (cd launcher && ./gradlew -q assembleDebug --console=plain 2>&1 | { grep -vE '^Note:' || true; }); then

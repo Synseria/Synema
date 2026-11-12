@@ -84,10 +84,11 @@ final class Place {
     }
 
     enum Trend {
-        STEADY("→", HouseHeader.TEXT), RISING("↗", HouseHeader.TEXT), FALLING("↘", HouseHeader.TEXT),
-        FALLING_FAST("↘", HouseHeader.FAIR);
+        STEADY("→", R.color.syn_encre), RISING("↗", R.color.syn_encre), FALLING("↘", R.color.syn_encre),
+        FALLING_FAST("↘", R.color.syn_alerte);
 
         final String arrow;
+        /** A colour resource, read where the arrow is drawn. */
         final int color;
 
         Trend(String arrow, int color) {

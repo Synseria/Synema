@@ -1,6 +1,8 @@
 package com.synseria.synema;
 
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -32,7 +34,10 @@ final class HousePanel {
     private static final int PER_LINE = 2;
     /** Line heights and the space between lines (dp): eight rooms and six tiles fit on 540 dp. */
     private static final int TILE_DP = 34, ROOM_DP = 52, LINE_GAP_DP = 3;
-    private static final int DIM = 0xFFA1A1A6, LIT = 0xFFF2D24A;
+    /** A remote key as drawn on its tile (dp): its size, its corner and its distance from the tile's edges. */
+    private static final int KEY_W_DP = 14, KEY_H_DP = 8, KEY_RADIUS_DP = 3, KEY_EDGE_DP = 8;
+    /** The contour is the primary ink at 35 %: enough to outline the key on any tile, too little to be a second colour. */
+    private static final int KEY_CONTOUR_ALPHA = 0x59;
     /** The rooms are read again this often while the dashboard stays in front. */
     private static final long ROOMS_MS = 10 * 60_000L;
     /** The month's cost is read again this often: Home Assistant values the hours as they end. */
@@ -216,17 +221,14 @@ final class HousePanel {
             TextView state = activity.text("", 9, 0);
             state.setTextColor(activity.getColorStateList(R.color.dash_tile_state));
             state.setDuplicateParentStateEnabled(true);
-            // The colour button that toggles it, as a dot by its state: the name keeps the width.
+            TextView name = activity.text(tile.name, 10, Focus.tileText(activity));
+            // The remote's colour button that toggles it: its key drawn in the tile's top right corner.
             int key = colourKey(tile);
             if (key != 0) {
-                GradientDrawable dot = new GradientDrawable();
-                dot.setShape(GradientDrawable.OVAL);
-                dot.setColor(key);
-                dot.setSize(activity.dp(6), activity.dp(6));
-                state.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null);
-                state.setCompoundDrawablePadding(activity.dp(5));
+                t.setForeground(keyDrawable(key));
+                name.setPadding(0, 0, activity.dp(KEY_W_DP + KEY_EDGE_DP), 0);
             }
-            t.addView(activity.text(tile.name, 10, Focus.TILE_TEXT));
+            t.addView(name);
             t.addView(new View(activity), new LinearLayout.LayoutParams(1, 0, 1f));
             t.addView(state);
             t.setOnClickListener(v -> {
@@ -295,26 +297,14 @@ final class HousePanel {
             t.setOrientation(LinearLayout.VERTICAL);
             Focus.tile(t);
             t.setPadding(activity.dp(7), activity.dp(5), activity.dp(6), activity.dp(5));
-            // The name, after a small yellow dot while a light of the room is on.
-            LinearLayout top = new LinearLayout(activity);
-            top.setGravity(Gravity.CENTER_VERTICAL);
-            View dot = new View(activity);
-            GradientDrawable mark = new GradientDrawable();
-            mark.setShape(GradientDrawable.OVAL);
-            mark.setColor(LIT);
-            dot.setBackground(mark);
-            LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(activity.dp(4), activity.dp(4));
-            dlp.setMarginEnd(activity.dp(3));
-            top.addView(dot, dlp);
-            TextView title = activity.text(name, 10, Focus.TILE_TEXT);
+            TextView title = activity.text(name, 10, Focus.tileText(activity));
             title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
             title.setIncludeFontPadding(false);
-            top.addView(title);
-            t.addView(top);
+            t.addView(title);
             // Then the temperature large and thin, its other readings stacked beside it as on the top line.
             LinearLayout body = new LinearLayout(activity);
             body.setGravity(Gravity.CENTER_VERTICAL);
-            TextView temp = activity.text("", 20, Focus.TILE_TEXT);
+            TextView temp = activity.text("", 20, Focus.tileText(activity));
             temp.setTypeface(android.graphics.Typeface.create("sans-serif-light", android.graphics.Typeface.NORMAL));
             temp.setIncludeFontPadding(false);
             body.addView(temp);
@@ -341,7 +331,7 @@ final class HousePanel {
 
     /**
      * "Salon" over its temperature and, stacked beside, its other readings as the top line shows them,
-     * compact; the yellow dot by the name while a light is on. Rebuilt only when something changed.
+     * compact; the tile lighter while a light is on. Rebuilt only when something changed.
      */
     private void fillRoom(LinearLayout t, Rooms.Room r) {
         Place place = place(r);
@@ -349,10 +339,10 @@ final class HousePanel {
         String signature = place.signature() + lit;
         if (signature.equals(t.getTag(R.id.room_shown))) return;
         t.setTag(R.id.room_shown, signature);
-        ((LinearLayout) t.getChildAt(0)).getChildAt(0).setVisibility(lit ? View.VISIBLE : View.INVISIBLE);
+        t.setActivated(lit);
         LinearLayout body = (LinearLayout) t.getChildAt(1);
-        ((TextView) body.getChildAt(0)).setText(HouseHeader.degrees(place, ""));
-        HouseHeader.facts(activity, (LinearLayout) body.getChildAt(1), 8, true, place);
+        ((TextView) body.getChildAt(0)).setText(HouseHeader.degrees(activity, place, ""));
+        HouseHeader.facts(activity, (LinearLayout) body.getChildAt(1), 8, place);
     }
 
     /**
@@ -389,11 +379,11 @@ final class HousePanel {
         powerValue.setVisibility(va == null ? View.INVISIBLE : View.VISIBLE);
         gauge.setVisibility(va == null || max == null ? View.GONE : View.VISIBLE);
         if (va != null) {
-            SpannableStringBuilder sb = new SpannableStringBuilder(HouseText.whole(va) + " " + unit(power));
+            SpannableStringBuilder sb = new SpannableStringBuilder(HouseText.whole(va) + "\u00A0" + unit(power));
             if (max != null) {
                 int at = sb.length();
-                sb.append(" / ").append(HouseText.whole(max)).append(' ').append(unit(subscribed));
-                sb.setSpan(new ForegroundColorSpan(DIM), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.append(" / ").append(HouseText.whole(max)).append('\u00A0').append(unit(subscribed));
+                sb.setSpan(new ForegroundColorSpan(activity.getColor(R.color.syn_encre_secondaire)), at, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 gauge.removeAllViews();
                 gauge.addView(activity.progress((float) Math.min(1, va / (max * kilo(subscribed) / kilo(power)))),
                         new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -437,7 +427,7 @@ final class HousePanel {
         dot.setShape(GradientDrawable.OVAL);
         label.setVisibility(s == null ? View.GONE : View.VISIBLE);
         if (s == null) return;
-        dot.setColor(HouseText.tempoColour(s));
+        dot.setColor(HouseText.tempoColour(activity, s));
         int size = activity.dp(6);
         dot.setSize(size, size);
         label.setCompoundDrawablesRelativeWithIntrinsicBounds(dot, null, null, null);
@@ -463,17 +453,32 @@ final class HousePanel {
         }
     }
 
-    /** The remote's colour buttons (red, green, yellow, blue), as their dots. */
+    /** The remote's colour buttons (red, green, yellow, blue), as their keys. */
     private static final int[] COLOUR_CODES = {183, 184, 185, 186};
-    private static final int[] COLOURS = {0xFFE5484D, 0xFF46A758, 0xFFF5D90A, 0xFF3E8EF7};
+    private static final int[] COLOURS = {R.color.syn_touche_rouge, R.color.syn_touche_verte, R.color.syn_touche_jaune,
+            R.color.syn_touche_bleue};
 
-    /** The colour of the remote button set to this tile's entity, or 0: the dot by the tile's name. */
+    /** The colour of the remote button set to this tile's entity, or 0: no key on the tile. */
     private int colourKey(HomeConfig.Item tile) {
         for (int i = 0; i < COLOUR_CODES.length; i++) {
             HomeConfig.Action a = home.keys.get(COLOUR_CODES[i]);
-            if (a != null && !a.entity.isEmpty() && a.entity.equals(tile.action.entity)) return COLOURS[i];
+            if (a != null && !a.entity.isEmpty() && a.entity.equals(tile.action.entity)) return activity.getColor(COLOURS[i]);
         }
         return 0;
+    }
+
+    /** A small remote key of this colour, pinned to a tile's top right corner. */
+    private Drawable keyDrawable(int colour) {
+        GradientDrawable key = new GradientDrawable();
+        key.setColor(colour);
+        key.setCornerRadius(activity.dp(KEY_RADIUS_DP));
+        key.setStroke(activity.dp(1), (KEY_CONTOUR_ALPHA << 24) | (activity.getColor(R.color.syn_encre) & 0xFFFFFF));
+        LayerDrawable layer = new LayerDrawable(new Drawable[]{key});
+        layer.setLayerSize(0, activity.dp(KEY_W_DP), activity.dp(KEY_H_DP));
+        layer.setLayerGravity(0, Gravity.TOP | Gravity.END);
+        layer.setLayerInsetTop(0, activity.dp(KEY_EDGE_DP));
+        layer.setLayerInsetEnd(0, activity.dp(KEY_EDGE_DP));
+        return layer;
     }
 
     private static String tileNames(List<HomeConfig.Item> items) {
