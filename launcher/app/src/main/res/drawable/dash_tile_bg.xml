@@ -7,7 +7,6 @@
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/syn_tv_carte_allumee" />
-                    <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
                     <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>
@@ -25,7 +24,6 @@
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/syn_tv_carte" />
-                    <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
                     <corners android:radius="@dimen/syn_rayon_pastille" />
                 </shape>
             </item>
@@ -41,14 +39,12 @@
     <item android:state_activated="true">
         <shape android:shape="rectangle">
             <solid android:color="@color/syn_tv_carte_allumee" />
-            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
             <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/syn_tv_carte" />
-            <stroke android:width="@dimen/syn_trait_filet" android:color="@color/syn_filet" />
             <corners android:radius="@dimen/syn_rayon_pastille" />
         </shape>
     </item>

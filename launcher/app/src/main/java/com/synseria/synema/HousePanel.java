@@ -307,7 +307,10 @@ final class HousePanel {
             // Then the temperature large and thin, its other readings stacked beside it as on the top line.
             LinearLayout body = new LinearLayout(activity);
             body.setGravity(Gravity.CENTER_VERTICAL);
+            // A reading, not a title: the thin figures of the top line's temperatures, at a tile's size.
             TextView temp = activity.text("", R.style.Role_Titre);
+            temp.setFontVariationSettings("'wght' 200");
+            temp.setFontFeatureSettings("tnum");
             temp.setIncludeFontPadding(false);
             body.addView(temp);
             LinearLayout facts = new LinearLayout(activity);

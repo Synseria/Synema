@@ -6,9 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * The favourites, never scrolling: six 16:9 cards to a line, their pictures from MIN_DP to MAX_DP wide as the width allows, the space between them taking the rest.
- * The pictures keep Focus.cardRoom from each other, and the first and last stand on the column's edges
- * like a card row's: the dock reaches a frame's inset past them (margins out, no side padding).
+ * The favourites on their plate (the view's background), never scrolling: six 16:9 cards to a line,
+ * their pictures from MIN_DP to MAX_DP wide as the width allows, the space between them taking the rest.
+ * The pictures keep Focus.cardRoom from each other and from the plate's edge: a focused card's lift and
+ * ring stay on the plate and off its neighbours.
  */
 public final class Dock extends ViewGroup {
     static final int PER_LINE = 6;
@@ -28,16 +29,7 @@ public final class Dock extends ViewGroup {
         gap = Math.round(GAP_DP * d);
         lineGap = Math.round(LINE_GAP_DP * d);
         room = Focus.cardRoom(ctx);
-        setPadding(0, room - inset, 0, room - inset);
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        // Left and right, not start and end: a relative margin set here is never resolved again.
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) getLayoutParams();
-        lp.leftMargin = -inset;
-        lp.rightMargin = -inset;
-        super.onAttachedToWindow();
+        setPadding(room - inset, room - inset, room - inset, room - inset);
     }
 
     @Override
