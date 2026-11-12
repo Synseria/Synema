@@ -352,7 +352,7 @@ final class EditMenu {
     private void colourSwatches(LinearLayout rows, Dialog menu) {
         List<String[]> choices = new ArrayList<>();
         for (Tokens.Colour c : Tokens.COLOURS) choices.add(new String[]{c.id, activity.getString(c.label)});
-        swatchRow(rows, activity.getString(R.string.colour), choices, Config.load(activity).colour, Tokens.COLOURS.length,
+        swatchRow(rows, activity.getString(R.string.colour), choices, Config.load(activity).colour,
                 this::colourSwatch, id -> {
                     if (Config.load(activity).colour.equals(id)) return;
                     if (!Config.save(activity, "colour", id)) failed();
@@ -372,7 +372,7 @@ final class EditMenu {
         choices.add(new String[]{Config.BACKDROP_ARTWORK, activity.getString(R.string.backdrop_artwork)});
         for (Backdrop.Theme t : Backdrop.themes(activity)) choices.add(new String[]{t.id, activity.getString(t.label)});
         if (Config.load(activity).wallpaper != null) choices.add(new String[]{Config.BACKDROP_PICTURE, activity.getString(R.string.backdrop_picture)});
-        swatchRow(rows, activity.getString(R.string.backdrop), choices, Config.load(activity).backdrop, choices.size(),
+        swatchRow(rows, activity.getString(R.string.backdrop), choices, Config.load(activity).backdrop,
                 this::swatch, id -> {
                     if (!Config.save(activity, "backdrop", id)) failed();
                     host.changed();
@@ -383,7 +383,7 @@ final class EditMenu {
      * A label with the chosen name at its end over a single-choice group of swatches: the arrows choose, the
      * chosen swatch is outlined, and the save waits for the arrows to rest.
      */
-    private void swatchRow(LinearLayout rows, String label, List<String[]> choices, String current, int count,
+    private void swatchRow(LinearLayout rows, String label, List<String[]> choices, String current,
                            java.util.function.Function<String, Drawable> look, java.util.function.Consumer<String> save) {
         int chosen = 0;
         for (int i = 0; i < choices.size(); i++) if (choices.get(i)[0].equals(current)) chosen = i;
@@ -398,12 +398,12 @@ final class EditMenu {
         rows.addView(caption);
 
         ChoiceGroup strip = new ChoiceGroup(activity);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < choices.size(); i++) {
             View sw = new View(activity);
             sw.setBackground(look.apply(choices.get(i)[0]));
             // Equal shares of the panel's width, however many choices there are.
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, px(R.dimen.syn_rangee_palette), 1f);
-            if (i < count - 1) lp.setMarginEnd(px(R.dimen.syn_espace_2));
+            if (i < choices.size() - 1) lp.setMarginEnd(px(R.dimen.syn_espace_2));
             strip.addView(sw, lp);
         }
         strip.choose(chosen);

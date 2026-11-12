@@ -433,8 +433,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
     private void showRatings(TvListings.Item item) {
         heroRatings.removeAllViews();
         if (item.audience < 0) return;
-        TextView capsule = Tokens.text(this, HouseText.units(this, getString(R.string.rating, item.audience), false), R.style.Role_Note);
-        capsule.setSingleLine(true);
+        TextView capsule = Tokens.line(this, HouseText.units(this, getString(R.string.rating, item.audience), false), R.style.Role_Note);
         capsule.setIncludeFontPadding(false);
         capsule.setContentDescription(getString(R.string.rating_audience, item.audience));
         capsule.setBackgroundResource(R.drawable.dash_capsule_bg);
@@ -838,8 +837,7 @@ public class MainActivity extends Activity implements EditMenu.Host {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
         line.addView(icon, new LinearLayout.LayoutParams(dp(UNDER_CARD_ICON_DP), dp(UNDER_CARD_ICON_DP)));
-        TextView name = Tokens.text(this, appLabel(pm, item.pkg), R.style.Role_Note);
-        name.setSingleLine(true);
+        TextView name = Tokens.line(this, appLabel(pm, item.pkg), R.style.Role_Note);
         name.setPadding(px(R.dimen.syn_espace_1), 0, 0, 0);
         line.addView(name);
         return line;

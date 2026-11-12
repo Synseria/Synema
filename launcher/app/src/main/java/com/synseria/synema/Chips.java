@@ -15,8 +15,7 @@ final class Chips {
 
     /** A secondary button, a touch target (syn_cible_min) high, a white ring when focused. */
     static TextView button(Context ctx, String text) {
-        TextView b = Tokens.text(ctx, text, R.style.Role_CorpsFort);
-        b.setSingleLine(true);
+        TextView b = Tokens.line(ctx, text, R.style.Role_CorpsFort);
         b.setTextColor(ctx.getColor(R.color.syn_encre));
         b.setBackgroundResource(R.drawable.button_secondary_bg);
         int pad = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
@@ -33,8 +32,7 @@ final class Chips {
         int gap = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_1);
         int pad = ctx.getResources().getDimensionPixelSize(R.dimen.syn_espace_4);
         for (int i = 0; i < labels.length; i++) {
-            TextView cell = Tokens.text(ctx, labels[i], R.style.Role_CorpsFort);
-            cell.setSingleLine(true);
+            TextView cell = Tokens.line(ctx, labels[i], R.style.Role_CorpsFort);
             cell.setBackgroundResource(R.drawable.choice_cell_bg);
             cell.setTextColor(ctx.getColorStateList(R.color.choice_cell_text));
             cell.setGravity(Gravity.CENTER);

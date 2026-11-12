@@ -39,13 +39,11 @@ final class PlaceBlock {
         this.block = block;
         LinearLayout head = new LinearLayout(activity);
         head.setGravity(Gravity.CENTER_VERTICAL);
-        name = Tokens.text(activity, "", R.style.Role_Titre);
-        name.setSingleLine(true);
+        name = Tokens.line(activity, "", R.style.Role_Titre);
         name.setIncludeFontPadding(false);
         head.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         // A reading, not a title: the thin figures of the room tiles.
-        temperature = Tokens.text(activity, "", R.style.Role_Releve);
-        temperature.setSingleLine(true);
+        temperature = Tokens.line(activity, "", R.style.Role_Releve);
         temperature.setIncludeFontPadding(false);
         head.addView(temperature);
         block.addView(head, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.px(R.dimen.syn_espace_6)));

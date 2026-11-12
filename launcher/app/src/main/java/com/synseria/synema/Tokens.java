@@ -78,4 +78,12 @@ final class Tokens {
         t.setText(s);
         return t;
     }
+
+    /** A text held to one line (a name from Home Assistant, a reading): too long, it ends in "…", never cut mid-glyph. */
+    static TextView line(Context ctx, CharSequence s, int role) {
+        TextView t = text(ctx, s, role);
+        t.setSingleLine(true);
+        t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        return t;
+    }
 }

@@ -260,8 +260,7 @@ final class HouseHeader {
             // jeton manquant: syn_icone_grande (20), the person's initial disc
             int disc = activity.dp(20);
             String letter = n.name.isEmpty() ? "" : n.name.substring(0, 1).toUpperCase(Locale.getDefault());
-            TextView initial = Tokens.text(activity, letter, R.style.Role_CorpsFort);
-            initial.setSingleLine(true);
+            TextView initial = Tokens.line(activity, letter, R.style.Role_CorpsFort);
             initial.setTextColor(activity.getColor(R.color.syn_nuit_profond));
             initial.setIncludeFontPadding(false);
             initial.setGravity(Gravity.CENTER);
@@ -279,8 +278,7 @@ final class HouseHeader {
             size = activity.px(R.dimen.syn_espace_2);
         }
         chip.addView(sign, new LinearLayout.LayoutParams(size, size));
-        TextView words = Tokens.text(activity, n.text, R.style.Role_Note);
-        words.setSingleLine(true);
+        TextView words = Tokens.line(activity, n.text, R.style.Role_Note);
         words.setTextColor(color);
         words.setIncludeFontPadding(false);
         int wrap = ViewGroup.LayoutParams.WRAP_CONTENT;
