@@ -43,8 +43,6 @@ final class Alerts implements HaSocket.Listener {
     private static final int PIN_SECONDS = 120;
     /** Enlarged, what the card keeps under the picture (dp): its bar and its row of title and buttons. */
     private static final int ENLARGED_CHROME_DP = 96;   // jeton manquant: syn_alerte_pied
-    /** The card's picture, as overlay_alert.xml sizes it (dp): 16:9 of the panel's width less its margins. */
-    private static final int MEDIA_DP = 153;   // jeton manquant: syn_hauteur_alerte_media
     private static final int MESSAGE_MAX_DP = 420;   // jeton manquant: syn_largeur_message
     /** The same alert is not shown again within this delay (people walking past a camera). */
     private static final long COOLDOWN_MS = 120_000;
@@ -188,6 +186,7 @@ final class Alerts implements HaSocket.Listener {
         // The receiver's notification changes for other reasons too.
         if (code.equals(shownPin) || code.equals(closedPin)) return;
         dismissPin();
+        Tokens.apply(ctx);   // the accent may have changed since the service started
         View v = LayoutInflater.from(ctx).inflate(R.layout.overlay_pin, null);
         LinearLayout digits = v.findViewById(R.id.digits);
         for (int i = 0; i < code.length(); i++) {
@@ -253,6 +252,7 @@ final class Alerts implements HaSocket.Listener {
         }
         dismiss();
         boolean live = !a.camera.isEmpty();
+        Tokens.apply(ctx);   // the accent may have changed since the service started
         View v = LayoutInflater.from(ctx).inflate(R.layout.overlay_alert, null);
         TextView title = v.findViewById(R.id.title);
         shownMessage = message;
@@ -396,7 +396,7 @@ final class Alerts implements HaSocket.Listener {
         lp.x = on ? 0 : Scale.marginX(ctx);
         lp.y = on ? 0 : Scale.marginY(ctx);
         ImageView frame = shown.findViewById(R.id.frame);
-        shown.findViewById(R.id.media).getLayoutParams().height = on ? ctx.getResources().getDisplayMetrics().heightPixels - (int) (ENLARGED_CHROME_DP * d) : (int) (MEDIA_DP * d);
+        shown.findViewById(R.id.media).getLayoutParams().height = on ? ctx.getResources().getDisplayMetrics().heightPixels - (int) (ENLARGED_CHROME_DP * d) : px(R.dimen.alert_media_height);
         frame.setScaleType(on ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP);
         ((TextView) shown.findViewById(R.id.btnFull)).setText(on ? R.string.alert_shrink : R.string.alert_full_screen);
         if (on) {
