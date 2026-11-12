@@ -76,7 +76,6 @@
     <string name="alert_full_screen">Enlarge</string>
     <string name="alert_close">Close</string>
     <string name="airplay_code">AirPlay code</string>
-    <string name="alert_closes_in">Closes in %1$d&#160;s</string>
     <string name="edit_move">Move</string>
     <string name="edit_remove">Remove from favourites</string>
     <string name="edit_add">Add</string>

@@ -36,7 +36,6 @@
     <string name="alert_full_screen">Agrandir</string>
     <string name="alert_close">Fermer</string>
     <string name="airplay_code">Code AirPlay</string>
-    <string name="alert_closes_in">Se ferme dans %1$d&#160;s</string>
     <string name="edit_move">Déplacer</string>
     <string name="edit_remove">Retirer des favoris</string>
     <string name="edit_add">Ajouter</string>
