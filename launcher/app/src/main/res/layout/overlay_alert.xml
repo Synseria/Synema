@@ -13,7 +13,7 @@
     <FrameLayout
         android:id="@+id/media"
         android:layout_width="match_parent"
-        android:layout_height="153dp"
+        android:layout_height="@dimen/alert_media_height"
         android:layout_marginStart="@dimen/syn_espace_2"
         android:layout_marginTop="@dimen/syn_espace_2"
         android:layout_marginEnd="@dimen/syn_espace_2"

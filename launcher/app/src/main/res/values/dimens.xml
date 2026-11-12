@@ -19,4 +19,6 @@
     <!-- jeton manquant: syn_barre_haute (72), syn_panneau_maison_largeur (288) -->
     <dimen name="top_line_height">72dp</dimen>
     <dimen name="house_panel_width">288dp</dimen>
+    <!-- The alert's picture: 16:9 of the panel's width less its margins. jeton manquant: syn_hauteur_alerte_media -->
+    <dimen name="alert_media_height">153dp</dimen>
 </resources>

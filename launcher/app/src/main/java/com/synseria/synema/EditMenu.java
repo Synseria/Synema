@@ -61,10 +61,16 @@ final class EditMenu {
     private final Host host;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable pendingSave;
+    /** Set just before the screen is recreated in a new accent: its menu opens again on the Theme tab. */
+    private static boolean reopenOnTheme;
 
     EditMenu(Activity activity, Host host) {
         this.activity = activity;
         this.host = host;
+        if (reopenOnTheme) {
+            reopenOnTheme = false;
+            handler.post(() -> customize(1));
+        }
     }
 
     void open(String pkg, List<String> favourites) {
@@ -158,6 +164,11 @@ final class EditMenu {
 
     /** The settings: two tabs, Home and Theme; the left and right arrows on the tabs switch them. */
     void customize() {
+        customize(0);
+    }
+
+    /** The settings menu on its tab {@code tab}: 0 Home, 1 Theme. */
+    private void customize(int tab) {
         List<String> favourites = Config.load(activity).dockApps;
         Dialog d = dialog();
         LinearLayout panel = new LinearLayout(activity);
@@ -188,11 +199,11 @@ final class EditMenu {
         Runnable fill = () -> {
             content.removeAllViews();
             if (tabs.chosenIndex() == 0) homeTab(content, d, favourites);
-            else themeTab(content);
+            else themeTab(content, d);
             scroll.scrollTo(0, 0);
         };
         tabs.onChoice(i -> fill.run());
-        tabs.choose(0);
+        tabs.choose(tab);
         fill.run();
         d.setOnDismissListener(x -> flushPending());
         showPanel(d, panel, tabs);
@@ -226,8 +237,8 @@ final class EditMenu {
         }
     }
 
-    private void themeTab(LinearLayout rows) {
-        colourSwatches(rows);
+    private void themeTab(LinearLayout rows, Dialog menu) {
+        colourSwatches(rows, menu);
         backdropSwatches(rows);
         ImageView knob = new ImageView(activity);
         Runnable paint = () -> knob.setImageDrawable(toggle(Config.load(activity).backdropMotion));
@@ -338,13 +349,16 @@ final class EditMenu {
     }
 
     /** The accent: one swatch per design-system preset. Choosing it restarts the open screens in the new colour. */
-    private void colourSwatches(LinearLayout rows) {
+    private void colourSwatches(LinearLayout rows, Dialog menu) {
         List<String[]> choices = new ArrayList<>();
         for (Tokens.Colour c : Tokens.COLOURS) choices.add(new String[]{c.id, activity.getString(c.label)});
         swatchRow(rows, activity.getString(R.string.colour), choices, Config.load(activity).colour, Tokens.COLOURS.length,
                 this::colourSwatch, id -> {
                     if (Config.load(activity).colour.equals(id)) return;
                     if (!Config.save(activity, "colour", id)) failed();
+                    // The menu closes before the screen is rebuilt, and the new screen reopens it on this tab.
+                    reopenOnTheme = true;
+                    menu.dismiss();
                     activity.recreate();
                 });
     }
@@ -395,8 +409,12 @@ final class EditMenu {
         strip.choose(chosen);
         strip.onChoice(i -> {
             name.setText(choices.get(i)[1]);
-            flushPending();
-            pendingSave = () -> save.accept(choices.get(i)[0]);
+            // Each arrow restarts the wait: only the choice the arrows rest on is saved.
+            if (pendingSave != null) handler.removeCallbacks(pendingSave);
+            pendingSave = () -> {
+                pendingSave = null;
+                save.accept(choices.get(i)[0]);
+            };
             handler.postDelayed(pendingSave, SAVE_MS);
         });
         LinearLayout.LayoutParams stripLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -404,7 +422,7 @@ final class EditMenu {
         rows.addView(strip, stripLp);
     }
 
-    /** Runs the swatch choice's save now if it is still waiting for the arrows to rest. */
+    /** Runs the swatch choice's save now if it is still waiting for the arrows to rest (the menu closes). */
     private void flushPending() {
         if (pendingSave == null) return;
         handler.removeCallbacks(pendingSave);
