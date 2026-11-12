@@ -7,7 +7,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
+import android.text.TextUtils;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.util.SparseArray;
@@ -15,6 +15,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -72,7 +73,6 @@ final class Alerts implements HaSocket.Listener {
     private boolean enlarged;
     private boolean pausedMedia;
     private int secondsLeft;
-    private String shownMessage = "";
 
     Alerts(Context ctx, HomeAssistant ha, HomeConfig config) {
         this.ctx = ctx;
@@ -255,11 +255,18 @@ final class Alerts implements HaSocket.Listener {
         Tokens.apply(ctx);   // the accent may have changed since the service started
         View v = LayoutInflater.from(ctx).inflate(R.layout.overlay_alert, null);
         TextView title = v.findViewById(R.id.title);
-        shownMessage = message;
         if (live) {
-            // Beside the buttons the title has little room: two lines rather than a cut word.
+            // The camera's title has its own full-width line: two lines rather than a cut word.
+            title.setTextAppearance(R.style.Role_CorpsFort);
             title.setMaxLines(2);
+            title.setEllipsize(TextUtils.TruncateAt.END);
+            ((ViewGroup.MarginLayoutParams) title.getLayoutParams()).bottomMargin = 0;
             title.setText(a.title);
+            TextView note = v.findViewById(R.id.message);
+            if (!message.isEmpty()) {
+                note.setText(message);
+                note.setVisibility(View.VISIBLE);
+            }
         } else if (message.isEmpty()) {
             title.setText(a.title);
         } else {
@@ -334,7 +341,6 @@ final class Alerts implements HaSocket.Listener {
             });
             rtc.start();
         }
-        if (live) title.post(this::fitMessage);
         secondsLeft = live ? SHOW_SECONDS : NOTICE_SECONDS;
         main.post(countdown);
     }
@@ -364,23 +370,6 @@ final class Alerts implements HaSocket.Listener {
         return text;
     }
 
-    /** The camera's title on one line, with its message after it in secondary ink only if all of it fits. */
-    private void fitMessage() {
-        if (shown == null || shownAlert == null) return;
-        TextView title = shown.findViewById(R.id.title);
-        String head = shownAlert.title;
-        if (!shownMessage.isEmpty()) {
-            String full = head + "  " + shownMessage;
-            if (title.getPaint().measureText(full) <= title.getWidth()) {
-                SpannableString text = new SpannableString(full);
-                text.setSpan(new ForegroundColorSpan(ctx.getColor(R.color.syn_encre_secondaire)), head.length() + 2, full.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                title.setText(text);
-                return;
-            }
-        }
-        title.setText(head);
-    }
-
     private int px(int dimen) {
         return ctx.getResources().getDimensionPixelSize(dimen);
     }
@@ -404,7 +393,6 @@ final class Alerts implements HaSocket.Listener {
             shown.findViewById(R.id.countdownBar).setVisibility(View.GONE);
         }
         wm.updateViewLayout(shown, lp);
-        shown.findViewById(R.id.title).post(this::fitMessage);
     }
 
     private void dismiss() {
