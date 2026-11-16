@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Engendré par Synseria-Design — ne pas retoucher : changer jetons.json ou apps/Synema.json, puis sh propager.sh. -->
-<!-- jetons.json 8e252f614957292a · contenu 370320acefba9fa5 -->
+<!-- jetons.json 3a1cf9d706c5146a · contenu 79d346100fef5479 -->
 <resources>
-    <color name="syn_fenetre">#FF12151D</color>
-    <color name="syn_surface">#FF1A1E2A</color>
-    <color name="syn_creux">#FF242A3A</color>
-    <color name="syn_filet">#FF333A4D</color>
-    <color name="syn_contour_controle">#FF868EA3</color>
-    <color name="syn_encre">#FFEEF0F6</color>
-    <color name="syn_encre_secondaire">#FFA3ABBF</color>
-    <color name="syn_encre_tertiaire">#FF7F879B</color>
-    <color name="syn_survol">#14EEF0F6</color>
-    <color name="syn_pression">#24EEF0F6</color>
+    <color name="syn_fenetre">#FF1E212A</color>
+    <color name="syn_surface">#FF262B38</color>
+    <color name="syn_creux">#FF313848</color>
+    <color name="syn_filet">#FF41495C</color>
+    <color name="syn_contour_controle">#FF868FA4</color>
+    <color name="syn_encre">#FFFDFDFF</color>
+    <color name="syn_encre_secondaire">#FFAFB8CC</color>
+    <color name="syn_encre_tertiaire">#FF80889C</color>
+    <color name="syn_survol">#14FDFDFF</color>
+    <color name="syn_pression">#24FDFDFF</color>
+    <color name="syn_selection_inactive">#24FDFDFF</color>
     <color name="syn_primaire">#FF7CADFF</color>
-    <color name="syn_primaire_encre">#FFB1CEFF</color>
+    <color name="syn_primaire_encre">#FFC5DBFF</color>
     <color name="syn_primaire_fond">#387CADFF</color>
     <color name="syn_encre_sur_primaire">#FF0E1322</color>
     <color name="syn_nuit">#FF16284F</color>
     <color name="syn_nuit_profond">#FF0E1322</color>
     <color name="syn_safran">#FFFFC53D</color>
+    <color name="syn_voile_image">#E00E1322</color>
+    <color name="syn_encre_sur_image">#FFFFFFFF</color>
+    <color name="syn_encre_secondaire_sur_image">#C7FFFFFF</color>
     <color name="syn_safran_texte">#FFFFC53D</color>
     <color name="syn_safran_fond">#33FFC53D</color>
     <color name="syn_danger">#FFFF7A7A</color>
@@ -39,32 +43,32 @@
     <attr name="syn_primaire_fond" format="color" />
     <style name="SynCouleur.Azur" parent="">
         <item name="syn_primaire">#FF7CADFF</item>
-        <item name="syn_primaire_encre">#FFB1CEFF</item>
+        <item name="syn_primaire_encre">#FFC5DBFF</item>
         <item name="syn_primaire_fond">#387CADFF</item>
     </style>
     <style name="SynCouleur.Jade" parent="">
         <item name="syn_primaire">#FF4BCBA9</item>
-        <item name="syn_primaire_encre">#FF9FE2CC</item>
+        <item name="syn_primaire_encre">#FFA7EAD4</item>
         <item name="syn_primaire_fond">#384BCBA9</item>
     </style>
     <style name="SynCouleur.Violet" parent="">
         <item name="syn_primaire">#FFB79CFF</item>
-        <item name="syn_primaire_encre">#FFD3C5FF</item>
+        <item name="syn_primaire_encre">#FFDDD3FF</item>
         <item name="syn_primaire_fond">#38B79CFF</item>
     </style>
     <style name="SynCouleur.Framboise" parent="">
         <item name="syn_primaire">#FFF27F93</item>
-        <item name="syn_primaire_encre">#FFF9B1BB</item>
+        <item name="syn_primaire_encre">#FFFFC6CD</item>
         <item name="syn_primaire_fond">#38F27F93</item>
     </style>
     <style name="SynCouleur.Corail" parent="">
         <item name="syn_primaire">#FFEA8869</item>
-        <item name="syn_primaire_encre">#FFF3B6A3</item>
+        <item name="syn_primaire_encre">#FFFFC8B7</item>
         <item name="syn_primaire_fond">#38EA8869</item>
     </style>
     <style name="SynCouleur.Ardoise" parent="">
         <item name="syn_primaire">#FFB6BECC</item>
-        <item name="syn_primaire_encre">#FFD9DEE7</item>
+        <item name="syn_primaire_encre">#FFDBE0E9</item>
         <item name="syn_primaire_fond">#38B6BECC</item>
     </style>
     <dimen name="syn_rayon_pastille">4dp</dimen>
@@ -86,6 +90,7 @@
     <dimen name="syn_interrupteur_largeur">32dp</dimen>
     <dimen name="syn_interrupteur_hauteur">18dp</dimen>
     <dimen name="syn_rangee">28dp</dimen>
+    <dimen name="syn_rangee_navigation">36dp</dimen>
     <dimen name="syn_rangee_palette">36dp</dimen>
     <dimen name="syn_touche">18dp</dimen>
     <dimen name="syn_icone_barre">17dp</dimen>
